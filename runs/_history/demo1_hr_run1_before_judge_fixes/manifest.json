@@ -1,0 +1,80 @@
+{
+  "brief": "An assistant that answers HR policy questions for Meridian Shipping's shore-based staff: leave, conduct, and travel/expense rules. It should also tell staff what the policy says about salary and pension, and keep answers short and polite.",
+  "docs": "demos/hr_docs",
+  "models": {
+    "gen": "openai/gpt-oss-20b",
+    "judge": "qwen/qwen3.8-27b",
+    "agent": "openai/gpt-oss-20b"
+  },
+  "usage": {
+    "intake": {
+      "calls": 3,
+      "cache_hits": 3,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "guard": {
+      "calls": 8,
+      "cache_hits": 8,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "generate": {
+      "calls": 2,
+      "cache_hits": 2,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "evalgen": {
+      "calls": 20,
+      "cache_hits": 20,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "agent": {
+      "calls": 88,
+      "cache_hits": 22,
+      "prompt_tokens": 73252,
+      "completion_tokens": 6681,
+      "seconds": 50.65518530001282,
+      "total_tokens": 79933
+    },
+    "judge": {
+      "calls": 66,
+      "cache_hits": 38,
+      "prompt_tokens": 19612,
+      "completion_tokens": 484,
+      "seconds": 6.961677800005418,
+      "total_tokens": 20096
+    },
+    "optimize": {
+      "calls": 4,
+      "cache_hits": 0,
+      "prompt_tokens": 1561,
+      "completion_tokens": 303,
+      "seconds": 1.959217699986766,
+      "total_tokens": 1864
+    },
+    "_total": {
+      "calls": 191,
+      "cache_hits": 93,
+      "total_tokens": 101893,
+      "seconds": 59.58
+    }
+  },
+  "seconds": 453.0,
+  "notes": [
+    "intake: 5 questions, 100% reference real document terms"
+  ],
+  "seed": 7,
+  "final_score": null,
+  "tools": []
+}

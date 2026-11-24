@@ -1,0 +1,40 @@
+part_no,description,category,equipment,unit_price_usd,stock_qty,lead_time_days,min_order_qty,supplier_id
+SP-1007,Fuel injector nozzle,Main engine,MAN B&W 6S50MC,412.5,8,42,1,OceanParts
+SP-1014,Piston ring set,Main engine,MAN B&W 6S50MC,1890.0,8,14,1,OceanParts
+SP-1021,Cylinder liner,Main engine,MAN B&W 6S50MC,7450.0,1,45,1,NordMarine
+SP-1028,Exhaust valve spindle,Main engine,MAN B&W 6S50MC,3220.0,8,45,1,NordMarine
+SP-1035,Turbocharger bearing kit,Main engine,ABB TPL77,2675.0,1,7,1,OceanParts
+SP-1042,Fuel pump plunger,Main engine,MAN B&W 6S50MC,980.0,8,21,1,NordMarine
+SP-1049,Lube oil filter element,Auxiliary engine,Wartsila 6L20,64.9,1,7,1,OceanParts
+SP-1056,Fuel oil filter element,Auxiliary engine,Wartsila 6L20,58.4,20,35,10,OceanParts
+SP-1063,Cylinder head gasket,Auxiliary engine,Wartsila 6L20,134.0,40,10,1,OceanParts
+SP-1070,Connecting rod bearing shell,Auxiliary engine,Wartsila 6L20,289.0,12,10,1,NordMarine
+SP-1077,Starting air valve,Auxiliary engine,Wartsila 6L20,520.0,0,14,1,NordMarine
+SP-1084,Seawater pump impeller,Pumps,Alfa Laval SW-150,346.0,2,5,1,OceanParts
+SP-1091,Mechanical seal,Pumps,Alfa Laval SW-150,218.0,8,28,10,OceanParts
+SP-1098,Pump shaft sleeve,Pumps,Alfa Laval SW-150,172.0,20,14,2,OceanParts
+SP-1105,Bilge pump diaphragm,Pumps,Wilden P4,96.5,40,21,10,OceanParts
+SP-1112,Purifier disc stack,Purifier,Alfa Laval S-946,1560.0,0,10,1,NordMarine
+SP-1119,Purifier O-ring kit,Purifier,Alfa Laval S-946,41.3,8,21,10,OceanParts
+SP-1126,Boiler burner nozzle,Boiler,Aalborg OL,205.0,12,7,5,OceanParts
+SP-1133,Boiler gauge glass set,Boiler,Aalborg OL,77.8,4,14,5,OceanParts
+SP-1140,Flame sensor,Boiler,Aalborg OL,163.0,0,10,1,NordMarine
+SP-1147,Steering gear hydraulic seal kit,Deck machinery,Rolls-Royce SR-562,640.0,6,10,1,NordMarine
+SP-1154,Windlass brake band,Deck machinery,Hatlapa W-30,1125.0,3,28,1,NordMarine
+SP-1161,Mooring winch brake lining,Deck machinery,Hatlapa W-30,388.0,0,5,1,OceanParts
+SP-1168,Hydraulic hose assembly 2m,Deck machinery,Generic,52.0,40,5,2,OceanParts
+SP-1175,LED navigation light,Navigation,Aqua Signal 25,118.0,2,5,10,OceanParts
+SP-1182,Radar magnetron,Navigation,Furuno FAR-2218,2340.0,6,28,1,NordMarine
+SP-1189,GPS antenna,Navigation,Furuno GP-39,295.0,6,10,2,NordMarine
+SP-1196,Lifeboat release hook pin,Safety,Schat-Davit,76.0,40,21,5,OceanParts
+SP-1203,Fire extinguisher 9kg CO2,Safety,Generic,189.0,0,21,5,OceanParts
+SP-1210,EPIRB battery,Safety,McMurdo E5,410.0,0,35,1,OceanParts
+SP-1217,Immersion suit,Safety,Viking PS5005,340.0,0,10,1,OceanParts
+SP-1224,Air compressor valve plate,Air compressor,Sperre HL2,142.0,2,7,1,OceanParts
+SP-1231,Compressor piston ring set,Air compressor,Sperre HL2,108.5,0,42,10,OceanParts
+SP-1238,Oily water separator filter,Environmental,RWO Skit,232.0,1,45,2,NordMarine
+SP-1245,Sewage plant blower diaphragm,Environmental,Hamworthy ST,87.0,8,14,2,OceanParts
+SP-1252,Alternator carbon brush set,Electrical,Stamford HCM,64.0,6,35,1,OceanParts
+SP-1259,Circuit breaker 400A,Electrical,ABB Tmax,780.0,6,28,1,NordMarine
+SP-1266,Cable gland M32,Electrical,Generic,4.8,2,5,5,OceanParts
+SP-1273,Deck crane wire rope 20mm 100m,Deck machinery,Generic,970.0,20,21,1,NordMarine

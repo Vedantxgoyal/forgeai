@@ -1,0 +1,111 @@
+"""End-to-end orchestration: brief + folder -> run directory with every artifact.
+
+Run layout (everything is committed for the demos):
+  00_brief.txt  01_corpus_profile.json  02_questions.json  02_requirements.json
+  03_agent.v1.yaml  04_evals.json  05_iteration_N.json  agent.final.yaml  changelog.json
+  report.md  manifest.json
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import time
+from dataclasses import asdict
+from pathlib import Path
+from typing import Callable
+
+from forgeai.agent.runtime import Agent, build_index, save_agent_def
+from forgeai.config import Settings, get_settings
+from forgeai.factory import evalgen, generator, guard, intake
+from forgeai.factory.optimizer import optimize, run_exam
+from forgeai.factory.report import render_report
+from forgeai.ingest.loaders import load_folder
+from forgeai.ingest.profiler import profile_corpus
+from forgeai.llm.client import LLMClient
+
+log = logging.getLogger(__name__)
+
+
+def _dump(path: Path, obj) -> None:
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+
+
+def run_factory(brief: str, docs: str | Path, out: str | Path, *, settings: Settings | None = None, client: LLMClient | None = None,
+                ask: Callable[[str], str] | None = None, n_cases: int = 24, max_iters: int = 3, workers: int = 4,
+                approve: Callable[[object], bool] | None = None, on_event: Callable[[str], None] = print) -> dict:
+    s = settings or get_settings()
+    client = client or LLMClient(s)
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    t0 = time.perf_counter()
+    notes: list[str] = []
+
+    (out / "00_brief.txt").write_text(brief, encoding="utf-8")
+    on_event("[1/7] loading + profiling documents")
+    load = load_folder(docs)
+    if not load.documents:
+        raise SystemExit(f"No readable documents in {docs}: {load.skipped}")
+    profile = profile_corpus(load)
+    _dump(out / "01_corpus_profile.json", profile.to_dict())
+    for f, why in load.skipped:
+        notes.append(f"skipped file {f}: {why}")
+
+    on_event("[2/7] intake interview")
+    qs, share = intake.make_questions(client, brief, profile, s.gen_model)
+    _dump(out / "02_questions.json", {"grounded_share": share, **qs.model_dump()})
+    qa = intake.collect_answers(client, brief, profile, qs, ask, s.gen_model)
+    req = intake.write_requirements(client, brief, profile, qa, s.gen_model)
+    notes.append(f"intake: {len(qs.questions)} questions, {share:.0%} reference real document terms")
+
+    on_event("[3/7] groundability guard")
+    d_tmp = None
+    from forgeai.schemas import AgentDef  # local import: only for typing a throwaway def
+    probe = AgentDef(name="probe", role_prompt="probe")
+    from forgeai.ingest.chunker import suggest_params
+    cp = suggest_params(load.documents)
+    probe.retrieval.chunk_size, probe.retrieval.chunk_overlap = cp.chunk_size, cp.chunk_overlap
+    index = build_index(load, probe, s)
+    from forgeai.tools import REGISTRY
+    from forgeai.tools.base import ToolContext
+
+    tctx = ToolContext(tables=load.tables)
+    evidence = " ".join(f"{t.card.purpose} {t.card.needed_when}" for t in REGISTRY.values() if t.available(tctx)[0])
+    evidence += " " + " ".join(c.replace("_", " ") for tb in load.tables.values() for c in tb.columns)
+    req = guard.run_guard(client, index, req, s.gen_model, extra_evidence=evidence)
+    _dump(out / "02_requirements.json", req.model_dump())
+    if approve is not None and not approve(req):
+        raise SystemExit("Requirements rejected by human reviewer; stopping before generation.")
+
+    on_event("[4/7] generating agent definition")
+    d0 = generator.build_agent(client, req, load, profile, s, s.gen_model)
+    save_agent_def(d0, out / "03_agent.v1.yaml")
+
+    on_event("[5/7] generating verified eval cases")
+    cases, gstats = evalgen.generate_cases(client, index, req, target=n_cases, seed=s.seed, model=s.gen_model)
+    _dump(out / "04_evals.json", {"stats": gstats, "cases": [c.model_dump() for c in cases]})
+    on_event(f"      {len(cases)} cases kept {gstats['by_type']} ({gstats['dropped_unverified']} unverified dropped)")
+    if len(cases) < 20:
+        notes.append(f"WARNING: only {len(cases)} verified cases could be generated (<20 target); score is less reliable.")
+
+    on_event("[6/7] baseline exam + optimizer loop")
+    # the index used for the agent must follow the agent's own chunking (same as probe by construction)
+    agent_index = build_index(load, d0, s) if (d0.retrieval.chunk_size, d0.retrieval.chunk_overlap) != (cp.chunk_size, cp.chunk_overlap) else index
+    d_final, logs = optimize(d0, load, req, cases, client, s, base_index=agent_index, max_iters=max_iters, workers=workers, on_event=lambda m: on_event("      " + m))
+    for lg in logs:
+        _dump(out / f"05_iteration_{lg.iteration}.json", {**{k: v for k, v in asdict(lg).items() if k != "results"}, "results": [r.model_dump() for r in lg.results]})
+    save_agent_def(d_final, out / "agent.final.yaml")
+    _dump(out / "changelog.json", [{"iteration": lg.iteration, "accepted": lg.accepted, "note": lg.note, "score_before": lg.score_before,
+                                    "score_after": lg.overall_score, "changes": [asdict(c) for c in lg.changes]} for lg in logs[1:]])
+
+    on_event("[7/7] writing honest report")
+    usage = client.meter.as_dict()
+    models = {"gen": s.gen_model, "judge": s.judge_model, "agent": s.effective_agent_model}
+    fb = [k for k, v in usage.items() if k != "_total"]
+    report = render_report(Path(docs).name, req, d0, d_final, cases, gstats, logs, usage, models, notes)
+    (out / "report.md").write_text(report, encoding="utf-8")
+    _dump(out / "manifest.json", {"brief": brief, "docs": str(docs), "models": models, "usage": usage, "seconds": round(time.perf_counter() - t0, 1),
+                                  "notes": notes, "seed": s.seed, "final_score": logs[-1].overall_score if logs[-1].accepted else None,
+                                  "tools": [t.name for t in d_final.tools]})
+    on_event(f"done in {time.perf_counter() - t0:.0f}s -> {out}")
+    return {"out": str(out), "logs": logs, "final": d_final, "requirements": req}

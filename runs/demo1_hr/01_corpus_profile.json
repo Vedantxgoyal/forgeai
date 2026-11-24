@@ -1,0 +1,100 @@
+{
+  "docs": [
+    {
+      "doc_id": "code_of_conduct",
+      "file": "code_of_conduct.pdf",
+      "kind": "pdf",
+      "n_words": 253,
+      "n_pages": 1,
+      "headings": [
+        "1. Working Hours and Attendance",
+        "2. Gifts and Hospitality",
+        "3. Harassment and Reporting Concerns",
+        "4. Use of Company Equipment and Data",
+        "5. Disciplinary Process"
+      ],
+      "top_terms": [
+        "hours",
+        "working",
+        "written",
+        "warning",
+        "use",
+        "company",
+        "value",
+        "data",
+        "core",
+        "gift",
+        "harassment",
+        "gifts"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    },
+    {
+      "doc_id": "leave_policy",
+      "file": "leave_policy.pdf",
+      "kind": "pdf",
+      "n_words": 306,
+      "n_pages": 2,
+      "headings": [
+        "1. Annual Leave",
+        "2. Sick Leave",
+        "3. Parental Leave",
+        "4. Bereavement and Emergency Leave",
+        "5. Approval"
+      ],
+      "top_terms": [
+        "leave",
+        "sick",
+        "sick leave",
+        "paid",
+        "days paid",
+        "days",
+        "granted",
+        "year",
+        "bereavement",
+        "weeks",
+        "carried",
+        "emergency"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    },
+    {
+      "doc_id": "travel_expense_policy",
+      "file": "travel_expense_policy.pdf",
+      "kind": "pdf",
+      "n_words": 218,
+      "n_pages": 1,
+      "headings": [
+        "1. Booking Business Travel",
+        "2. Daily Allowance (Per Diem)",
+        "3. Claiming Expenses",
+        "4. Leave During Travel"
+      ],
+      "top_terms": [
+        "travel",
+        "usd",
+        "diem",
+        "time",
+        "flights",
+        "leave",
+        "trip",
+        "meal",
+        "night",
+        "tier-",
+        "expense",
+        "flights hours"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    }
+  ],
+  "skipped": []
+}

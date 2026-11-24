@@ -1,0 +1,406 @@
+{
+  "stats": {
+    "proposed": 24,
+    "kept": 22,
+    "dropped_unverified": 2,
+    "dropped_answerable_refusal": 0,
+    "by_type": {
+      "paraphrase": 4,
+      "answerable": 8,
+      "multi_doc": 4,
+      "out_of_scope": 3,
+      "near_miss": 3
+    }
+  },
+  "cases": [
+    {
+      "id": "par-823bed",
+      "type": "paraphrase",
+      "question": "If I see a colleague being treated unfairly, how can I report it and how long will it take for the company to look into it?",
+      "expected_refusal": false,
+      "reference_answer": "You can tell your line manager, HR, or use the Ethics Hotline at ethics@meridian.example. The company will acknowledge your report within 2 working days and usually finish the investigation in 30 calendar days.",
+      "key_facts": [
+        "zero tolerance",
+        "2 working days",
+        "30 calendar days"
+      ],
+      "source_docs": [
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0003"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-f17235",
+      "type": "answerable",
+      "question": "What is the per diem for meals and incidentals in tier-1 cities, and how much is it reduced if a meal is provided by the host?",
+      "expected_refusal": false,
+      "reference_answer": "The per diem for meals and incidentals is USD 60 per day in tier-1 cities, and it is reduced by USD 15 per meal if a meal is provided by the host.",
+      "key_facts": [
+        "USD 60 per day",
+        "USD 15 per meal",
+        "USD 40 per day"
+      ],
+      "source_docs": [
+        "travel_expense_policy"
+      ],
+      "gold_chunks": [
+        "travel_expense_policy::0002"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-cab7c7",
+      "type": "answerable",
+      "question": "What is the maximum value of a gift that Meridian Shipping shore-based employees can accept from suppliers, customers or agents, and what must they do if a gift exceeds this value?",
+      "expected_refusal": false,
+      "reference_answer": "Meridian Shipping shore-based employees may accept gifts up to USD 50. If a gift exceeds USD 50, it must be declined or reported to Compliance within 5 working days. Cash or cash equivalents, such as gift cards, may never be accepted regardless of value.",
+      "key_facts": [
+        "USD 50",
+        "5 working days",
+        "Cash or cash equivalents"
+      ],
+      "source_docs": [
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0002"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "par-b4e732",
+      "type": "paraphrase",
+      "question": "How long does it usually take for my leave request to get approved, and what happens if it takes too long?",
+      "expected_refusal": false,
+      "reference_answer": "A line manager will approve your leave within three working days. If they don’t respond in that time, the request automatically escalates to the Head of Department.",
+      "key_facts": [
+        "3 working days",
+        "Head of Department"
+      ],
+      "source_docs": [
+        "leave_policy"
+      ],
+      "gold_chunks": [
+        "leave_policy::0005"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-1f150b",
+      "type": "answerable",
+      "question": "How many days in advance must flights and hotels be booked, and what is the maximum hotel rate in London?",
+      "expected_refusal": false,
+      "reference_answer": "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure, and hotel stays in London are capped at USD 180 per night.",
+      "key_facts": [
+        "7 days",
+        "USD 180"
+      ],
+      "source_docs": [
+        "travel_expense_policy"
+      ],
+      "gold_chunks": [
+        "travel_expense_policy::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "par-c8f28c",
+      "type": "paraphrase",
+      "question": "What should I do if my company laptop goes missing or gets stolen?",
+      "expected_refusal": false,
+      "reference_answer": "If your company laptop is lost or stolen, you must report it to IT Security within 24 hours.",
+      "key_facts": [
+        "Lost or stolen devices",
+        "reported to IT Security",
+        "within 24 hours"
+      ],
+      "source_docs": [
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0004"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-d90475",
+      "type": "answerable",
+      "question": "Within how many days must expense claims be submitted after returning from a trip?",
+      "expected_refusal": false,
+      "reference_answer": "Expense claims must be submitted within 30 days of returning from the trip.",
+      "key_facts": [
+        "30 days"
+      ],
+      "source_docs": [
+        "travel_expense_policy"
+      ],
+      "gold_chunks": [
+        "travel_expense_policy::0003"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "ans-4bbf8e",
+      "type": "answerable",
+      "question": "What are the core working hours for Meridian Shipping shore-based employees?",
+      "expected_refusal": false,
+      "reference_answer": "Core working hours are 09:30 to 17:30, Monday to Friday, with a one hour lunch break.",
+      "key_facts": [
+        "09:30 to 17:30",
+        "Monday to Friday",
+        "one hour lunch break"
+      ],
+      "source_docs": [
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0001"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "ans-aa562e",
+      "type": "answerable",
+      "question": "How many days of paid bereavement leave are granted for the death of a spouse?",
+      "expected_refusal": false,
+      "reference_answer": "Up to 5 days of paid bereavement leave are granted on the death of a spouse.",
+      "key_facts": [
+        "5 days"
+      ],
+      "source_docs": [
+        "leave_policy"
+      ],
+      "gold_chunks": [
+        "leave_policy::0004"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "par-be13b7",
+      "type": "paraphrase",
+      "question": "If I travel for work on a Saturday or Sunday, will that time count as vacation days?",
+      "expected_refusal": false,
+      "reference_answer": "No, weekend travel time is not credited as leave unless the line manager approves compensatory time in writing.",
+      "key_facts": [
+        "weekends",
+        "line manager",
+        "compensatory time",
+        "in writing"
+      ],
+      "source_docs": [
+        "travel_expense_policy"
+      ],
+      "gold_chunks": [
+        "travel_expense_policy::0004"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "ans-841b70",
+      "type": "answerable",
+      "question": "What happens after a minor breach?",
+      "expected_refusal": false,
+      "reference_answer": "A documented verbal warning, then a written warning.",
+      "key_facts": [
+        "documented verbal warning",
+        "written warning"
+      ],
+      "source_docs": [
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0005"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-183557",
+      "type": "answerable",
+      "question": "How many working days of paid paternity leave are fathers and non-birthing partners entitled to, and when must they notify HR of the expected date?",
+      "expected_refusal": false,
+      "reference_answer": "Fathers and non-birthing partners are entitled to 10 working days of paid paternity leave, and they must notify HR of the expected date at least 8 weeks before the leave begins.",
+      "key_facts": [
+        "10 working days",
+        "8 weeks"
+      ],
+      "source_docs": [
+        "leave_policy"
+      ],
+      "gold_chunks": [
+        "leave_policy::0003"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-b06a37",
+      "type": "multi_doc",
+      "question": "If an employee loses a company laptop while traveling on a business trip, what steps must they take regarding the laptop and their travel booking?",
+      "expected_refusal": false,
+      "reference_answer": "They must report the lost or stolen laptop to IT Security within 24 hours, and they should ensure that all flights and hotels for the trip were booked through the corporate travel desk at least 7 days before departure.",
+      "key_facts": [
+        "Lost or stolen devices must be reported to IT Security within 24 hours.",
+        "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure."
+      ],
+      "source_docs": [
+        "code_of_conduct",
+        "travel_expense_policy"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0004",
+        "travel_expense_policy::0001"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "mul-a896e4",
+      "type": "multi_doc",
+      "question": "If an employee takes a 4‑day sick leave and receives a gift card from a supplier, what must the employee do according to company policy?",
+      "expected_refusal": false,
+      "reference_answer": "The employee must provide a medical certificate for the 4‑day sick leave, and must decline or report the gift card because cash or cash equivalents may never be accepted regardless of value.",
+      "key_facts": [
+        "A medical certificate is required for any sick leave of 3 or more consecutive days.",
+        "Cash or cash equivalents, such as gift cards, may never be accepted regardless of value."
+      ],
+      "source_docs": [
+        "leave_policy",
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "leave_policy::0002",
+        "code_of_conduct::0002"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-58a38c",
+      "type": "multi_doc",
+      "question": "If an employee plans a 7‑hour flight to London and wants to work remotely from another country for 3 days during the trip, what travel booking requirement and remote‑work policy must they follow?",
+      "expected_refusal": false,
+      "reference_answer": "They must book the flight and hotel through the corporate travel desk at least 7 days before departure, and they must obtain written approval from HR for working from another country, which is limited to 20 days per year.",
+      "key_facts": [
+        "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure.",
+        "Working from another country requires written approval from HR and is limited to 20 days per year."
+      ],
+      "source_docs": [
+        "travel_expense_policy",
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "travel_expense_policy::0001",
+        "code_of_conduct::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-ff664f",
+      "type": "multi_doc",
+      "question": "If an employee reports harassment and also requests leave during the quarter‑end closing week, what are the timelines for the harassment investigation and the leave approval process?",
+      "expected_refusal": false,
+      "reference_answer": "The harassment report is acknowledged within 2 working days and the investigation is normally completed within 30 calendar days. The leave request is approved by the line manager within 3 working days, but if it is not answered within that period it escalates to the Head of Department, and leave during the quarter‑end closing week requires Head of Department approval.",
+      "key_facts": [
+        "Reports are acknowledged within 2 working days and investigations are normally completed within 30 calendar days.",
+        "Leave requests are approved by the line manager within 3 working days."
+      ],
+      "source_docs": [
+        "code_of_conduct",
+        "leave_policy"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0003",
+        "leave_policy::0005"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "out-aae766",
+      "type": "out_of_scope",
+      "question": "What is the best way to cook a steak?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "out-e16eec",
+      "type": "out_of_scope",
+      "question": "How do I solve a quadratic equation?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "out-5f838a",
+      "type": "out_of_scope",
+      "question": "Can you recommend a good mystery novel?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-567f31",
+      "type": "near_miss",
+      "question": "What is the exact salary range for a senior analyst according to the company policy?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-0a7eaf",
+      "type": "near_miss",
+      "question": "Can you provide the specific pension investment options available to employees?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-ae162a",
+      "type": "near_miss",
+      "question": "What is the maximum annual leave entitlement for a manager under the leave_policy?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true
+    }
+  ]
+}

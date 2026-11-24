@@ -1,0 +1,1 @@
+A procurement assistant for ship superintendents and chief engineers that helps them find spare parts in our catalogue, check price, stock and lead time, compare the two suppliers' terms, work out order totals with discounts, and say who must approve a purchase.
