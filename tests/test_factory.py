@@ -87,3 +87,10 @@ def test_retrieval_ladder_is_ordered_and_finite():
 def test_wilson_interval_brackets_estimate():
     lo, hi = wilson(18, 24)
     assert lo < 0.75 < hi and 0 <= lo and hi <= 1
+
+
+def test_numbers_compared_by_value():
+    from forgeai.textutil import numbers
+    assert numbers("USD 2,675.00") == numbers("2675.0") == {"2675"}
+    assert fact_in("2675.0", "costs USD 2,675.00 per unit")
+    assert not fact_in("2675.0", "costs USD 2,576.00 per unit")

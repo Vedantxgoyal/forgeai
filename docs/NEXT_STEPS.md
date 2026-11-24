@@ -9,6 +9,18 @@ Deadline: **Fri 27 Nov, 12:00 noon** (repo link + 3–8 min video + optional hos
 - Demo 2 (ship spares, csv_lookup + calculator) was **mid-run** (baseline exam) when we stopped. Agent definition and evals were generated.
 - `docs/DEMO_SCRIPT.md` = video outline.
 
+## IMPORTANT finding (demo 2)
+Demo 2 finished at **24/24 (100%)** with zero optimizer changes. OceanAI says a suspicious 100% is worse than an
+explained 78%, and this exam is too easy: every case is generated from ONE passage or a pair, so **no case needs
+csv_lookup or the calculator** and the agent's tools are never tested. Do this first tomorrow:
+- Add a `tool` case type in `factory/evalgen.py`: for corpora with tables, build cases that need a row lookup
+  (price/stock/lead time of a named part) and a calculation (qty x unit price, minus the supplier's volume discount).
+  Compute the expected value deterministically in Python from the CSV + discount text (not from the LLM), so
+  `key_facts` is a number. The judge already compares numbers by value.
+- Add harder cases (conflicting facts across suppliers, thresholds just under/over a limit).
+- Re-run demo 2; expect failures; let the optimizer work. Report whatever honestly comes out.
+- Also: stronger judge/agent split (use gpt-oss-20b for agent and qwen as judge once Groq's daily cap resets).
+
 ## Do next (in this order)
 1. Check whether `runs/demo2_spares/report.md` exists. If yes, read it and fix anything suspicious.
    If not (laptop slept/process died), re-run — finished LLM calls are cached, so it resumes quickly:

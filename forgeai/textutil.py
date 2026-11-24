@@ -49,8 +49,18 @@ def looks_like_refusal(text: str, refusal_phrase: str = "") -> bool:
     return bool(_REFUSAL_RE.search(text))
 
 
+def _canon_num(n: str) -> str:
+    """'2,675.00' and '2675.0' are the same number: compare by value, not by spelling."""
+    n = n.replace(",", "").rstrip(".")
+    try:
+        f = float(n)
+    except ValueError:
+        return n
+    return str(int(f)) if f == int(f) else repr(round(f, 6))
+
+
 def numbers(s: str) -> set[str]:
-    return {n.replace(",", "").rstrip(".") for n in _NUM.findall(s)}
+    return {_canon_num(n) for n in _NUM.findall(s)}
 
 
 def fact_in(fact: str, text: str) -> bool:
