@@ -17,7 +17,7 @@ The LLM is only called when a deterministic check is *ambiguous* (some but not a
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+import re
 
 from forgeai.llm.client import LLMClient
 from forgeai.llm.structured import generate_structured
@@ -26,42 +26,75 @@ from forgeai.schemas import AgentResponse, CaseResult, EvalCase, JudgeVote
 from forgeai.textutil import fact_in, support_ratio
 
 SUPPORT_MIN = 0.55
+_CLARIFY = re.compile(
+    r"(which (one|of|\w+)|do you mean|are you (asking|referring)|could you (clarify|specify|tell)|please (clarify|specify))[^?]*\?",
+    re.I,
+)
 MAX_ANSWER_CHARS = 1200
 
 
 def _vote(client: LLMClient, model: str, case: EvalCase, resp: AgentResponse, facts: list[str]) -> JudgeVote | None:
-    prompt = render("judge_facts", question=case.question, context=resp.context_text[:3500], answer=resp.answer[:MAX_ANSWER_CHARS],
-                    facts="\n".join(f"{i}. {f}" for i, f in enumerate(facts, 1)))
+    prompt = render(
+        "judge_facts",
+        question=case.question,
+        context=resp.context_text[:3500],
+        answer=resp.answer[:MAX_ANSWER_CHARS],
+        facts="\n".join(f"{i}. {f}" for i, f in enumerate(facts, 1)),
+    )
 
     def check(v: JudgeVote) -> None:
         if len(v.facts_present) != len(facts):
             raise ValueError(f"facts_present must have {len(facts)} entries")
 
     try:
-        return generate_structured(client, JudgeVote, [{"role": "user", "content": prompt}], model=model, stage="judge",
-                                   max_tokens=200, retries=1, validator=check).value
+        return generate_structured(
+            client,
+            JudgeVote,
+            [{"role": "user", "content": prompt}],
+            model=model,
+            stage="judge",
+            max_tokens=200,
+            retries=1,
+            validator=check,
+        ).value
     except Exception:  # noqa: BLE001
         return None
 
 
 def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentResponse, use_llm: bool = True) -> CaseResult:
-    base = dict(case_id=case.id, type=case.type, split=case.split, refused=resp.refused, answer=resp.answer, question=case.question)
+    base = dict(
+        case_id=case.id, type=case.type, split=case.split, refused=resp.refused, answer=resp.answer, question=case.question
+    )
 
     # ---- cases that must be refused ---- #
     if case.expected_refusal:
         if resp.refused:
             return CaseResult(**base, passed=True)
-        return CaseResult(**base, passed=False, grounded=False, failure="hallucination",
-                          judge_note="answered a question the documents cannot support")
+        return CaseResult(
+            **base,
+            passed=False,
+            grounded=False,
+            failure="hallucination",
+            judge_note="answered a question the documents cannot support",
+        )
+
+    # ---- ambiguous questions: asking which meaning is a correct response ---- #
+    if case.type == "ambiguous" and not resp.refused and _CLARIFY.search(resp.answer):
+        return CaseResult(**base, passed=True, judge_note="asked a clarifying question")
 
     # ---- cases that must be answered ---- #
     facts = case.key_facts
     ctx = resp.context_text
     retrieval_hit = all(fact_in(f, ctx) for f in facts)
     if resp.refused:
-        return CaseResult(**base, passed=False, fact_coverage=0.0, retrieval_hit=retrieval_hit,
-                          failure="retrieval_miss" if not retrieval_hit else "wrong_refusal",
-                          judge_note="refused although facts " + ("were not retrieved" if not retrieval_hit else "were in the context"))
+        return CaseResult(
+            **base,
+            passed=False,
+            fact_coverage=0.0,
+            retrieval_hit=retrieval_hit,
+            failure="retrieval_miss" if not retrieval_hit else "wrong_refusal",
+            judge_note="refused although facts " + ("were not retrieved" if not retrieval_hit else "were in the context"),
+        )
 
     present = [fact_in(f, resp.answer) for f in facts]
     cov = sum(present) / len(facts) if facts else 1.0
@@ -110,5 +143,15 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
         else:
             failure = "prompt_defect"
             note.append("facts missing from answer despite being retrieved" if not facts_ok else "missing or invalid citations")
-    return CaseResult(**base, passed=passed, fact_coverage=round(cov, 2), grounded=grounded, citation_ok=cites_ok,
-                      retrieval_hit=retrieval_hit, failure=failure, judge_note="; ".join(note), judge_unstable=unstable, llm_overrode=overrode)
+    return CaseResult(
+        **base,
+        passed=passed,
+        fact_coverage=round(cov, 2),
+        grounded=grounded,
+        citation_ok=cites_ok,
+        retrieval_hit=retrieval_hit,
+        failure=failure,
+        judge_note="; ".join(note),
+        judge_unstable=unstable,
+        llm_overrode=overrode,
+    )

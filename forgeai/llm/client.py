@@ -36,6 +36,14 @@ class LLMUnavailable(RuntimeError):
     """Raised when the endpoint cannot be reached after all transport retries."""
 
 
+class QuotaExhausted(LLMUnavailable):
+    """This model cannot serve now (daily quota spent, long cool-down, or unknown name)."""
+
+    def __init__(self, message: str, retry_after: float = 3600.0):
+        super().__init__(message)
+        self.retry_after = retry_after
+
+
 @dataclass
 class Completion:
     text: str
@@ -170,6 +178,12 @@ def _recover_native_tool_call(exc: Exception) -> str | None:
         return None
 
 
+# Only the provider's own wording: matching loose phrases like "per day" would fire on document text.
+_UNAVAILABLE = re.compile(
+    r"(tokens|requests) per day|model_not_found|The model `[^`]+` does not exist|model_decommissioned", re.I
+)
+
+
 def _rate_limit_wait(exc: Exception) -> float | None:
     """Seconds the server asks us to wait ('try again in 2m3.5s' / '850ms'), if it says so."""
     m = re.search(r"try again in (?:(\d+)h)?(?:(\d+)m(?!s))?(?:([\d.]+)(ms|s))?", str(exc))
@@ -208,6 +222,10 @@ class LLMClient:
         self.settings = settings or get_settings()
         self.transport = transport or OpenAICompatTransport(self.settings)
         self.meter = meter or UsageMeter()
+        self.substitutions: dict[str, int] = {}  # "wanted -> used": calls answered by a stand-in model
+        self._exhausted: dict[str, float] = {}  # model -> time before which it is not tried again
+        self._local: ChatTransport | None = None
+        self._injected = transport is not None
         self._cache = None
         if self.settings.use_cache if use_cache is None else use_cache:
             import diskcache
@@ -225,22 +243,59 @@ class LLMClient:
         json_mode: bool = False,
         stage: str = "",
     ) -> str:
-        model = model or self.settings.gen_model
-        key = self._key(model, messages, temperature, max_tokens, json_mode)
-
-        if self._cache is not None and key in self._cache:
-            cached: Completion = self._cache[key]
-            self.meter.record(stage, Completion(cached.text), 0.0, cached=True)
-            return cached.text
-
-        self._check_budget()
-        completion, seconds = self._call_with_retries(model, messages, temperature, max_tokens, json_mode)
-        self.meter.record(stage, completion, seconds, cached=False)
-        if self._cache is not None and completion.text.strip():  # never cache empty replies
-            self._cache[key] = completion
-        return completion.text
+        wanted = model or self.settings.gen_model
+        last: QuotaExhausted | None = None
+        for candidate in self._chain(wanted):
+            key = self._key(candidate, messages, temperature, max_tokens, json_mode)
+            if self._cache is not None and key in self._cache:
+                cached: Completion = self._cache[key]
+                self.meter.record(stage, Completion(cached.text), 0.0, cached=True)
+                self._note_substitution(wanted, candidate)
+                return cached.text
+            if self._exhausted.get(candidate, 0) > time.time():
+                continue
+            self._check_budget()
+            try:
+                completion, seconds = self._call_with_retries(candidate, messages, temperature, max_tokens, json_mode)
+            except QuotaExhausted as exc:
+                last = exc
+                self._exhausted[candidate] = time.time() + exc.retry_after
+                log.warning("model %s unavailable; trying the next fallback", candidate)
+                continue
+            self.meter.record(stage, completion, seconds, cached=False)
+            self._note_substitution(wanted, candidate)
+            if self._cache is not None and completion.text.strip():  # never cache empty replies
+                self._cache[key] = completion
+            return completion.text
+        raise last or QuotaExhausted(f"RateLimitError: every model in the chain for {wanted} is cooling down")
 
     # -- internals ---------------------------------------------------------
+    def _chain(self, wanted: str) -> list[str]:
+        extra = [m.strip() for m in self.settings.fallback_models.split(",") if m.strip()]
+        return [wanted, *[m for m in extra if m != wanted]]
+
+    def _note_substitution(self, wanted: str, used: str) -> None:
+        if used != wanted:
+            k = f"{wanted} -> {used}"
+            self.substitutions[k] = self.substitutions.get(k, 0) + 1
+
+    def _transport_for(self, model: str) -> tuple[ChatTransport, str]:
+        if not model.endswith("@local"):
+            return self.transport, model
+        name = model[: -len("@local")]
+        if self._injected:
+            return self.transport, name
+        if self._local is None:
+            local = self.settings.model_copy(
+                update={
+                    "llm_base_url": self.settings.local_base_url,
+                    "llm_api_key": "ollama",
+                    "request_timeout_s": max(self.settings.request_timeout_s, 600.0),
+                }
+            )
+            self._local = OpenAICompatTransport(local)
+        return self._local, name
+
     def _key(self, model, messages, temperature, max_tokens, json_mode) -> str:
         payload = json.dumps(
             [model, messages, temperature, max_tokens, json_mode, self.settings.seed],
@@ -262,8 +317,9 @@ class LLMClient:
             attempt += 1
             t0 = time.perf_counter()
             try:
-                c = self.transport.complete(
-                    model=model,
+                transport, name = self._transport_for(model)
+                c = transport.complete(
+                    model=name,
                     messages=messages,
                     temperature=temperature,
                     max_tokens=max_tokens,
@@ -274,6 +330,8 @@ class LLMClient:
             except Exception as exc:  # noqa: BLE001 - classified below
                 last = exc
                 hint = _rate_limit_wait(exc)
+                if _UNAVAILABLE.search(str(exc)) or (hint or 0) > 180:
+                    raise QuotaExhausted(f"LLM model {model} unavailable: {exc!r}", retry_after=hint or 3600.0) from exc
                 if hint is not None and hint <= 180 and rate_waits < 60:
                     # A per-minute quota is not a failure: wait as asked without spending a retry.
                     rate_waits += 1
@@ -283,7 +341,7 @@ class LLMClient:
                     continue
                 if not _is_transient(exc) or attempt >= attempts:
                     break
-                wait = min(2 ** attempt, 20)
+                wait = min(2**attempt, 20)
                 log.warning("LLM call failed (%s), retry %d/%d in %ss", type(exc).__name__, attempt, attempts - 1, wait)
                 time.sleep(wait)
         raise LLMUnavailable(f"LLM call failed after {attempts} attempt(s): {last!r}") from last

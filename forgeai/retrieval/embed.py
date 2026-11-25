@@ -107,7 +107,7 @@ class OllamaEmbedder:
     def embed(self, texts):
         vecs = []
         for i in range(0, len(texts), 64):
-            r = self._http.post("/api/embed", json={"model": self._model, "input": texts[i:i + 64]})
+            r = self._http.post("/api/embed", json={"model": self._model, "input": texts[i : i + 64]})
             r.raise_for_status()
             vecs.extend(r.json()["embeddings"])
         return _l2norm(np.array(vecs))

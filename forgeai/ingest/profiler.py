@@ -50,9 +50,12 @@ class CorpusProfile:
         lines: list[str] = [f"{len(self.docs)} document(s), ~{self.total_words} words total."]
         per_doc = max(400, max_chars // max(1, len(self.docs)))
         for d in self.docs:
-            part = [f"\n## {d.doc_id} ({d.kind}, {d.n_words} words"
-                    + (f", {d.n_pages} pages" if d.n_pages else "")
-                    + (f", {d.n_rows} rows" if d.n_rows is not None else "") + ")"]
+            part = [
+                f"\n## {d.doc_id} ({d.kind}, {d.n_words} words"
+                + (f", {d.n_pages} pages" if d.n_pages else "")
+                + (f", {d.n_rows} rows" if d.n_rows is not None else "")
+                + ")"
+            ]
             if d.columns:
                 part.append("Columns: " + ", ".join(d.columns))
             if d.sample_rows:

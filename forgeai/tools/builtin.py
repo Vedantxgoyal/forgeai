@@ -12,21 +12,30 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import pandas as pd
 from rapidfuzz import fuzz, process
 
-from forgeai.tools.base import CapabilityCard, Tool, ToolContext, ToolInputError
-
+from forgeai.tools.base import CapabilityCard, Tool, ToolInputError
 
 # --------------------------------------------------------------------------- #
 # Calculator - safe AST evaluation (no eval/exec, bounded exponent)
 # --------------------------------------------------------------------------- #
 _BIN = {
-    ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
-    ast.Div: operator.truediv, ast.FloorDiv: operator.floordiv, ast.Mod: operator.mod,
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod,
     ast.Pow: operator.pow,
 }
 _UNARY = {ast.UAdd: operator.pos, ast.USub: operator.neg}
 _FUNCS = {
-    "round": round, "abs": abs, "min": min, "max": max, "sqrt": math.sqrt,
-    "ceil": math.ceil, "floor": math.floor, "sum": lambda *a: sum(a),
+    "round": round,
+    "abs": abs,
+    "min": min,
+    "max": max,
+    "sqrt": math.sqrt,
+    "ceil": math.ceil,
+    "floor": math.floor,
+    "sum": lambda *a: sum(a),
 }
 _MAX_EXP = 100
 _MAX_LEN = 300
@@ -125,8 +134,16 @@ class CsvLookup(Tool):
             return best[0]
         raise ToolInputError(f"unknown {what} '{name}'. Available: {options}")
 
-    def _run(self, ctx, table: str | None = None, filters: dict | None = None, query: str | None = None,
-             columns: list[str] | None = None, limit: int = 10, **_):
+    def _run(
+        self,
+        ctx,
+        table: str | None = None,
+        filters: dict | None = None,
+        query: str | None = None,
+        columns: list[str] | None = None,
+        limit: int = 10,
+        **_,
+    ):
         if not ctx.tables:
             raise ToolInputError("no tables available")
         names = list(ctx.tables)
@@ -187,8 +204,9 @@ class Weather(Tool):
             if latitude is None or longitude is None:
                 if not location:
                     raise ToolInputError("give 'location' or both 'latitude' and 'longitude'")
-                g = http.get("https://geocoding-api.open-meteo.com/v1/search",
-                             params={"name": location, "count": 1, "format": "json"})
+                g = http.get(
+                    "https://geocoding-api.open-meteo.com/v1/search", params={"name": location, "count": 1, "format": "json"}
+                )
                 g.raise_for_status()
                 results = g.json().get("results") or []
                 if not results:
@@ -196,12 +214,17 @@ class Weather(Tool):
                 r0 = results[0]
                 latitude, longitude = r0["latitude"], r0["longitude"]
                 place = ", ".join(x for x in (r0.get("name"), r0.get("country")) if x)
-            f = http.get("https://api.open-meteo.com/v1/forecast", params={
-                "latitude": latitude, "longitude": longitude,
-                "current": "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code",
-                "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max",
-                "forecast_days": 3, "timezone": "auto",
-            })
+            f = http.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "current": "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,weather_code",
+                    "daily": "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max",
+                    "forecast_days": 3,
+                    "timezone": "auto",
+                },
+            )
             f.raise_for_status()
             data = f.json()
         return {
@@ -235,5 +258,4 @@ class CurrentDate(Tool):
         except (ZoneInfoNotFoundError, ValueError) as exc:
             raise ToolInputError(f"unknown timezone '{tzname}'") from exc
         now = datetime.now(tz)
-        return {"date": now.date().isoformat(), "weekday": now.strftime("%A"),
-                "time": now.strftime("%H:%M"), "timezone": tzname}
+        return {"date": now.date().isoformat(), "weekday": now.strftime("%A"), "time": now.strftime("%H:%M"), "timezone": tzname}

@@ -23,7 +23,9 @@ def case(**kw):
     return EvalCase(**base)
 
 
-def resp(answer, refused=False, retrieved=("leave#1",), citations=("leave#1",), ctx="Shore staff accrue 24 days of paid annual leave."):
+def resp(
+    answer, refused=False, retrieved=("leave#1",), citations=("leave#1",), ctx="Shore staff accrue 24 days of paid annual leave."
+):
     return AgentResponse(answer=answer, refused=refused, retrieved=list(retrieved), citations=list(citations), context_text=ctx)
 
 
@@ -56,7 +58,9 @@ def test_judge_refusal_classes():
     r = judge_case(NoLLM(), "m", case(), resp("I can't answer that.", refused=True), use_llm=False)
     assert r.failure == "wrong_refusal"
     # facts not retrieved -> retrieval miss
-    r = judge_case(NoLLM(), "m", case(), resp("I can't answer that.", refused=True, ctx="unrelated text about travel"), use_llm=False)
+    r = judge_case(
+        NoLLM(), "m", case(), resp("I can't answer that.", refused=True, ctx="unrelated text about travel"), use_llm=False
+    )
     assert r.failure == "retrieval_miss"
     # must-refuse question answered -> hallucination; refused -> pass
     oos = case(type="out_of_scope", expected_refusal=True, key_facts=[])
@@ -91,6 +95,7 @@ def test_wilson_interval_brackets_estimate():
 
 def test_numbers_compared_by_value():
     from forgeai.textutil import numbers
+
     assert numbers("USD 2,675.00") == numbers("2675.0") == {"2675"}
     assert fact_in("2675.0", "costs USD 2,675.00 per unit")
     assert not fact_in("2675.0", "costs USD 2,576.00 per unit")
@@ -98,9 +103,17 @@ def test_numbers_compared_by_value():
 
 def test_tool_cases_are_computed_from_data():
     import pandas as pd
+
     from forgeai.factory.toolcases import build_tool_cases
-    df = pd.DataFrame({"part_no": ["A-1", "A-2", "A-3", "A-4"], "description": ["seal", "ring", "pin", "hose"],
-                       "unit_price_usd": [10.5, 20.0, 31.0, 45.5], "stock_qty": [3, 9, 4, 7]})
+
+    df = pd.DataFrame(
+        {
+            "part_no": ["A-1", "A-2", "A-3", "A-4"],
+            "description": ["seal", "ring", "pin", "hose"],
+            "unit_price_usd": [10.5, 20.0, 31.0, 45.5],
+            "stock_qty": [3, 9, 4, 7],
+        }
+    )
     cases = build_tool_cases({"cat": df}, 6)
     assert len(cases) >= 4 and all(c.type == "tool" and c.key_facts for c in cases)
     for c in cases:
@@ -114,6 +127,7 @@ def test_bare_number_facts_match_whole_numbers_only():
 
 def test_native_tool_call_is_recovered_and_rate_hint_parsed():
     import json
+
     from forgeai.llm.client import _rate_limit_wait, _recover_native_tool_call
 
     class E(Exception):
@@ -160,7 +174,9 @@ def test_small_corpus_still_yields_twenty_cases():
     topics = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel"]
     chunks = []
     for n, t in enumerate(topics):
-        body = f"The {t} rule requires notice {n + 11} hours before arrival and applies to every vessel calling at this berth today."
+        body = (
+            f"The {t} rule requires notice {n + 11} hours before arrival and applies to every vessel calling at this berth today."
+        )
         chunks.append(Chunk(chunk_id=f"d{n % 2}::{n}", doc_id=f"d{n % 2}", text=body, body=body))
     counter = itertools.count()
 
@@ -169,15 +185,82 @@ def test_small_corpus_still_yields_twenty_cases():
             user = messages[-1]["content"]
             k = next(counter)
             if "MUST REFUSE" in user:
-                return Completion(json.dumps({"questions": [f"Who won the zebra{k}{i} chess trophy quickly?" for i in range(12)]}))
+                return Completion(
+                    json.dumps({"questions": [f"Who won the zebra{k}{i} chess trophy quickly?" for i in range(12)]})
+                )
             word = topics[k % len(topics)]
             fact = next(c.body for c in chunks if c.body in user)
             digits = [w for w in fact.split() if w.isdigit()][0]
-            return Completion(json.dumps({"question": f"What notice applies for item{k} {word}{k}?", "answer": "x",
-                                          "key_facts": [f"{digits} hours"]}))
+            return Completion(
+                json.dumps(
+                    {"question": f"What notice applies for item{k} {word}{k}?", "answer": "x", "key_facts": [f"{digits} hours"]}
+                )
+            )
 
     s = Settings(use_cache=False, embed_backend="tfidf")
     client = LLMClient(s, transport=Fake(), use_cache=False)
-    req = Requirements(agent_name="a", purpose="p", audience="masters", tone="t", scope="port rules", must_answer_topics=["notice"])
+    req = Requirements(
+        agent_name="a", purpose="p", audience="masters", tone="t", scope="port rules", must_answer_topics=["notice"]
+    )
     cases, _ = generate_cases(client, HybridIndex(chunks, TfidfLsaEmbedder()), req, target=20)
     assert len(cases) >= 20
+
+
+def test_quota_exhausted_model_falls_back_and_is_reported():
+    from forgeai.config import Settings
+    from forgeai.llm.client import Completion, LLMClient
+
+    class T:
+        calls: list = []
+
+        def complete(self, *, model, **_):
+            self.calls.append(model)
+            if model == "big":
+                raise RuntimeError("Rate limit reached on tokens per day (TPD). Please try again in 6m2s.")
+            return Completion("hello")
+
+    s = Settings(use_cache=False, fallback_models="small@local", transport_retries=0)
+    c = LLMClient(s, transport=T(), use_cache=False)
+    assert c.chat([{"role": "user", "content": "hi"}], model="big") == "hello"
+    assert c.chat([{"role": "user", "content": "hi2"}], model="big") == "hello"
+    assert T.calls == ["big", "small", "small"]  # the exhausted model is not retried while cooling down
+    assert c.substitutions == {"big -> small@local": 2}
+
+
+def test_document_text_in_an_error_does_not_look_like_a_quota():
+    from forgeai.llm.client import _UNAVAILABLE
+
+    assert not _UNAVAILABLE.search("meals are USD 60 per day; the file does not exist in policy")
+
+
+def test_contract_depends_on_tools_and_tone():
+    from forgeai.factory.generator import output_contract
+    from forgeai.schemas import Requirements
+
+    req = Requirements(agent_name="a", purpose="p", audience="staff", tone="concise", scope="s", must_answer_topics=["t"])
+    plain, tooled = output_contract(req, set()), output_contract(req, {"calculator", "csv_lookup"})
+    assert plain["max_words"] == 90 and "calculations" not in plain
+    assert {"calculations", "records"} <= set(tooled)
+
+
+def test_asking_which_one_passes_an_ambiguous_case():
+    amb = case(type="ambiguous", key_facts=["12 days", "24 days"], question="How many days do I get?")
+    ok = judge_case(NoLLM(), "m", amb, resp("Do you mean annual leave or sick leave?"), use_llm=False)
+    assert ok.passed
+    bad = judge_case(NoLLM(), "m", amb, resp("You get 24 days.", ctx="12 days sick, 24 days annual"), use_llm=False)
+    assert not bad.passed
+
+
+def test_stale_cases_are_detected_from_changed_cells():
+    import pandas as pd
+
+    from forgeai.factory.regression import staleness
+    from forgeai.factory.toolcases import build_tool_cases
+    from forgeai.ingest.loaders import Document, LoadResult
+
+    df = pd.DataFrame({"part_no": ["A-1", "A-2"], "description": ["seal", "ring"], "unit_price_usd": ["10.5", "20.0"]})
+    case_ = build_tool_cases({"cat": df}, 1)[0]
+    same = LoadResult([Document("cat", None, "table", table=df.copy())], [])
+    assert staleness(case_, same) == []
+    changed = df.assign(unit_price_usd=["99.0", "98.0"])
+    assert "changed" in staleness(case_, LoadResult([Document("cat", None, "table", table=changed)], []))[0]

@@ -217,10 +217,14 @@ def load_file(path: Path, root: Path | None = None) -> Document:
     rel = path.relative_to(root) if root else Path(path.name)
     ext = path.suffix.lower()
     kind = (
-        "pdf" if ext == ".pdf"
-        else "docx" if ext == ".docx"
-        else "table" if ext in TABLE_EXT
-        else "html" if ext in HTML_EXT
+        "pdf"
+        if ext == ".pdf"
+        else "docx"
+        if ext == ".docx"
+        else "table"
+        if ext in TABLE_EXT
+        else "html"
+        if ext in HTML_EXT
         else "text"
     )
     doc = Document(doc_id=slugify(str(rel.with_suffix(""))), path=path, kind=kind)

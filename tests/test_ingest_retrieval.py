@@ -44,10 +44,16 @@ def test_bad_file_does_not_stop_run(corpus):
     assert len(res.documents) == 4
 
 
-@pytest.mark.parametrize("line, expected", [
-    ("# Annual Leave", True), ("3.2 Travel Allowances", True), ("SICK LEAVE", True),
-    ("Employees are entitled to 12 days of paid sick leave.", False), ("", False),
-])
+@pytest.mark.parametrize(
+    "line, expected",
+    [
+        ("# Annual Leave", True),
+        ("3.2 Travel Allowances", True),
+        ("SICK LEAVE", True),
+        ("Employees are entitled to 12 days of paid sick leave.", False),
+        ("", False),
+    ],
+)
 def test_heading_detection(line, expected):
     assert looks_like_heading(line) is expected
 
@@ -55,8 +61,12 @@ def test_heading_detection(line, expected):
 def test_chunks_respect_sections_size_and_overlap(tmp_path):
     sentence = "Rule {i} says staff must follow procedure number {i} carefully at all times."
     body = " ".join(sentence.format(i=i) for i in range(60))  # ~780 words
-    doc = Document(doc_id="pol", path=tmp_path / "x", kind="text",
-                   blocks=[Block("Section A", is_heading=True), Block(body), Block("Section B", is_heading=True), Block("Short rule.")])
+    doc = Document(
+        doc_id="pol",
+        path=tmp_path / "x",
+        kind="text",
+        blocks=[Block("Section A", is_heading=True), Block(body), Block("Section B", is_heading=True), Block("Short rule.")],
+    )
     chunks = chunk_document(doc, ChunkParams(chunk_size=120, chunk_overlap=20))
     assert all(len(c.body.split()) <= 140 for c in chunks)
     assert chunks[-1].section == "Section B" and chunks[-1].body == "Short rule."

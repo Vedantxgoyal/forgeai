@@ -121,12 +121,7 @@ def suggest_params(docs: list[Document]) -> ChunkParams:
     Short-section corpora (FAQs, policies with many clauses) get small chunks so
     one chunk ~ one rule; long narrative sections get larger chunks.
     """
-    lengths = [
-        sum(len(b.text.split()) for b in s.blocks)
-        for d in docs
-        if d.table is None
-        for s in _sections(d)
-    ]
+    lengths = [sum(len(b.text.split()) for b in s.blocks) for d in docs if d.table is None for s in _sections(d)]
     if not lengths:
         return ChunkParams()
     median = statistics.median(lengths)

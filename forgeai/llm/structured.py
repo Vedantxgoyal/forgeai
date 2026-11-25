@@ -18,8 +18,9 @@ from __future__ import annotations
 import json
 import logging
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -178,8 +179,7 @@ def generate_structured(
                 {
                     "role": "user",
                     "content": (
-                        f"That output was invalid: {err}\n"
-                        "Return the corrected JSON object only, matching the schema exactly."
+                        f"That output was invalid: {err}\nReturn the corrected JSON object only, matching the schema exactly."
                     ),
                 },
             ]

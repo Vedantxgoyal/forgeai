@@ -49,8 +49,9 @@ def build_index(load: LoadResult, d: AgentDef, settings: Settings, embedder=None
 
 
 class Agent:
-    def __init__(self, d: AgentDef, load: LoadResult, client: LLMClient, settings: Settings | None = None,
-                 index: HybridIndex | None = None):
+    def __init__(
+        self, d: AgentDef, load: LoadResult, client: LLMClient, settings: Settings | None = None, index: HybridIndex | None = None
+    ):
         self.d, self.load, self.client = d, load, client
         self.settings = settings or get_settings()
         self.index = index or build_index(load, d, self.settings)
@@ -69,8 +70,11 @@ class Agent:
             return question, ""
         prior = "\n".join(f"{m['role']}: {m['content']}" for m in history[-4:])
         msgs = [
-            {"role": "system", "content": "Rewrite the user's question as a short keyword-rich search query for a document search engine. "
-             "Name the concept in the formal terms a policy or catalogue would use. Output the query only."},
+            {
+                "role": "system",
+                "content": "Rewrite the user's question as a short keyword-rich search query for a document search engine. "
+                "Name the concept in the formal terms a policy or catalogue would use. Output the query only.",
+            },
             {"role": "user", "content": (f"Conversation:\n{prior}\n\n" if prior else "") + f"Question: {question}"},
         ]
         try:
@@ -102,15 +106,19 @@ class Agent:
             'Reply with ONE JSON object: {"action":"answer|tool","answer":str,"citations":[chunk ids],"refused":bool,'
             f'"tool":str,"args":object}}. Contract: {contract}'
         )
-        msgs = [{"role": "system", "content": sys_msg}, *history[-6:],
-                {"role": "user", "content": f"CONTEXT:\n{ctx_text or '(nothing retrieved)'}\n\nQUESTION: {question}"}]
+        msgs = [
+            {"role": "system", "content": sys_msg},
+            *history[-6:],
+            {"role": "user", "content": f"CONTEXT:\n{ctx_text or '(nothing retrieved)'}\n\nQUESTION: {question}"},
+        ]
         calls: list[dict] = []
         fallback = AgentTurn(action="answer", answer=self.d.refusal_phrase, refused=True)
         turn, err = fallback, ""
         try:
             for _ in range(MAX_TOOL_STEPS + 1):
-                res = generate_structured(self.client, AgentTurn, msgs, model=self.model, stage="agent",
-                                          max_tokens=700, fallback=fallback)
+                res = generate_structured(
+                    self.client, AgentTurn, msgs, model=self.model, stage="agent", max_tokens=700, fallback=fallback
+                )
                 turn = res.value
                 if res.used_fallback:
                     err = "agent output invalid after retries"
@@ -119,8 +127,14 @@ class Agent:
                     r = self.tools[turn.tool].run(self.ctx, **(turn.args or {}))
                     text = r.to_text()
                     calls.append({"tool": turn.tool, "args": turn.args, "ok": r.ok, "result": text[:800]})
-                    msgs = [*msgs, {"role": "assistant", "content": json.dumps(turn.model_dump())},
-                            {"role": "user", "content": f'TOOL RESULT ({turn.tool}): {text}\nNow give the final answer (action="answer").'}]
+                    msgs = [
+                        *msgs,
+                        {"role": "assistant", "content": json.dumps(turn.model_dump())},
+                        {
+                            "role": "user",
+                            "content": f'TOOL RESULT ({turn.tool}): {text}\nNow give the final answer (action="answer").',
+                        },
+                    ]
                     ctx_text += f"\n\n[tool:{turn.tool}] {text}"
                     continue
                 break
@@ -133,6 +147,14 @@ class Agent:
             turn = AgentTurn(action="answer", answer=self.d.refusal_phrase, refused=True)
         refused = turn.refused or looks_like_refusal(turn.answer, self.d.refusal_phrase)
         cites = [c.strip("[] ") for c in turn.citations]
-        return AgentResponse(answer=turn.answer.strip(), citations=cites, refused=refused, retrieved=retrieved,
-                             context_text=ctx_text, tool_calls=calls, seconds=time.perf_counter() - t0,
-                             rewritten_query=rewritten, error=err)
+        return AgentResponse(
+            answer=turn.answer.strip(),
+            citations=cites,
+            refused=refused,
+            retrieved=retrieved,
+            context_text=ctx_text,
+            tool_calls=calls,
+            seconds=time.perf_counter() - t0,
+            rewritten_query=rewritten,
+            error=err,
+        )

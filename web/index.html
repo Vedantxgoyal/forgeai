@@ -42,6 +42,15 @@
       <label>Run name<input name="name" required pattern="[A-Za-z0-9_\-]{1,60}" placeholder="my_agent" /></label>
       <label>Documents<input name="files" type="file" multiple required accept=".pdf,.docx,.csv,.tsv,.xlsx,.md,.txt,.html,.htm" /></label>
       <label>Test cases <output id="cases-out">24</output><input name="cases" type="range" min="20" max="30" value="24" /></label>
+      <label class="check"><input type="checkbox" name="review" value="true" /> Let me review and edit the requirements before generating</label>
+      <label class="check"><input type="checkbox" name="tournament" value="true" /> Prompt tournament (more model calls)</label>
+      <label id="code-field" hidden>Access code<input id="code" type="password" autocomplete="off" /></label>
+      <div id="review" class="review" hidden>
+        <p><strong>Review the requirements.</strong> <span class="muted">Edit if needed, then approve.</span></p>
+        <div id="review-guard"></div>
+        <textarea id="review-json" rows="12" spellcheck="false" aria-label="Requirements as JSON"></textarea>
+        <div class="row"><button type="button" class="ghost" id="reject">Reject</button><button type="button" class="primary" id="approve">Approve and continue</button></div>
+      </div>
       <div id="job" class="job" hidden><div id="job-status"></div><pre id="job-log"></pre></div>
       <div class="row"><button type="button" class="ghost" data-close="build">Close</button><button class="primary" id="forge-btn">Start forging</button></div>
     </form>

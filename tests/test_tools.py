@@ -9,27 +9,46 @@ from forgeai.tools.builtin import safe_eval
 
 @pytest.fixture
 def ctx():
-    df = pd.DataFrame({
-        "part_no": ["MP-1001", "MP-1002", "AB-2207"],
-        "description": ["Main engine fuel injector", "Cylinder liner gasket", "Ballast pump impeller"],
-        "unit_price_usd": ["1250.50", "85.00", "640.00"],
-        "supplier": ["Wartsila Spares", "Marine Parts Co", "Marine Parts Co"],
-    })
+    df = pd.DataFrame(
+        {
+            "part_no": ["MP-1001", "MP-1002", "AB-2207"],
+            "description": ["Main engine fuel injector", "Cylinder liner gasket", "Ballast pump impeller"],
+            "unit_price_usd": ["1250.50", "85.00", "640.00"],
+            "supplier": ["Wartsila Spares", "Marine Parts Co", "Marine Parts Co"],
+        }
+    )
     return ToolContext(tables={"catalogue": df}, timezone="Asia/Kolkata")
 
 
 # calculator ------------------------------------------------------------------
-@pytest.mark.parametrize("expr, value", [
-    ("4 * 1250.50", 5002), ("(85 + 640) * (1 - 0.05)", 688.75), ("2^10", 1024),
-    ("round(10/3, 2)", 3.33), ("1,250.50 * 2", 2501), ("max(3, 9, 4)", 9), ("-5 + sqrt(16)", -1),
-])
+@pytest.mark.parametrize(
+    "expr, value",
+    [
+        ("4 * 1250.50", 5002),
+        ("(85 + 640) * (1 - 0.05)", 688.75),
+        ("2^10", 1024),
+        ("round(10/3, 2)", 3.33),
+        ("1,250.50 * 2", 2501),
+        ("max(3, 9, 4)", 9),
+        ("-5 + sqrt(16)", -1),
+    ],
+)
 def test_calculator(expr, value):
     assert safe_eval(expr) == value
 
 
-@pytest.mark.parametrize("expr", [
-    "__import__('os').system('ls')", "open('x')", "a + 1", "9 ** 999999", "1/0", "[1,2]", "True + 1",
-])
+@pytest.mark.parametrize(
+    "expr",
+    [
+        "__import__('os').system('ls')",
+        "open('x')",
+        "a + 1",
+        "9 ** 999999",
+        "1/0",
+        "[1,2]",
+        "True + 1",
+    ],
+)
 def test_calculator_rejects_unsafe_or_invalid(expr):
     res = REGISTRY["calculator"].run(ToolContext(), expression=expr)
     assert not res.ok and res.error
@@ -73,9 +92,13 @@ def test_weather_uses_open_meteo(monkeypatch, ctx):
 
     def handler(request: httpx.Request):
         if "geocoding" in request.url.host:
-            return httpx.Response(200, json={"results": [{"name": "Rotterdam", "country": "Netherlands", "latitude": 51.9, "longitude": 4.5}]})
+            return httpx.Response(
+                200, json={"results": [{"name": "Rotterdam", "country": "Netherlands", "latitude": 51.9, "longitude": 4.5}]}
+            )
         assert request.url.params["latitude"] == "51.9"
-        return httpx.Response(200, json={"current": {"temperature_2m": 9.1}, "current_units": {"temperature_2m": "°C"}, "daily": {}})
+        return httpx.Response(
+            200, json={"current": {"temperature_2m": 9.1}, "current_units": {"temperature_2m": "°C"}, "daily": {}}
+        )
 
     real_client = httpx.Client
     monkeypatch.setattr(httpx, "Client", lambda **kw: real_client(transport=httpx.MockTransport(handler), **kw))

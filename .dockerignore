@@ -1,0 +1,9 @@
+.env
+.git
+.forge_cache
+.pytest_cache
+**/__pycache__
+**/node_modules
+web/dist
+runs/_history
+*.log

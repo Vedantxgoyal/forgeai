@@ -9,7 +9,7 @@ document-grounded questions is stored in the requirements so the report can show
 from __future__ import annotations
 
 import re
-from typing import Callable
+from collections.abc import Callable
 
 from forgeai.ingest.profiler import CorpusProfile
 from forgeai.llm.client import LLMClient
@@ -42,18 +42,35 @@ def make_questions(client: LLMClient, brief: str, profile: CorpusProfile, model:
             raise ValueError(f"need 1..{MAX_Q} questions, got {len(qs.questions)}")
 
     fallback = QuestionSet(questions=[])
-    res = generate_structured(client, QuestionSet, [{"role": "user", "content": prompt}], model=model,
-                              stage="intake", validator=validate, fallback=fallback)
+    res = generate_structured(
+        client,
+        QuestionSet,
+        [{"role": "user", "content": prompt}],
+        model=model,
+        stage="intake",
+        validator=validate,
+        fallback=fallback,
+    )
     qs = res.value
     for q in qs.questions:
         q.grounded_in = grounded_terms(q.question, vocab)
     generic = [q for q in qs.questions if not q.grounded_in]
     if generic and not res.used_fallback:
         # one targeted retry telling the model which questions were generic
-        feedback = "These questions were generic (they mention nothing from the documents): " + \
-                   " | ".join(q.question for q in generic) + ". Rewrite ALL questions so each names a real heading/term/column from the profile."
-        res2 = generate_structured(client, QuestionSet, [{"role": "user", "content": prompt}, {"role": "user", "content": feedback}],
-                                   model=model, stage="intake", validator=validate, fallback=qs)
+        feedback = (
+            "These questions were generic (they mention nothing from the documents): "
+            + " | ".join(q.question for q in generic)
+            + ". Rewrite ALL questions so each names a real heading/term/column from the profile."
+        )
+        res2 = generate_structured(
+            client,
+            QuestionSet,
+            [{"role": "user", "content": prompt}, {"role": "user", "content": feedback}],
+            model=model,
+            stage="intake",
+            validator=validate,
+            fallback=qs,
+        )
         qs = res2.value
         for q in qs.questions:
             q.grounded_in = grounded_terms(q.question, vocab)
@@ -62,15 +79,26 @@ def make_questions(client: LLMClient, brief: str, profile: CorpusProfile, model:
     return qs, share
 
 
-def collect_answers(client: LLMClient, brief: str, profile: CorpusProfile, qs: QuestionSet,
-                    ask: Callable[[str], str] | None, model: str | None = None) -> list[QA]:
+def collect_answers(
+    client: LLMClient,
+    brief: str,
+    profile: CorpusProfile,
+    qs: QuestionSet,
+    ask: Callable[[str], str] | None,
+    model: str | None = None,
+) -> list[QA]:
     """``ask`` is a callable (e.g. input) for a human; None => model proposes conservative defaults."""
     if ask is not None:
         out = []
         for q in qs.questions:
             a = ask(q.question).strip()
-            out.append(QA(question=q.question, answer=a or "(no preference - use a sensible default)",
-                          source="user" if a else "auto-default"))
+            out.append(
+                QA(
+                    question=q.question,
+                    answer=a or "(no preference - use a sensible default)",
+                    source="user" if a else "auto-default",
+                )
+            )
         return out
     if not qs.questions:
         return []
@@ -82,18 +110,41 @@ def collect_answers(client: LLMClient, brief: str, profile: CorpusProfile, qs: Q
         if len(a.answers) != n:
             raise ValueError(f"need exactly {n} answers")
 
-    res = generate_structured(client, Answers, [{"role": "user", "content": prompt}], model=model, stage="intake",
-                              validator=validate, fallback=Answers(answers=["(no preference - be conservative)"] * n))
+    res = generate_structured(
+        client,
+        Answers,
+        [{"role": "user", "content": prompt}],
+        model=model,
+        stage="intake",
+        validator=validate,
+        fallback=Answers(answers=["(no preference - be conservative)"] * n),
+    )
     return [QA(question=q.question, answer=a, source="auto-default") for q, a in zip(qs.questions, res.value.answers)]
 
 
-def write_requirements(client: LLMClient, brief: str, profile: CorpusProfile, qa: list[QA], model: str | None = None) -> Requirements:
+def write_requirements(
+    client: LLMClient, brief: str, profile: CorpusProfile, qa: list[QA], model: str | None = None
+) -> Requirements:
     qa_text = "\n".join(f"Q: {x.question}\nA: {x.answer}" for x in qa) or "(none)"
     prompt = render("intake_requirements", brief=brief, profile=profile.to_prompt(4000), qa=qa_text)
-    fb = RequirementsDraft(agent_name="document_assistant", purpose=brief[:200], audience="general users",
-                           tone="clear and concise", scope=brief[:300], must_answer_topics=[brief[:80]], must_refuse_topics=[])
-    res = generate_structured(client, RequirementsDraft, [{"role": "user", "content": prompt}], model=model,
-                              stage="intake", fallback=fb, max_tokens=1200)
+    fb = RequirementsDraft(
+        agent_name="document_assistant",
+        purpose=brief[:200],
+        audience="general users",
+        tone="clear and concise",
+        scope=brief[:300],
+        must_answer_topics=[brief[:80]],
+        must_refuse_topics=[],
+    )
+    res = generate_structured(
+        client,
+        RequirementsDraft,
+        [{"role": "user", "content": prompt}],
+        model=model,
+        stage="intake",
+        fallback=fb,
+        max_tokens=1200,
+    )
     assumptions = [f"{x.question} -> {x.answer}" for x in qa if x.source == "auto-default"]
     if res.used_fallback:
         assumptions.append("Requirements model output was invalid; deterministic fallback requirements were used.")

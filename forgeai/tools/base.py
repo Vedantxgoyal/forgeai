@@ -75,11 +75,7 @@ class Tool(ABC):
         }
 
     def card_text(self) -> str:
-        return (
-            f"- {self.name}: {self.card.purpose}\n"
-            f"  needed when: {self.card.needed_when}\n"
-            f"  NOT for: {self.card.not_for}"
-        )
+        return f"- {self.name}: {self.card.purpose}\n  needed when: {self.card.needed_when}\n  NOT for: {self.card.not_for}"
 
 
 class ToolInputError(ValueError):

@@ -89,19 +89,22 @@ class AgentDef(BaseModel):
     tools: list[ToolChoice] = Field(default_factory=list)
     dropped_tools: list[dict] = Field(default_factory=list)
     dropped_rules: list[dict] = Field(default_factory=list)
-    output_contract: dict = Field(default_factory=lambda: {
-        "answer": "string, grounded only in the context",
-        "citations": "list of chunk ids used, e.g. ['hr_policy#3']",
-        "refused": "true if the documents cannot answer",
-    })
+    output_contract: dict = Field(
+        default_factory=lambda: {
+            "answer": "string, grounded only in the context",
+            "citations": "list of chunk ids used, e.g. ['hr_policy#3']",
+            "refused": "true if the documents cannot answer",
+        }
+    )
 
     def system_prompt(self) -> str:
         rules = "\n".join(f"{i}. {r.text}" for i, r in enumerate(self.rules, 1))
-        return f"{self.role_prompt}\n\nRULES:\n{rules}\n\nIf you must refuse, say exactly: \"{self.refusal_phrase}\""
+        return f'{self.role_prompt}\n\nRULES:\n{rules}\n\nIf you must refuse, say exactly: "{self.refusal_phrase}"'
 
 
 class AgentTurn(BaseModel):
     """What the running agent returns each step (small models: keep it flat)."""
+
     action: Literal["answer", "tool"] = "answer"
     answer: str = ""
     citations: list[str] = Field(default_factory=list)
@@ -125,7 +128,7 @@ class RoleDraft(BaseModel):
 
 
 # ----------------------------- evals / judging ---------------------------- #
-CaseType = Literal["answerable", "multi_doc", "paraphrase", "out_of_scope", "near_miss", "tool"]
+CaseType = Literal["answerable", "multi_doc", "paraphrase", "out_of_scope", "near_miss", "tool", "ambiguous"]
 
 
 class EvalCase(BaseModel):
@@ -139,12 +142,19 @@ class EvalCase(BaseModel):
     gold_chunks: list[str] = Field(default_factory=list)
     split: Literal["dev", "holdout"] = "dev"
     verified: bool = True
+    evidence: list[dict] = Field(default_factory=list)  # table cells a computed answer depends on
 
 
 class RawQA(BaseModel):
     question: str
     answer: str
     key_facts: list[str] = Field(min_length=1)
+
+
+class RawAmbiguous(BaseModel):
+    question: str
+    facts_a: list[str] = Field(min_length=1)
+    facts_b: list[str] = Field(min_length=1)
 
 
 class RawQuestions(BaseModel):
@@ -182,5 +192,6 @@ class CaseResult(BaseModel):
     judge_note: str = ""
     judge_unstable: bool = False
     llm_overrode: bool = False
+    contract_ok: bool = True
     answer: str = ""
     question: str = ""

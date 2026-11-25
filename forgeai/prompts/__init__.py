@@ -7,14 +7,14 @@ inside prompts never need brace escaping.
 from __future__ import annotations
 
 import re
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 PROMPT_DIR = Path(__file__).parent
 _VAR = re.compile(r"\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}")
 
 
-@lru_cache(maxsize=None)
+@cache
 def _raw(name: str) -> str:
     path = PROMPT_DIR / f"{name}.md"
     if not path.exists():

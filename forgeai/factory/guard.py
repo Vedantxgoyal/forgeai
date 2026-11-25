@@ -61,7 +61,9 @@ def live_tool_for(topic: str) -> str:
     return next((name for name, words in LIVE_DATA_TOOLS.items() if any(w in low for w in words)), "")
 
 
-def check_topic(client: LLMClient, index: HybridIndex, topic: str, model: str | None = None, extra_evidence: str = "") -> TopicCheck:
+def check_topic(
+    client: LLMClient, index: HybridIndex, topic: str, model: str | None = None, extra_evidence: str = ""
+) -> TopicCheck:
     hits = index.search(topic, SearchParams(top_k=3, mode="hybrid"))
     # Evidence = best passages (with section headings) + what the available tools can do + table column names.
     texts = [h.chunk.text for h in hits] + ([extra_evidence] if extra_evidence else [])
@@ -69,8 +71,15 @@ def check_topic(client: LLMClient, index: HybridIndex, topic: str, model: str | 
     passages = "\n---\n".join(f"[{h.chunk.chunk_id}] {h.chunk.body[:700]}" for h in hits) or "(nothing found)"
     verdict, note = "partial", ""
     if hits:
-        res = generate_structured(client, _Verdict, [{"role": "user", "content": render("guard_topic", topic=topic, passages=passages)}],
-                                  model=model, stage="guard", max_tokens=200, fallback=_Verdict(verdict="partial", note="llm unavailable"))
+        res = generate_structured(
+            client,
+            _Verdict,
+            [{"role": "user", "content": render("guard_topic", topic=topic, passages=passages)}],
+            model=model,
+            stage="guard",
+            max_tokens=200,
+            fallback=_Verdict(verdict="partial", note="llm unavailable"),
+        )
         verdict, note = res.value.verdict.lower().strip(), res.value.note
     else:
         verdict = "no"
@@ -90,11 +99,19 @@ def check_topic(client: LLMClient, index: HybridIndex, topic: str, model: str | 
     tool = live_tool_for(topic)
     if tool and status == "unsupported":
         status, note = "partial", f"not in the documents; live data comes from the {tool} tool"
-    return TopicCheck(topic=topic, status=status, lexical_coverage=round(cov, 2), best_chunks=[h.chunk.chunk_id for h in hits],
-                      llm_verdict=verdict, note=note)
+    return TopicCheck(
+        topic=topic,
+        status=status,
+        lexical_coverage=round(cov, 2),
+        best_chunks=[h.chunk.chunk_id for h in hits],
+        llm_verdict=verdict,
+        note=note,
+    )
 
 
-def run_guard(client: LLMClient, index: HybridIndex, req: Requirements, model: str | None = None, extra_evidence: str = "") -> Requirements:
+def run_guard(
+    client: LLMClient, index: HybridIndex, req: Requirements, model: str | None = None, extra_evidence: str = ""
+) -> Requirements:
     checks = [check_topic(client, index, t, model, extra_evidence) for t in req.must_answer_topics]
     unsupported = [c.topic for c in checks if c.status == "unsupported"]
     req.groundability = checks

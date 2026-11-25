@@ -11,13 +11,18 @@ _PUNCT = re.compile(r"[^\w\s%.\-/]")
 _NUM = re.compile(r"\d[\d,]*(?:\.\d+)?")
 
 REFUSAL_PATTERNS = [
-    r"\bcan'?t answer\b", r"\bcannot answer\b", r"\bunable to (?:answer|find|provide)\b",
+    r"\bcan'?t answer\b",
+    r"\bcannot answer\b",
+    r"\bunable to (?:answer|find|provide)\b",
     r"\bnot (?:covered|mentioned|specified|provided|available|found) in (?:the|these|my)\b",
     r"\bno (?:information|mention|details?) (?:about|on|regarding|in)\b",
-    r"\bdo(?:es)?n'?t (?:contain|include|have|cover|specify)\b", r"\bdo not (?:contain|have|cover|know)\b",
-    r"\boutside (?:the|my) (?:scope|documents)\b", r"\bnot able to (?:answer|help)\b",
+    r"\bdo(?:es)?n'?t (?:contain|include|have|cover|specify)\b",
+    r"\bdo not (?:contain|have|cover|know)\b",
+    r"\boutside (?:the|my) (?:scope|documents)\b",
+    r"\bnot able to (?:answer|help)\b",
     r"\bI (?:don'?t|do not) have (?:that|this|any|enough)\b",
-    r"\bI(?:'m| am) (?:only|designed to|here to)\b", r"\bI can only (?:help|answer|assist)\b",
+    r"\bI(?:'m| am) (?:only|designed to|here to)\b",
+    r"\bI can only (?:help|answer|assist)\b",
     r"\b(?:isn'?t|is not|aren'?t|are not) (?:covered|part of|something I)\b",
 ]
 _REFUSAL_RE = re.compile("|".join(REFUSAL_PATTERNS), re.I)

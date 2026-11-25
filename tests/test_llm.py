@@ -61,8 +61,9 @@ def test_structured_semantic_validator_triggers_retry(settings, fake):
 def test_structured_uses_fallback_and_flags_it(settings, fake):
     fake.push("bad", "worse", "still bad")
     client = LLMClient(settings, transport=fake)
-    res = generate_structured(client, Questions, [{"role": "user", "content": "x"}],
-                              fallback=lambda: Questions(questions=["default"]))
+    res = generate_structured(
+        client, Questions, [{"role": "user", "content": "x"}], fallback=lambda: Questions(questions=["default"])
+    )
     assert res.used_fallback and res.value.questions == ["default"] and len(res.errors) == 3
 
 

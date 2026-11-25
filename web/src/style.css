@@ -120,6 +120,10 @@ dialog label { display: block; margin-bottom: 12px; font-size: .9rem; }
 dialog label input, dialog label textarea { display: block; width: 100%; margin-top: 5px; }
 dialog input[type=range] { padding: 0; accent-color: var(--ember); }
 .row { display: flex; justify-content: flex-end; gap: 10px; }
+dialog label.check { display: flex; gap: 8px; align-items: center; }
+dialog label.check input { display: inline; width: auto; margin: 0; accent-color: var(--ember); }
+.review { border: 1px solid #735114; border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+.review textarea { width: 100%; margin: 10px 0; font-family: "Cascadia Code", Consolas, monospace; font-size: .8rem; }
 .job { margin-bottom: 14px; }
 .job pre { max-height: 160px; }
 

@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     judge_model: str = "llama3.1:8b"
     # Model the produced agent runs on. Empty -> same as gen_model.
     agent_model: str = ""
+    # Comma-separated stand-ins used when a model's quota is spent or it does not exist, in order.
+    # "name@local" means: ask the local endpoint (Ollama) instead. Every substitution is reported.
+    fallback_models: str = ""
+    local_base_url: str = "http://localhost:11434/v1"
 
     request_timeout_s: float = 180.0
     transport_retries: int = 3  # network / rate-limit retries per call

@@ -43,6 +43,14 @@ include = ["forgeai*"]
 [tool.setuptools.package-data]
 forgeai = ["prompts/*.md"]
 
+[tool.ruff]
+line-length = 130
+extend-exclude = ["runs", "web"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]  # long prompt/report strings are kept readable in one piece
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

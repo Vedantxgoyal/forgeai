@@ -131,6 +131,29 @@ $('#open-chat').addEventListener('click', () => { $('#chat').hidden = false; $('
 
 // ---------------------------------------------------------------- build
 $('#open-build').addEventListener('click', () => $('#build').showModal());
+const builderHeaders = () => ({ 'X-Access-Code': $('#code').value });
+api('/api/config').then((c) => {
+  $('#code-field').hidden = !c.needs_code;
+  if (!c.build_enabled) {
+    $('#open-build').disabled = true;
+    $('#open-build').title = 'Building is switched off on this public demo. Clone the repository to forge your own.';
+  }
+}).catch(() => {});
+
+let reviewing = null;
+async function decide(approved) {
+  let requirements = null;
+  try {
+    if (approved) requirements = JSON.parse($('#review-json').value);
+    await api(`/api/jobs/${reviewing}/approve`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...builderHeaders() }, body: JSON.stringify({ approved, requirements }) });
+    $('#review').hidden = true;
+    reviewing = null;
+  } catch (err) {
+    $('#job-status').textContent = err instanceof SyntaxError ? `The JSON is not valid: ${err.message}` : err.message;
+  }
+}
+$('#approve').addEventListener('click', () => decide(true));
+$('#reject').addEventListener('click', () => decide(false));
 document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => {
   const el = document.getElementById(b.dataset.close);
   if (el.close) el.close(); else el.hidden = true;
@@ -140,7 +163,14 @@ $('#build-form [name=cases]').addEventListener('input', (e) => { $('#cases-out')
 async function poll(id) {
   try {
     const job = await api(`/api/jobs/${id}`);
-    $('#job-status').textContent = job.status === 'running' ? `Stage ${job.stage || 1} of 7` : job.status;
+    if (job.status === 'awaiting_approval' && reviewing !== job.id) {
+      reviewing = job.id;
+      $('#review').hidden = false;
+      $('#review-json').value = JSON.stringify(job.requirements, null, 2);
+      $('#review-guard').innerHTML = job.groundability.map((g) => `<span class="chip ${{ supported: 'ok', partial: 'warn', unsupported: 'bad' }[g.status]}">${esc(g.topic)}: ${esc(g.status)}</span>`).join(' ');
+    }
+    if (job.status === 'running') $('#job-status').textContent = `Stage ${job.stage || 1} of 7`;
+    else $('#job-status').textContent = job.status.replace('_', ' ');
     $('#job-log').textContent = [...job.events, job.error].filter(Boolean).join('\n');
     $('#job-log').scrollTop = $('#job-log').scrollHeight;
     forge.setStates(STAGES.map((_, i) => (job.status === 'done' || i + 1 < job.stage ? 'done' : i + 1 === job.stage ? 'active' : 'idle')));
@@ -148,6 +178,7 @@ async function poll(id) {
     if (job.status === 'done' || job.status === 'failed') {
       forge.setBusy(false);
       $('#forge-btn').disabled = false;
+      $('#review').hidden = true;
       if (job.status === 'done') { $('#build').close(); await refreshRuns(job.name); }
       return;
     }
@@ -164,7 +195,7 @@ $('#build-form').addEventListener('submit', async (e) => {
   $('#job-status').textContent = 'Uploading…';
   $('#job-log').textContent = '';
   try {
-    const job = await api('/api/build', { method: 'POST', body: new FormData(e.target) });
+    const job = await api('/api/build', { method: 'POST', headers: builderHeaders(), body: new FormData(e.target) });
     forge.setBusy(true);
     poll(job.id);
   } catch (err) {

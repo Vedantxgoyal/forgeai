@@ -1,0 +1,22 @@
+# Render blueprint (free web service). Secrets are entered in the dashboard, never committed.
+services:
+  - type: web
+    name: forgeai
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/config
+    envVars:
+      - key: FORGE_LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: FORGE_LLM_API_KEY
+        sync: false
+      - key: FORGE_ACCESS_CODE
+        sync: false
+      - key: FORGE_GEN_MODEL
+        value: openai/gpt-oss-20b
+      - key: FORGE_AGENT_MODEL
+        value: openai/gpt-oss-20b
+      - key: FORGE_JUDGE_MODEL
+        value: qwen/qwen3.8-27b
+      - key: FORGE_FALLBACK_MODELS
+        value: qwen/qwen3.8-27b,openai/gpt-oss-120b

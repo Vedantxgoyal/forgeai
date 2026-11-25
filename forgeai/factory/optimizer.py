@@ -24,21 +24,20 @@ import logging
 import re
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 
 from pydantic import BaseModel
 
-from forgeai.agent.runtime import Agent
+from forgeai.agent.runtime import Agent, build_index
 from forgeai.config import Settings
 from forgeai.factory.judge import judge_case
 from forgeai.ingest.loaders import LoadResult
-from forgeai.llm.client import LLMClient
+from forgeai.llm.client import BudgetExceeded, LLMClient, LLMUnavailable
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
 from forgeai.retrieval.index import HybridIndex
-from forgeai.agent.runtime import build_index
 from forgeai.schemas import AgentDef, CaseResult, EvalCase, Requirements, Rule
-from forgeai.textutil import content_tokens, fact_in, norm
+from forgeai.textutil import content_tokens, norm
 
 log = logging.getLogger(__name__)
 
@@ -50,7 +49,7 @@ MEANING = {
 FALLBACK_RULES = {
     "wrong_refusal": "Before refusing, re-read every CONTEXT passage; if any passage states the answer, even in different wording, answer from it and cite it.",
     "hallucination": "Every sentence of your answer must be directly supported by a CONTEXT passage; if a detail is not written there, leave it out or refuse.",
-    "prompt_defect": "State every relevant condition, number and exception found in the CONTEXT passages you cite, and always list the cited chunk ids in \"citations\".",
+    "prompt_defect": 'State every relevant condition, number and exception found in the CONTEXT passages you cite, and always list the cited chunk ids in "citations".',
 }
 
 
@@ -91,10 +90,14 @@ def score(results: list[CaseResult], split: str | None = None) -> float:
     return round(sum(r.passed for r in rs) / len(rs), 4) if rs else 0.0
 
 
-def run_exam(agent: Agent, cases: list[EvalCase], client: LLMClient, judge_model: str, workers: int = 4, use_llm_judge: bool = True) -> list[CaseResult]:
+def run_exam(
+    agent: Agent, cases: list[EvalCase], client: LLMClient, judge_model: str, workers: int = 4, use_llm_judge: bool = True
+) -> list[CaseResult]:
     def one(c: EvalCase) -> CaseResult:
         resp = agent.ask(c.question)
         r = judge_case(client, judge_model, c, resp, use_llm=use_llm_judge)
+        limit = agent.d.output_contract.get("max_words")
+        r.contract_ok = not limit or len(resp.answer.split()) <= limit * 1.25
         if resp.error:
             r.judge_note = (r.judge_note + "; " if r.judge_note else "") + f"agent error: {resp.error}"
         return r
@@ -119,19 +122,35 @@ def _rule_is_clean(rule: str, cases: list[EvalCase], failing: list[CaseResult]) 
         qt = content_tokens(r.question)
         if qt and len(rt & qt) / len(qt) >= 0.7:
             return "copies a failing test question"
-    if re.search(r"\b(ignore|outside knowledge|general knowledge|guess)\b", low) and not re.search(r"\b(never|not|don'?t|without)\b", low):
+    if re.search(r"\b(ignore|outside knowledge|general knowledge|guess)\b", low) and not re.search(
+        r"\b(never|not|don'?t|without)\b", low
+    ):
         return "weakens grounding"
     return ""
 
 
-def _new_rule(client: LLMClient, model: str, req: Requirements, category: str, failing: list[CaseResult],
-              all_cases: list[EvalCase], n: int, symptoms_override: str = "") -> tuple[str, str]:
+def _new_rule(
+    client: LLMClient,
+    model: str,
+    req: Requirements,
+    category: str,
+    failing: list[CaseResult],
+    all_cases: list[EvalCase],
+    n: int,
+    symptoms_override: str = "",
+) -> tuple[str, str]:
     kinds = sorted({r.type for r in failing})
-    symptoms = symptoms_override or (f"{len(failing)} failing question(s) of type(s): {', '.join(kinds)}. "
-                                     "Examples of the wording (not to be copied): " + " | ".join(r.question[:90] for r in failing[:3]))
-    prompt = render("fix_rule", category=category, scope=req.scope, meaning=MEANING[category], symptoms=f"{symptoms} (attempt {n})")
+    symptoms = symptoms_override or (
+        f"{len(failing)} failing question(s) of type(s): {', '.join(kinds)}. "
+        "Examples of the wording (not to be copied): " + " | ".join(r.question[:90] for r in failing[:3])
+    )
+    prompt = render(
+        "fix_rule", category=category, scope=req.scope, meaning=MEANING[category], symptoms=f"{symptoms} (attempt {n})"
+    )
     try:
-        res = generate_structured(client, _Rule, [{"role": "user", "content": prompt}], model=model, stage="optimize", max_tokens=200, retries=1)
+        res = generate_structured(
+            client, _Rule, [{"role": "user", "content": prompt}], model=model, stage="optimize", max_tokens=200, retries=1
+        )
         cand = res.value.rule.strip()
     except Exception:  # noqa: BLE001
         cand = ""
@@ -144,11 +163,25 @@ def _new_rule(client: LLMClient, model: str, req: Requirements, category: str, f
 def _retrieval_step(d: AgentDef, tried: set[str], reranker_ok: bool) -> tuple[AgentDef, str] | None:
     r = d.retrieval
     ladder = [
-        ("top_k_8", lambda: setattr(r, "top_k", max(r.top_k, 8)), f"top_k {r.top_k} -> {max(r.top_k, 8)} (answer may sit just below the cut-off)"),
-        ("rewrite", lambda: setattr(r, "query_rewrite", True), "enable LLM query rewrite (user wording differs from document vocabulary)"),
+        (
+            "top_k_8",
+            lambda: setattr(r, "top_k", max(r.top_k, 8)),
+            f"top_k {r.top_k} -> {max(r.top_k, 8)} (answer may sit just below the cut-off)",
+        ),
+        (
+            "rewrite",
+            lambda: setattr(r, "query_rewrite", True),
+            "enable LLM query rewrite (user wording differs from document vocabulary)",
+        ),
         ("rerank", lambda: setattr(r, "rerank", True), "enable cross-encoder reranking over the candidate pool"),
-        ("smaller_chunks", lambda: (setattr(r, "chunk_size", max(60, int(r.chunk_size * 0.6))), setattr(r, "chunk_overlap", max(10, int(r.chunk_overlap * 0.6)))),
-         f"chunk size {r.chunk_size} -> {max(60, int(r.chunk_size * 0.6))} words (answer diluted inside large chunks)"),
+        (
+            "smaller_chunks",
+            lambda: (
+                setattr(r, "chunk_size", max(60, int(r.chunk_size * 0.6))),
+                setattr(r, "chunk_overlap", max(10, int(r.chunk_overlap * 0.6))),
+            ),
+            f"chunk size {r.chunk_size} -> {max(60, int(r.chunk_size * 0.6))} words (answer diluted inside large chunks)",
+        ),
         ("top_k_12", lambda: setattr(r, "top_k", 12), "top_k -> 12"),
     ]
     for key, fn, desc in ladder:
@@ -160,9 +193,21 @@ def _retrieval_step(d: AgentDef, tried: set[str], reranker_ok: bool) -> tuple[Ag
     return None
 
 
-def optimize(d0: AgentDef, load: LoadResult, req: Requirements, cases: list[EvalCase], client: LLMClient, settings: Settings,
-             base_results: list[CaseResult] | None = None, base_index: HybridIndex | None = None, max_iters: int = 3,
-             workers: int = 4, on_event=lambda msg: None) -> tuple[AgentDef, list[IterationLog]]:
+def optimize(
+    d0: AgentDef,
+    load: LoadResult,
+    req: Requirements,
+    cases: list[EvalCase],
+    client: LLMClient,
+    settings: Settings,
+    base_results: list[CaseResult] | None = None,
+    base_index: HybridIndex | None = None,
+    max_iters: int = 3,
+    workers: int = 4,
+    on_event=lambda msg: None,
+    token_budget: int = 0,
+    max_seconds: float = 0,
+) -> tuple[AgentDef, list[IterationLog]]:
     import time
 
     judge_model = settings.judge_model
@@ -189,15 +234,47 @@ def optimize(d0: AgentDef, load: LoadResult, req: Requirements, cases: list[Eval
         for r in res:
             if not r.passed:
                 fails[r.failure or "unclassified"] += 1
-        return IterationLog(i, score(res, "dev"), score(res, "holdout"), score(res), sum(r.passed for r in res), len(res), dict(fails),
-                            changes, accepted, note, before, by_type, res, d.version, round(time.perf_counter() - t0, 1))
+        return IterationLog(
+            i,
+            score(res, "dev"),
+            score(res, "holdout"),
+            score(res),
+            sum(r.passed for r in res),
+            len(res),
+            dict(fails),
+            changes,
+            accepted,
+            note,
+            before,
+            by_type,
+            res,
+            d.version,
+            round(time.perf_counter() - t0, 1),
+        )
 
     logs.append(mk(0, d0, best_res, [], True, "baseline (as generated)"))
+    exam_seconds = time.perf_counter() - t0
+    exam_tokens = sum(v.total_tokens for k, v in client.meter.stages.items() if k.startswith(("agent", "judge")))
+    rejected_in_a_row = 0
+
+    def stop(reason: str) -> None:
+        logs[-1].note += f" | stopped: {reason}"
+        on_event(f"stopping: {reason}")
+
     tried: set[str] = set()
     rejected_rules: set[str] = set()
     case_by_id = {c.id: c for c in cases}
 
     for it in range(1, max_iters + 1):
+        if rejected_in_a_row >= 2:
+            stop("two iterations in a row did not pay for themselves")
+            break
+        if token_budget and client.meter.total_tokens + exam_tokens > token_budget:
+            stop(f"another exam (~{exam_tokens} tokens) would exceed the budget of {token_budget}")
+            break
+        if max_seconds and time.perf_counter() - t0 + exam_seconds > max_seconds:
+            stop(f"another exam (~{exam_seconds:.0f}s) would exceed the time budget of {max_seconds:.0f}s")
+            break
         dev_fail = [r for r in best_res if not r.passed and r.split == "dev"]
         if not dev_fail:
             on_event("no dev failures left; stopping early")
@@ -221,25 +298,34 @@ def optimize(d0: AgentDef, load: LoadResult, req: Requirements, cases: list[Eval
                 before = (cand.retrieval.chunk_size, cand.retrieval.chunk_overlap)
                 step = _retrieval_step(cand, tried, reranker_ok)
                 if step is None:
-                    changes.append(Change(cat, "none", "retrieval ladder exhausted; remaining misses reported as unresolved", ids))
+                    changes.append(
+                        Change(cat, "none", "retrieval ladder exhausted; remaining misses reported as unresolved", ids)
+                    )
                     continue
                 rebuild |= before != (cand.retrieval.chunk_size, cand.retrieval.chunk_overlap)
                 changes.append(Change(cat, "retrieval", step[1], ids))
             else:
                 if cat == "hallucination" and any(case_by_id[i].expected_refusal for i in ids):
                     refuse_ids = [r for r in fl if case_by_id[r.case_id].expected_refusal]
-                    sym = (f"{len(refuse_ids)} question(s) the assistant should have declined were answered from general knowledge or loosely related text. "
-                           f"Topics it must decline: {'; '.join(req.must_refuse_topics) or 'anything not in the documents'}.")
+                    sym = (
+                        f"{len(refuse_ids)} question(s) the assistant should have declined were answered from general knowledge or loosely related text. "
+                        f"Topics it must decline: {'; '.join(req.must_refuse_topics) or 'anything not in the documents'}."
+                    )
                 elif cat == "prompt_defect" and all(case_by_id[i].type == "tool" for i in ids):
-                    sym = ("Questions needing a record lookup and/or arithmetic returned wrong or no values. Available tools: "
-                           + ", ".join(t.name for t in cand.tools) + ". Say when and how to call them.")
+                    sym = (
+                        "Questions needing a record lookup and/or arithmetic returned wrong or no values. Available tools: "
+                        + ", ".join(t.name for t in cand.tools)
+                        + ". Say when and how to call them."
+                    )
                 else:
                     sym = ""
                 text, how = _new_rule(client, settings.gen_model, req, cat, fl, cases, it, sym)
                 if norm(text) in rejected_rules:  # same rule was already tried and rolled back
                     text, how = FALLBACK_RULES[cat], "previous LLM rule was rolled back; tried vetted template rule instead"
                 if norm(text) in rejected_rules:
-                    changes.append(Change(cat, "none", "no new rule available: every candidate was already tried and rolled back", ids))
+                    changes.append(
+                        Change(cat, "none", "no new rule available: every candidate was already tried and rolled back", ids)
+                    )
                     continue
                 rid = f"f{it}{cat[0]}"
                 cand.rules.append(Rule(id=rid, text=text, added_in_iteration=it, category=cat, reason=how))
@@ -250,16 +336,28 @@ def optimize(d0: AgentDef, load: LoadResult, req: Requirements, cases: list[Eval
             break
 
         cand_idx = build_index(load, cand, settings) if rebuild else best_idx
-        res = exam(cand, cand_idx)
+        try:
+            res = exam(cand, cand_idx)
+        except (BudgetExceeded, LLMUnavailable) as exc:
+            stop(f"iteration {it} could not finish ({type(exc).__name__}); keeping the best agent so far")
+            break
         d_new, d_old = score(res, "dev"), score(best_res, "dev")
         h_new, h_old = score(res, "holdout"), score(best_res, "holdout")
         n_h = max(1, sum(1 for r in res if r.split == "holdout"))
         regress = d_new < d_old or (h_new < h_old - 1.5 / n_h)
         accepted = not regress and (d_new > d_old or h_new > h_old)  # a change must earn its place
-        note = ("accepted" if accepted else
-                f"rolled back: dev {d_old:.2f}->{d_new:.2f}, holdout {h_old:.2f}->{h_new:.2f}" if regress else "no improvement; kept previous agent")
+        note = (
+            "accepted"
+            if accepted
+            else f"rolled back: dev {d_old:.2f}->{d_new:.2f}, holdout {h_old:.2f}->{h_new:.2f}"
+            if regress
+            else "no improvement; kept previous agent"
+        )
         logs.append(mk(it, cand, res, changes, accepted, note, before=score(best_res)))
-        on_event(f"iteration {it}: dev {d_old:.2f}->{d_new:.2f} holdout {h_old:.2f}->{h_new:.2f} ({'accepted' if accepted else 'rolled back'})")
+        on_event(
+            f"iteration {it}: dev {d_old:.2f}->{d_new:.2f} holdout {h_old:.2f}->{h_new:.2f} ({'accepted' if accepted else 'rolled back'})"
+        )
+        rejected_in_a_row = 0 if accepted else rejected_in_a_row + 1
         if accepted:
             best_d, best_res, best_idx = cand, res, cand_idx
         else:

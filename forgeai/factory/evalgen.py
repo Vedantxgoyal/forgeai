@@ -19,13 +19,13 @@ import logging
 import random
 from collections import defaultdict
 
-from forgeai.ingest.chunker import Chunk
 from forgeai.factory.toolcases import build_tool_cases
+from forgeai.ingest.chunker import Chunk
 from forgeai.llm.client import LLMClient
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
 from forgeai.retrieval.index import HybridIndex, SearchParams
-from forgeai.schemas import EvalCase, RawQA, RawQuestions, Requirements
+from forgeai.schemas import EvalCase, RawAmbiguous, RawQA, RawQuestions, Requirements
 from forgeai.textutil import content_tokens, fact_in, norm
 
 log = logging.getLogger(__name__)
@@ -65,11 +65,19 @@ def _case_id(kind: str, question: str) -> str:
 
 
 def _qa_for_chunk(client, model, chunk: Chunk, audience: str, style_key: str, avoid: list[str] | None = None) -> RawQA | None:
-    prompt = render("eval_qa", chunk_id=chunk.chunk_id, doc_id=chunk.doc_id, passage=chunk.body[:1800],
-                    audience=audience, style=STYLE[style_key] + (
-                        " Ask about a DIFFERENT detail than these existing questions: " + " | ".join(avoid) if avoid else ""))
+    prompt = render(
+        "eval_qa",
+        chunk_id=chunk.chunk_id,
+        doc_id=chunk.doc_id,
+        passage=chunk.body[:1800],
+        audience=audience,
+        style=STYLE[style_key]
+        + (" Ask about a DIFFERENT detail than these existing questions: " + " | ".join(avoid) if avoid else ""),
+    )
     try:
-        res = generate_structured(client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=500, retries=1)
+        res = generate_structured(
+            client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=500, retries=1
+        )
     except Exception as exc:  # noqa: BLE001
         log.info("evalgen skipped chunk %s: %s", chunk.chunk_id, exc)
         return None
@@ -96,9 +104,15 @@ def _answerability(index: HybridIndex, question: str) -> float:
     return max((len(q & content_tokens(h.chunk.body)) / len(q) for h in hits), default=0.0)
 
 
-def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, target: int = 24,
-                   seed: int = 7, model: str | None = None,
-                   tables: dict | None = None) -> tuple[list[EvalCase], dict]:
+def generate_cases(
+    client: LLMClient,
+    index: HybridIndex,
+    req: Requirements,
+    target: int = 24,
+    seed: int = 7,
+    model: str | None = None,
+    tables: dict | None = None,
+) -> tuple[list[EvalCase], dict]:
     stats = {"proposed": 0, "kept": 0, "dropped_unverified": 0, "dropped_answerable_refusal": 0, "by_type": {}}
     chunks = index.chunks
     multi_docs = len({c.doc_id for c in chunks}) >= 2
@@ -106,7 +120,8 @@ def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, tar
     n_multi = max(2, round(target * 0.15)) if multi_docs else 0
     n_para = max(3, round(target * 0.15))
     tool_cases = build_tool_cases(tables or {}, max(3, round(target * 0.25)), seed)
-    n_ans = max(3, target - n_refuse - n_multi - n_para - len(tool_cases))
+    n_amb = 2 if len(_eligible(chunks)) >= 2 else 0
+    n_ans = max(3, target - n_refuse - n_multi - n_para - n_amb - len(tool_cases))
 
     cases: list[EvalCase] = []
     seen_q: set[str] = set()
@@ -138,8 +153,17 @@ def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, tar
                 stats["dropped_unverified"] += 1
                 continue
             asked[ch.chunk_id].append(qa.question.strip())
-            if add(EvalCase(id=_case_id(kind, qa.question), type=kind, question=qa.question.strip(), reference_answer=qa.answer.strip(),
-                            key_facts=[f.strip() for f in qa.key_facts], source_docs=[ch.doc_id], gold_chunks=[ch.chunk_id])):
+            if add(
+                EvalCase(
+                    id=_case_id(kind, qa.question),
+                    type=kind,
+                    question=qa.question.strip(),
+                    reference_answer=qa.answer.strip(),
+                    key_facts=[f.strip() for f in qa.key_facts],
+                    source_docs=[ch.doc_id],
+                    gold_chunks=[ch.chunk_id],
+                )
+            ):
                 return True
         return False
 
@@ -155,14 +179,28 @@ def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, tar
         for a in base:
             if made >= n_multi:
                 break
-            hits = [h.chunk for h in index.search(a.body[:300], SearchParams(top_k=10, mode="hybrid")) if h.chunk.doc_id != a.doc_id and len(h.chunk.body.split()) >= MIN_CHUNK_WORDS]
+            hits = [
+                h.chunk
+                for h in index.search(a.body[:300], SearchParams(top_k=10, mode="hybrid"))
+                if h.chunk.doc_id != a.doc_id and len(h.chunk.body.split()) >= MIN_CHUNK_WORDS
+            ]
             if not hits:
                 continue
             b = hits[0]
             stats["proposed"] += 1
-            prompt = render("eval_multi", id_a=a.chunk_id, doc_a=a.doc_id, passage_a=a.body[:1200], id_b=b.chunk_id, doc_b=b.doc_id, passage_b=b.body[:1200])
+            prompt = render(
+                "eval_multi",
+                id_a=a.chunk_id,
+                doc_a=a.doc_id,
+                passage_a=a.body[:1200],
+                id_b=b.chunk_id,
+                doc_b=b.doc_id,
+                passage_b=b.body[:1200],
+            )
             try:
-                qa = generate_structured(client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=600, retries=1).value
+                qa = generate_structured(
+                    client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=600, retries=1
+                ).value
             except Exception:  # noqa: BLE001
                 stats["dropped_unverified"] += 1
                 continue
@@ -171,25 +209,107 @@ def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, tar
             if not (_verify_facts(qa, [a.body, b.body]) and in_a and in_b):
                 stats["dropped_unverified"] += 1
                 continue
-            if add(EvalCase(id=_case_id("multi", qa.question), type="multi_doc", question=qa.question.strip(), reference_answer=qa.answer.strip(),
-                            key_facts=[f.strip() for f in qa.key_facts], source_docs=[a.doc_id, b.doc_id], gold_chunks=[a.chunk_id, b.chunk_id])):
+            if add(
+                EvalCase(
+                    id=_case_id("multi", qa.question),
+                    type="multi_doc",
+                    question=qa.question.strip(),
+                    reference_answer=qa.answer.strip(),
+                    key_facts=[f.strip() for f in qa.key_facts],
+                    source_docs=[a.doc_id, b.doc_id],
+                    gold_chunks=[a.chunk_id, b.chunk_id],
+                )
+            ):
                 made += 1
 
+    # ---- ambiguous: one underspecified question that two passages answer differently ---- #
+    made = 0
+    for a in _stratified_sample(chunks, n_amb * 5, seed + 3):
+        if made >= n_amb:
+            break
+        near = [
+            h.chunk
+            for h in index.search(a.body[:300], SearchParams(top_k=6, mode="hybrid"))
+            if h.chunk.chunk_id != a.chunk_id and len(h.chunk.body.split()) >= MIN_CHUNK_WORDS
+        ]
+        if not near:
+            continue
+        b = near[0]
+        stats["proposed"] += 1
+        prompt = render("eval_ambiguous", passage_a=a.body[:1000], passage_b=b.body[:1000])
+        try:
+            raw = generate_structured(
+                client,
+                RawAmbiguous,
+                [{"role": "user", "content": prompt}],
+                model=model,
+                stage="evalgen",
+                max_tokens=500,
+                retries=1,
+            ).value
+        except Exception:  # noqa: BLE001
+            stats["dropped_unverified"] += 1
+            continue
+        fa, fb = raw.facts_a[0].strip(), raw.facts_b[0].strip()
+        # each reading must be verbatim in its own passage, differ from the other, and not be given away by the question
+        if (
+            not (fact_in(fa, a.body) and fact_in(fb, b.body) and norm(fa) != norm(fb))
+            or norm(fa) in norm(raw.question)
+            or norm(fb) in norm(raw.question)
+        ):
+            stats["dropped_unverified"] += 1
+            continue
+        if add(
+            EvalCase(
+                id=_case_id("ambig", raw.question),
+                type="ambiguous",
+                question=raw.question.strip(),
+                reference_answer=f"Either ask which is meant, or give both: {fa} / {fb}",
+                key_facts=[fa, fb],
+                source_docs=sorted({a.doc_id, b.doc_id}),
+                gold_chunks=[a.chunk_id, b.chunk_id],
+            )
+        ):
+            made += 1
+
     # ---- refusals ---- #
-    terms = ", ".join(sorted({t for d in {c.doc_id for c in chunks} for t in [d]}))
+    terms = ", ".join(sorted({c.doc_id for c in chunks}))
     n_off = max(2, n_refuse // 2)
     n_near = n_refuse - n_off
     kinds = [
-        ("out_of_scope", n_off, "Each question is clearly unrelated to the assistant's domain (e.g. sport, cooking, trivia, coding) or asks for something in TOPICS IT MUST REFUSE."),
-        ("near_miss", n_near, "Each question sounds like it belongs to the assistant's domain and uses its vocabulary, but asks for a specific detail the documents do NOT contain (prefer the 'topics its documents do not cover' list if present). Do not ask about general knowledge."),
+        (
+            "out_of_scope",
+            n_off,
+            "Each question is clearly unrelated to the assistant's domain (e.g. sport, cooking, trivia, coding) or asks for something in TOPICS IT MUST REFUSE.",
+        ),
+        (
+            "near_miss",
+            n_near,
+            "Each question sounds like it belongs to the assistant's domain and uses its vocabulary, but asks for a specific detail the documents do NOT contain (prefer the 'topics its documents do not cover' list if present). Do not ask about general knowledge.",
+        ),
     ]
     for kind, n, instr in kinds:
         if n <= 0:
             continue
-        prompt = render("eval_refuse", scope=req.scope, refuse_topics="; ".join(req.must_refuse_topics) or "none listed",
-                        ungrounded="; ".join(req.ungrounded_topics) or "none identified", terms=terms, n=n * 2, kind_instructions=instr)
+        prompt = render(
+            "eval_refuse",
+            scope=req.scope,
+            refuse_topics="; ".join(req.must_refuse_topics) or "none listed",
+            ungrounded="; ".join(req.ungrounded_topics) or "none identified",
+            terms=terms,
+            n=n * 2,
+            kind_instructions=instr,
+        )
         try:
-            qs = generate_structured(client, RawQuestions, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=500, retries=1).value.questions
+            qs = generate_structured(
+                client,
+                RawQuestions,
+                [{"role": "user", "content": prompt}],
+                model=model,
+                stage="evalgen",
+                max_tokens=500,
+                retries=1,
+            ).value.questions
         except Exception:  # noqa: BLE001
             qs = []
         made = 0

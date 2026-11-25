@@ -13,23 +13,25 @@ recorded with the reason, so "why no weather tool?" has an answer in the artifac
 from __future__ import annotations
 
 import json
+import re
 
 from rapidfuzz import fuzz
 
 from forgeai.config import Settings
+from forgeai.ingest.chunker import suggest_params
 from forgeai.ingest.loaders import LoadResult
 from forgeai.ingest.profiler import CorpusProfile
 from forgeai.llm.client import LLMClient
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
-from forgeai.schemas import AgentDef, RetrievalConfig, RoleDraft, Requirements, Rule, ToolChoice, ToolPicks
-from forgeai.ingest.chunker import suggest_params
+from forgeai.schemas import AgentDef, Requirements, RetrievalConfig, RoleDraft, Rule, ToolChoice, ToolPicks
 from forgeai.tools import REGISTRY, registry_cards
 from forgeai.tools.base import ToolContext
 
 
-def select_tools(client: LLMClient, req: Requirements, load: LoadResult, profile: CorpusProfile,
-                 model: str | None = None) -> tuple[list[ToolChoice], list[dict]]:
+def select_tools(
+    client: LLMClient, req: Requirements, load: LoadResult, profile: CorpusProfile, model: str | None = None
+) -> tuple[list[ToolChoice], list[dict]]:
     ctx = ToolContext(tables=load.tables)
     # Quotes may come only from what the client said (brief, their answers) or the distilled duties, never from
     # model-written text such as interview questions or auto-filled assumptions.
@@ -37,9 +39,20 @@ def select_tools(client: LLMClient, req: Requirements, load: LoadResult, profile
     req_text += " " + " ".join(x.answer for x in req.qa if x.source == "user")
     corpus_text = f"BRIEF: {req.brief}\nPURPOSE: {req.purpose}\nSCOPE: {req.scope}\nTOPICS: {', '.join(req.must_answer_topics)}"
     facts = f"{len(profile.docs)} documents; tables: {list(load.tables) or 'none'}"
-    res = generate_structured(client, ToolPicks, [{"role": "user", "content": render(
-        "agent_tools", requirements=req_text[:3500], facts=facts, cards=registry_cards(ctx))}],
-        model=model, stage="generate", fallback=ToolPicks(), max_tokens=500)
+    res = generate_structured(
+        client,
+        ToolPicks,
+        [
+            {
+                "role": "user",
+                "content": render("agent_tools", requirements=req_text[:3500], facts=facts, cards=registry_cards(ctx)),
+            }
+        ],
+        model=model,
+        stage="generate",
+        fallback=ToolPicks(),
+        max_tokens=500,
+    )
     keep: list[ToolChoice] = []
     dropped: list[dict] = []
     seen: set[str] = set()
@@ -59,7 +72,12 @@ def select_tools(client: LLMClient, req: Requirements, load: LoadResult, profile
         quote = pick.justification.strip()
         score = fuzz.partial_ratio(quote.lower(), (corpus_text + " " + req_text).lower()) if len(quote) >= 12 else 0
         if score < 85:
-            dropped.append({"tool": name, "reason": f"justification quote not found in brief/requirements (match {score:.0f}): {quote[:80]!r}"})
+            dropped.append(
+                {
+                    "tool": name,
+                    "reason": f"justification quote not found in brief/requirements (match {score:.0f}): {quote[:80]!r}",
+                }
+            )
             continue
         keep.append(ToolChoice(name=name, justification=quote))
     # Deterministic safety net: tables exist but the model forgot the lookup tool.
@@ -76,8 +94,6 @@ def _corpus_text(load: LoadResult) -> str:
 
 def _invented_content(rule: str, corpus: str, ungrounded: list[str]) -> str:
     """A generated domain rule may not introduce facts: numbers, currencies or uncovered topics."""
-    import re
-
     for tok in re.findall(r"\d[\d.,]*\d|\d|[A-Z]{3,}", rule):
         if tok.lower() not in corpus:
             return f"introduces '{tok}', which appears in neither documents nor brief"
@@ -89,41 +105,144 @@ def _invented_content(rule: str, corpus: str, ungrounded: list[str]) -> str:
 
 
 GROUNDING_RULES = [
-    ("g1", "Answer ONLY from the CONTEXT passages (and tool results). Never use outside knowledge, guesses or common sense to fill gaps.", "grounding"),
-    ("g2", "Cite the chunk ids you used in \"citations\", e.g. [\"doc#3\"]. Cite only passages that actually contain the answer.", "citation"),
-    ("g3", "If the CONTEXT does not contain the answer, set refused=true and use the refusal sentence. A partial answer must say what is missing.", "refusal"),
-    ("g4", "Copy numbers, durations, names, codes and conditions exactly as written in the CONTEXT; never round or convert unless asked.", "faithfulness"),
+    (
+        "g1",
+        "Answer ONLY from the CONTEXT passages (and tool results). Never use outside knowledge, guesses or common sense to fill gaps.",
+        "grounding",
+    ),
+    (
+        "g2",
+        'Cite the chunk ids you used in "citations", e.g. ["doc#3"]. Cite only passages that actually contain the answer.',
+        "citation",
+    ),
+    (
+        "g3",
+        "If the CONTEXT does not contain the answer, set refused=true and use the refusal sentence. A partial answer must say what is missing.",
+        "refusal",
+    ),
+    (
+        "g4",
+        "Copy numbers, durations, names, codes and conditions exactly as written in the CONTEXT; never round or convert unless asked.",
+        "faithfulness",
+    ),
+    (
+        "g5",
+        "If a question could mean more than one thing in the CONTEXT, either answer each meaning briefly and label it, or ask which one is meant.",
+        "ambiguity",
+    ),
 ]
 
 
-def build_agent(client: LLMClient, req: Requirements, load: LoadResult, profile: CorpusProfile,
-                settings: Settings, model: str | None = None) -> AgentDef:
+def output_contract(req: Requirements, tool_names: set[str]) -> dict:
+    """The contract differs per agent: it follows the audience, tone and the tools that were actually attached."""
+    concise = re.search(r"concise|short|brief", f"{req.tone} {req.brief}", re.I)
+    contract = {
+        "answer": f"plain text for {req.audience}; tone: {req.tone}; grounded only in the context",
+        "citations": "list of chunk ids used, e.g. ['document::0001']",
+        "refused": "true if the documents cannot answer",
+        "max_words": 90 if concise else 180,
+    }
+    if "csv_lookup" in tool_names:
+        contract["records"] = "name the record key (for example the part number) beside every value taken from a table"
+    if "calculator" in tool_names:
+        contract["calculations"] = "show the figures used together with the result"
+    if tool_names & {"weather", "current_date"}:
+        contract["as_of"] = "state the date or observation time (and place) of any live information"
+    return contract
+
+
+def build_agent(
+    client: LLMClient, req: Requirements, load: LoadResult, profile: CorpusProfile, settings: Settings, model: str | None = None
+) -> AgentDef:
     req_text = json.dumps(req.model_dump(exclude={"groundability", "qa", "assumptions"}), ensure_ascii=False)
-    fb = RoleDraft(role_prompt=f"You are {req.agent_name.replace('_', ' ')}. {req.purpose} Your audience: {req.audience}. Tone: {req.tone}.", rules=[])
-    draft = generate_structured(client, RoleDraft, [{"role": "user", "content": render("agent_role", requirements=req_text[:3500], ungrounded="; ".join(req.ungrounded_topics) or "none")}],
-                                model=model, stage="generate", fallback=fb, max_tokens=700).value
+    fb = RoleDraft(
+        role_prompt=f"You are {req.agent_name.replace('_', ' ')}. {req.purpose} Your audience: {req.audience}. Tone: {req.tone}.",
+        rules=[],
+    )
+    draft = generate_structured(
+        client,
+        RoleDraft,
+        [
+            {
+                "role": "user",
+                "content": render(
+                    "agent_role", requirements=req_text[:3500], ungrounded="; ".join(req.ungrounded_topics) or "none"
+                ),
+            }
+        ],
+        model=model,
+        stage="generate",
+        fallback=fb,
+        max_tokens=700,
+    ).value
     rules = [Rule(id=i, text=t, category=c) for i, t, c in GROUNDING_RULES]
     corpus_text = _corpus_text(load) + " " + req.brief.lower()
     dropped_rules: list[dict] = []
     for text in draft.rules[:5]:
         # Evidence-gated prompt: a model-written domain rule is NOT trusted into the prompt (small models invent
         # plausible policy). It is held back and logged; the optimizer may add rules only to fix a failing test.
-        why = _invented_content(text, corpus_text, req.ungrounded_topics) or "held back: rules enter the prompt only when a failing test justifies them"
+        why = (
+            _invented_content(text, corpus_text, req.ungrounded_topics)
+            or "held back: rules enter the prompt only when a failing test justifies them"
+        )
         dropped_rules.append({"rule": text.strip(), "reason": why})
     if req.must_refuse_topics:
-        rules.append(Rule(id="s1", category="scope", text="Politely decline these topics, even if the CONTEXT mentions them: " + "; ".join(req.must_refuse_topics) + "."))
+        rules.append(
+            Rule(
+                id="s1",
+                category="scope",
+                text="Politely decline these topics, even if the CONTEXT mentions them: "
+                + "; ".join(req.must_refuse_topics)
+                + ".",
+            )
+        )
     if req.ungrounded_topics:
-        rules.append(Rule(id="s2", category="scope", text="The documents do NOT cover: " + "; ".join(req.ungrounded_topics) + ". Say so instead of answering from general knowledge."))
+        rules.append(
+            Rule(
+                id="s2",
+                category="scope",
+                text="The documents do NOT cover: "
+                + "; ".join(req.ungrounded_topics)
+                + ". Say so instead of answering from general knowledge.",
+            )
+        )
     covered = "; ".join(t for t in req.must_answer_topics if t not in req.ungrounded_topics)
-    rules.append(Rule(id="s3", category="scope", text=f"You only help with: {covered}. Questions unrelated to these topics are out of scope: refuse them in one sentence."))
+    rules.append(
+        Rule(
+            id="s3",
+            category="scope",
+            text=f"You only help with: {covered}. Questions unrelated to these topics are out of scope: refuse them in one sentence.",
+        )
+    )
 
     tools, dropped = select_tools(client, req, load, profile, model)
     names = {t.name for t in tools}
     if "csv_lookup" in names:
-        rules.append(Rule(id="t1", category="tools", text="For the price, stock or any attribute of a specific record, call csv_lookup first and use the exact value it returns."))
+        rules.append(
+            Rule(
+                id="t1",
+                category="tools",
+                text="For the price, stock or any attribute of a specific record, call csv_lookup first and use the exact value it returns.",
+            )
+        )
     if "calculator" in names:
-        rules.append(Rule(id="t2", category="tools", text="Never do arithmetic yourself: call the calculator for every total, difference or percentage, then report its result."))
+        rules.append(
+            Rule(
+                id="t2",
+                category="tools",
+                text="Never do arithmetic yourself: call the calculator for every total, difference or percentage, then report its result.",
+            )
+        )
     cp = suggest_params(load.documents)
     cfg = RetrievalConfig(chunk_size=cp.chunk_size, chunk_overlap=cp.chunk_overlap, top_k=5, mode="hybrid", rerank=False)
-    return AgentDef(name=req.agent_name, model=settings.effective_agent_model, role_prompt=draft.role_prompt.strip(),
-                    rules=rules, retrieval=cfg, tools=tools, dropped_tools=dropped, dropped_rules=dropped_rules)
+    return AgentDef(
+        name=req.agent_name,
+        model=settings.effective_agent_model,
+        role_prompt=draft.role_prompt.strip(),
+        rules=rules,
+        retrieval=cfg,
+        tools=tools,
+        dropped_tools=dropped,
+        dropped_rules=dropped_rules,
+        output_contract=output_contract(req, {t.name for t in tools}),
+    )
