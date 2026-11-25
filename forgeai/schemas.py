@@ -125,7 +125,7 @@ class RoleDraft(BaseModel):
 
 
 # ----------------------------- evals / judging ---------------------------- #
-CaseType = Literal["answerable", "multi_doc", "paraphrase", "out_of_scope", "near_miss"]
+CaseType = Literal["answerable", "multi_doc", "paraphrase", "out_of_scope", "near_miss", "tool"]
 
 
 class EvalCase(BaseModel):

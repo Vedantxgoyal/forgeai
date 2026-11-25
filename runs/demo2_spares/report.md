@@ -2,24 +2,36 @@
 
 ## Verdict
 
-**Final agent (v1) passes 24/24 generated test cases (100%).** With only 24 cases the 95% confidence interval is roughly **86% - 100%**, so treat it as an estimate, not a guarantee.
-Dev split 100% (used by the optimizer) vs hold-out 100% (never inspected by it). Hold-out is close to dev: no obvious over-fitting.
+**Final agent (v3) passes 23/24 generated test cases (96%).** With only 24 cases the 95% confidence interval is roughly **80% - 99%**, so treat it as an estimate, not a guarantee.
+Dev split 94% (used by the optimizer) vs hold-out 100% (never inspected by it). Hold-out is close to dev: no obvious over-fitting.
 
 ## Scorecard per iteration
 
 | Iter | Agent | Overall | Dev | Hold-out | Failures by class | Outcome |
 |---|---|---|---|---|---|---|
-| 0 | v1 | 24/24 (100%) | 100% | 100% | none | baseline (as generated) | stopped: no dev failures remain |
+| 0 | v1 | 23/24 (96%) | 94% | 100% | retrieval_miss:1 | baseline (as generated) |
+| 1 | v2 | 22/24 (92%) | 89% | 100% | retrieval_miss:1, wrong_refusal:1 | rolled back: dev 0.94->0.89, holdout 1.00->1.00 |
+| 2 | v2 | 23/24 (96%) | 94% | 100% | hallucination:1 | accepted |
+| 3 | v3 | 23/24 (96%) | 94% | 100% | hallucination:1 | accepted |
 
-By case type (final): answerable 10/10, multi_doc 4/4, near_miss 3/3, out_of_scope 3/3, paraphrase 4/4
+By case type (final): answerable 4/4, multi_doc 4/4, near_miss 3/3, out_of_scope 3/3, paraphrase 3/4, tool 6/6
 
 ## Change log (what the optimizer changed and why)
 
-- No changes were needed or possible.
+- **Iter 1 / retrieval_miss / retrieval** (ROLLED BACK; overall 96% -> 92%): top_k 5 -> 8 (answer may sit just below the cut-off)  
+  targeted cases: par-f06b90
+- **Iter 2 / retrieval_miss / retrieval** (kept; overall 96% -> 96%): enable LLM query rewrite (user wording differs from document vocabulary)  
+  targeted cases: par-f06b90
+- **Iter 3 / hallucination / rule** (kept; overall 96% -> 96%): [f3h] Never infer or calculate costs, timelines, or terms not explicitly stated in the provided context; decline to answer if the data is missing.  (LLM-written rule passed leakage checks)  
+  targeted cases: par-f06b90
 
 ## What still fails, and why
 
-Nothing failed on this exam. That does not mean the agent is perfect: the exam was generated from the same documents by a small model, so it can miss question styles real users will try.
+- `par-f06b90` (paraphrase, dev) **hallucination**: "If I need my parts to arrive faster than the standard schedule, what is the cost and how much quicker will it be?"  
+  agent said: "The cost and speed improvement depend on the supplier:
+
+1. **OceanParts**: Express air freight is available at a surcharge of 12% of the order value and shorten"  
+  judge: answer support 0.84, numbers not in context: ['1']
 
 ## Requirements and groundability
 
@@ -39,17 +51,16 @@ Chosen: `csv_lookup` (because: "The assistant handles spare part lookups, price 
 
 ## How trustworthy is this score?
 
-- Exam: 24 cases kept of 24 proposed; 0 discarded because their key facts were not found verbatim in the source; 0 'refusal' questions discarded because the documents could actually answer them. Types: {'paraphrase': 4, 'answerable': 10, 'multi_doc': 4, 'out_of_scope': 3, 'near_miss': 3}.
-- Judge: deterministic checks decide; LLM judge (qwen/qwen3.8-27b) only arbitrates when some key facts are missing, and counts only if two votes with reversed fact order agree.
-  Overrides by LLM judge: 5; unstable judgements: 0.
-- **Warning:** judge model and agent model are the same model, so self-preference bias is possible. Deterministic checks limit but do not remove it.
+- Exam: 24 cases kept of 24 proposed; 0 discarded because their key facts were not found verbatim in the source; 0 'refusal' questions discarded because the documents could actually answer them. Types: {'paraphrase': 4, 'answerable': 4, 'multi_doc': 4, 'out_of_scope': 3, 'near_miss': 3, 'tool': 6}.
+- Judge: deterministic checks decide; LLM judge (openai/gpt-oss-120b) only arbitrates when some key facts are missing, and counts only if two votes with reversed fact order agree.
+  Overrides by LLM judge: 4; unstable judgements: 0.
 - The exam is generated from the same documents the agent retrieves from; it measures faithfulness to those documents, not real-world user satisfaction.
-- Small models: agent `qwen/qwen3.8-27b`, generator `qwen/qwen3.8-27b`, judge `qwen/qwen3.8-27b`.
+- Small models: agent `qwen/qwen3.8-27b`, generator `qwen/qwen3.8-27b`, judge `openai/gpt-oss-120b`.
 - intake: 5 questions, 100% reference real document terms
 
 ## Cost
 
-67 LLM calls (67 cache hits), 0 tokens, 0.0s of model time.
+224 LLM calls (61 cache hits), 199665 tokens, 147.26s of model time.
 
 ## Final agent rules
 
@@ -59,5 +70,8 @@ Chosen: `csv_lookup` (because: "The assistant handles spare part lookups, price 
 4. Copy numbers, durations, names, codes and conditions exactly as written in the CONTEXT; never round or convert unless asked.
 5. Politely decline these topics, even if the CONTEXT mentions them: external financial settlement advice; non-procurement operational advice; advice for non-technical audiences.
 6. You only help with: spare parts catalogue lookup; unit price and stock availability; lead time and urgent order classification; supplier pricing and discount terms; returns and warranty conditions; order total calculation; internal approval thresholds. Questions unrelated to these topics are out of scope: refuse them in one sentence.
+7. For the price, stock or any attribute of a specific record, call csv_lookup first and use the exact value it returns.
+8. Never do arithmetic yourself: call the calculator for every total, difference or percentage, then report its result.
+9. Never infer or calculate costs, timelines, or terms not explicitly stated in the provided context; decline to answer if the data is missing.  _(added iter 3: hallucination)_
 
-Retrieval: chunk 120/18 words, top_k 5, mode hybrid, rerank False, query_rewrite False
+Retrieval: chunk 120/18 words, top_k 5, mode hybrid, rerank False, query_rewrite True

@@ -115,6 +115,11 @@ def build_agent(client: LLMClient, req: Requirements, load: LoadResult, profile:
     rules.append(Rule(id="s3", category="scope", text=f"You only help with: {covered}. Questions unrelated to these topics are out of scope: refuse them in one sentence."))
 
     tools, dropped = select_tools(client, req, load, profile, model)
+    names = {t.name for t in tools}
+    if "csv_lookup" in names:
+        rules.append(Rule(id="t1", category="tools", text="For the price, stock or any attribute of a specific record, call csv_lookup first and use the exact value it returns."))
+    if "calculator" in names:
+        rules.append(Rule(id="t2", category="tools", text="Never do arithmetic yourself: call the calculator for every total, difference or percentage, then report its result."))
     cp = suggest_params(load.documents)
     cfg = RetrievalConfig(chunk_size=cp.chunk_size, chunk_overlap=cp.chunk_overlap, top_k=5, mode="hybrid", rerank=False)
     return AgentDef(name=req.agent_name, model=settings.effective_agent_model, role_prompt=draft.role_prompt.strip(),

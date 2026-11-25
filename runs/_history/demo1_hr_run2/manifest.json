@@ -1,0 +1,80 @@
+{
+  "brief": "An assistant that answers HR policy questions for Meridian Shipping's shore-based staff: leave, conduct, and travel/expense rules. It should also tell staff what the policy says about salary and pension, and keep answers short and polite.",
+  "docs": "demos/hr_docs",
+  "models": {
+    "gen": "openai/gpt-oss-20b",
+    "judge": "qwen/qwen3.8-27b",
+    "agent": "openai/gpt-oss-20b"
+  },
+  "usage": {
+    "intake": {
+      "calls": 3,
+      "cache_hits": 3,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "guard": {
+      "calls": 8,
+      "cache_hits": 8,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "generate": {
+      "calls": 2,
+      "cache_hits": 2,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "evalgen": {
+      "calls": 20,
+      "cache_hits": 2,
+      "prompt_tokens": 7850,
+      "completion_tokens": 2577,
+      "seconds": 10.894797000022663,
+      "total_tokens": 10427
+    },
+    "agent": {
+      "calls": 85,
+      "cache_hits": 7,
+      "prompt_tokens": 88698,
+      "completion_tokens": 7177,
+      "seconds": 46.15094569997018,
+      "total_tokens": 95875
+    },
+    "judge": {
+      "calls": 36,
+      "cache_hits": 8,
+      "prompt_tokens": 20936,
+      "completion_tokens": 460,
+      "seconds": 6.384443100003409,
+      "total_tokens": 21396
+    },
+    "optimize": {
+      "calls": 4,
+      "cache_hits": 0,
+      "prompt_tokens": 1488,
+      "completion_tokens": 317,
+      "seconds": 2.15895840000303,
+      "total_tokens": 1805
+    },
+    "_total": {
+      "calls": 158,
+      "cache_hits": 30,
+      "total_tokens": 129503,
+      "seconds": 65.59
+    }
+  },
+  "seconds": 1250.4,
+  "notes": [
+    "intake: 5 questions, 100% reference real document terms"
+  ],
+  "seed": 7,
+  "final_score": null,
+  "tools": []
+}

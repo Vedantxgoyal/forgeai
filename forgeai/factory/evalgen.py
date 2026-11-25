@@ -20,6 +20,7 @@ import random
 from collections import defaultdict
 
 from forgeai.ingest.chunker import Chunk
+from forgeai.factory.toolcases import build_tool_cases
 from forgeai.llm.client import LLMClient
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
@@ -93,14 +94,16 @@ def _answerability(index: HybridIndex, question: str) -> float:
 
 
 def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, target: int = 24,
-                   seed: int = 7, model: str | None = None) -> tuple[list[EvalCase], dict]:
+                   seed: int = 7, model: str | None = None,
+                   tables: dict | None = None) -> tuple[list[EvalCase], dict]:
     stats = {"proposed": 0, "kept": 0, "dropped_unverified": 0, "dropped_answerable_refusal": 0, "by_type": {}}
     chunks = index.chunks
     multi_docs = len({c.doc_id for c in chunks}) >= 2
     n_refuse = max(4, round(target * 0.25))
     n_multi = max(2, round(target * 0.15)) if multi_docs else 0
     n_para = max(3, round(target * 0.15))
-    n_ans = target - n_refuse - n_multi - n_para
+    tool_cases = build_tool_cases(tables or {}, max(3, round(target * 0.25)), seed)
+    n_ans = max(3, target - n_refuse - n_multi - n_para - len(tool_cases))
 
     cases: list[EvalCase] = []
     seen_q: set[str] = set()
@@ -190,6 +193,11 @@ def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, tar
                 continue
             if add(EvalCase(id=_case_id(kind, q), type=kind, question=q.strip(), expected_refusal=True)):
                 made += 1
+
+    # ---- tool cases: expected values computed in Python from the tables ---- #
+    for c in tool_cases:
+        stats["proposed"] += 1
+        cases.append(c)  # near-identical wording is intentional (different rows), so no token de-dup
 
     # ---- stratified dev / holdout split ---- #
     by_type: dict[str, list[EvalCase]] = defaultdict(list)

@@ -68,10 +68,12 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
     ratio, bad_nums = support_ratio(resp.answer, ctx, case.question)
     det_grounded = ratio >= SUPPORT_MIN and not bad_nums
     cites_ok = bool(resp.citations) and all(c in resp.retrieved or c.startswith("tool:") for c in resp.citations)
+    if any(t.get("ok") for t in resp.tool_calls):
+        cites_ok = True  # the recorded tool call is the provenance of a computed / looked-up value
 
     note, unstable, overrode = [], False, False
     grounded = det_grounded
-    if use_llm and facts and not all(present):
+    if use_llm and facts and not all(present) and case.type != "tool":  # numbers need no interpretation
         v1 = _vote(client, judge_model, case, resp, facts)
         v2_facts = list(reversed(facts))
         v2 = _vote(client, judge_model, case, resp, v2_facts)
@@ -97,7 +99,11 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
     passed = facts_ok and grounded and cites_ok
     failure = ""
     if not passed:
-        if not facts_ok and not retrieval_hit:
+        if case.type == "tool":
+            failure = "prompt_defect"
+            used = [t["tool"] for t in resp.tool_calls] or ["none"]
+            note.append(f"wrong or unsupported value; tools used: {used}; expected {case.reference_answer}")
+        elif not facts_ok and not retrieval_hit:
             failure = "retrieval_miss"
         elif not grounded:
             failure = "hallucination"

@@ -7,6 +7,29 @@ improvement rounds, and an honest quality report. Every stage is designed for a 
 > **Design principle: distrust the pipeline.** No single LLM output is trusted. Every stage has a deterministic
 > verifier, every score carries evidence, and the optimizer is judged on held-out cases it never saw.
 
+## Demo results (committed artifacts)
+
+| Demo | Tools chosen | Baseline -> final | Dev / hold-out | Models (Groq free tier) |
+|---|---|---|---|---|
+| [HR policy assistant](runs/demo1_hr/report.md) | none | 18/24 -> **21/24** | 88% / 86% | agent `gpt-oss-20b`, judge `qwen3.8-27b` |
+| [Ship-spares procurement](runs/demo2_spares/report.md) | `csv_lookup`, `calculator` | 23/24 -> **23/24** | 94% / 100% | agent `qwen3.8-27b`, judge `gpt-oss-120b` |
+
+Each run folder has a `NOTE.md` with provenance and known issues. With 24 cases the 95% interval is wide
+(HR 69-96%, spares 80-99%). The exams come from the same documents the agents read, so treat the scores as
+faithfulness estimates, not a guarantee.
+
+## What real runs broke, and how it was fixed
+
+Earlier passes are kept in `runs/_history/`. Each fix is in the pipeline, with a test where it is deterministic:
+
+- Correct answers failed because of Unicode hyphens, and `2,675.00` did not match `2675.0`.
+- The guard called table-backed topics unsupported because of low word overlap; both signals must now agree.
+- Model-written "domain rules" invented policy; rules now enter the prompt only when a failing test justifies them.
+- Test facts required details the question never asked for, or merely echoed the question.
+- A spares exam scored 100% without ever needing a tool; tool cases are now computed in Python from the tables.
+- `gpt-oss` made native function calls that the API rejected and were silently scored as refusals.
+- Rate-limit outages could be counted as agent failures.
+
 ## Run it
 
 ```powershell
@@ -18,6 +41,7 @@ forge run demos/hr_docs     --brief @demos/briefs/hr.txt     --out runs/demo1_hr
 forge run demos/spares_docs --brief @demos/briefs/spares.txt --out runs/demo2_spares
 forge chat runs/demo1_hr/agent.final.yaml demos/hr_docs --trace     # generic runner: works with ANY definition
 forge run <any folder> --brief "…" -i --approve     # interview yourself, approve requirements before generation
+streamlit run app.py              # web UI: scorecard, chat with trace, requirements, exam, build a new agent
 pytest                            # offline tests, including a whole-factory run on a scripted fake model
 ```
 
@@ -28,9 +52,9 @@ pytest                            # offline tests, including a whole-factory run
 | 1 | Intake | Questions are built from a deterministic corpus profile; a question that names nothing in the documents is rejected as *generic* and regenerated. The share of document-grounded questions is reported. | `factory/intake.py` |
 | 2 | Groundability guard | Each requested topic is searched in the corpus. Lexical coverage (deterministic) + LLM verdict; the LLM can only *lower* a status. Unsupported topics become prompt rules and near-miss tests. | `factory/guard.py` |
 | 3 | Agent generator | Prompt is **composed from named rules** (vetted grounding skeleton + domain rules), so the optimizer can patch one rule. A tool survives only if it is available for the corpus **and** justified by a quote that actually occurs in the brief; dropped tools are logged with reasons. | `factory/generator.py` |
-| 4 | Eval generator | ≥20 cases from the documents. Answerable/paraphrase: every key fact must appear **verbatim** in the source chunk or the case is discarded. Refusal cases are discarded if the corpus can actually answer them. Multi-document cases need facts from two docs. Stratified **dev / hold-out** split. | `factory/evalgen.py` |
+| 4 | Eval generator | ≥20 cases from the documents. For tables, **tool cases** (lookup, total, difference) have expected values computed in Python. Answerable/paraphrase: every key fact must appear **verbatim** in the source chunk or the case is discarded. Refusal cases are discarded if the corpus can actually answer them. Multi-document cases need facts from two docs. Stratified **dev / hold-out** split. | `factory/evalgen.py` |
 | 5 | Judge | Deterministic first: refusal detection, key-fact match, citation validity, groundedness (token + number support). The LLM only arbitrates missing facts, asked per-fact yes/no (verbosity), twice with reversed order (position bias), and only counts if both votes agree; judge model is separate (self-preference) and the report warns if it equals the agent model. | `factory/judge.py` |
-| 6 | Critic–optimizer | Failure classes (`retrieval_miss`, `wrong_refusal`, `hallucination`, `prompt_defect`) come from evidence, e.g. *were the required facts present in the retrieved context?* Each class gets the smallest fix: a retrieval ladder (top_k → query rewrite → rerank → smaller chunks) or one new prompt rule that is rejected if it leaks test facts or copies a test question. Rolled back if dev or hold-out gets worse. | `factory/optimizer.py` |
+| 6 | Critic–optimizer | Failure classes (`retrieval_miss`, `wrong_refusal`, `hallucination`, `prompt_defect`) come from evidence, e.g. *were the required facts present in the retrieved context?* Each class gets the smallest fix: a retrieval ladder (top_k → query rewrite → rerank → smaller chunks) or one new prompt rule that is rejected if it leaks test facts or copies a test question. A change is kept only if a score improves, and rolled back if dev or hold-out gets worse. | `factory/optimizer.py` |
 | 7 | Report | Scorecard per iteration, change log with before/after, what still fails and why, Wilson 95% interval, judge-reliability stats, token cost. Never claims more than the evidence. | `factory/report.py` |
 
 Artifacts per run: `00_brief.txt`, `01_corpus_profile.json`, `02_questions.json`, `02_requirements.json`,
@@ -47,6 +71,7 @@ forgeai/
   agent/      generic runtime: loads any AgentDef + folder, tool loop, retrieval trace
   factory/    intake, guard, generator, evalgen, judge, optimizer, report, pipeline
   prompts/    every generation prompt as a versioned .md file
+app.py        Streamlit UI
 demos/        synthetic corpora + briefs + the script that builds them
 runs/         committed artifacts of the demo runs
 ```

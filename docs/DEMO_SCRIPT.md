@@ -24,15 +24,17 @@ Open `runs/demo1_hr/report.md`:
 - Judge section: deterministic checks decide; LLM only arbitrates with two votes in reversed order (position bias); different model family (self-preference); per-fact yes/no (verbosity).
 
 ## 4:30–5:45 — Demo 2: ship-spares procurement (very different)
-1. `runs/demo2_spares/03_agent.v1.yaml`: picks **csv_lookup + calculator**, with quoted justifications from the brief; nothing else.
-2. Live chat: `forge chat runs/demo2_spares/agent.final.yaml demos/spares_docs --trace`
-   - "Price and stock of the piston ring set for the main engine?" (CSV lookup)
-   - "If I order 6 of SP-1021 from OceanParts, what's the total with the volume discount, and who approves it?" (calculator + procedure)
-   - "What's the weather in Rotterdam?" → refuses.
-3. Show the `--trace` output: retrieved chunk ids, tool calls.
+1. `runs/demo2_spares/agent.final.yaml`: picks **csv_lookup + calculator**, with quoted justifications from the brief; nothing else.
+2. `runs/demo2_spares/04_evals.json`: show a `tool` case — the expected total is computed in Python from the CSV.
+3. Report: 23/24. Iteration 1 (bigger top_k) was rolled back. Say openly: the one remaining failure is likely my judge
+   counting a list marker "1." as a number (see NOTE.md), fixed in code afterwards.
+4. Live chat (`streamlit run app.py`, Chat tab, open the Trace panel):
+   - "What is the total for 8 units of SP-1042?"  (lookup + arithmetic)
+   - "Who must approve a purchase order of USD 7,840?"  (procedure document)
+   - "How do I cook a steak?"  (refusal)
 
 ## 5:45–6:30 — Robustness + what I'd do next
-- Run on an unseen folder live: `forge run <new folder> --brief "…"` (or show the third-brief run).
+- Unseen folder: `forge run demos/port_docs --brief "@demos/briefs/port.txt" --out runs/demo3_port` (should pick the weather tool).
 - Bugs the real run exposed in my own pipeline (Unicode hyphens, over-specified test facts, guard false positives) — "I fixed the pipeline, not the scores" — see `runs/_history/`.
 - Limits: exam is generated from the same docs; ~24 cases gives a wide interval; no OCR.
 - Credit: retrieval design informed by my earlier project DocSage; ForgeAI itself written from scratch.

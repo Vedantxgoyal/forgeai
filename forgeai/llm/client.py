@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Any, Protocol
@@ -132,6 +133,9 @@ class OpenAICompatTransport:
         try:
             resp = self._client.chat.completions.create(**kwargs)
         except Exception as exc:  # some servers reject response_format/seed
+            recovered = _recover_native_tool_call(exc)
+            if recovered is not None:
+                return Completion(text=recovered)
             msg = str(exc).lower()
             if json_mode and ("response_format" in msg or "json" in msg) and self._json_mode_supported:
                 log.warning("Endpoint rejected JSON mode; falling back to prompt-only JSON.")
@@ -146,6 +150,33 @@ class OpenAICompatTransport:
             prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
             completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
         )
+
+
+def _recover_native_tool_call(exc: Exception) -> str | None:
+    """Some open models (gpt-oss) emit a native function call although we ask for JSON; the server
+    rejects it but returns the attempted call. Translate it into the agent's own tool step."""
+    body = getattr(exc, "body", None)
+    if not isinstance(body, dict) or body.get("code") != "tool_use_failed":
+        return None
+    try:
+        call = json.loads(body.get("failed_generation", ""))
+        name = str(call["name"]).split(".")[-1]
+        args = call.get("arguments") or {}
+        args = json.loads(args) if isinstance(args, str) else args
+        if "action" in args:  # the model wrapped our own answer object in a fake function call
+            return json.dumps(args)
+        return json.dumps({"action": "tool", "tool": name, "args": args})
+    except (ValueError, KeyError, TypeError):
+        return None
+
+
+def _rate_limit_wait(exc: Exception) -> float | None:
+    """Seconds the server asks us to wait ('try again in 2m3.5s' / '850ms'), if it says so."""
+    m = re.search(r"try again in (?:(\d+)h)?(?:(\d+)m(?!s))?(?:([\d.]+)(ms|s))?", str(exc))
+    if not m or not any(m.groups()):
+        return None
+    seconds = float(m.group(3) or 0) / (1000 if m.group(4) == "ms" else 1)
+    return int(m.group(1) or 0) * 3600 + int(m.group(2) or 0) * 60 + seconds + 1.0
 
 
 def _is_transient(exc: Exception) -> bool:
@@ -226,7 +257,9 @@ class LLMClient:
     def _call_with_retries(self, model, messages, temperature, max_tokens, json_mode):
         attempts = self.settings.transport_retries + 1
         last: Exception | None = None
-        for attempt in range(1, attempts + 1):
+        attempt, rate_waits = 0, 0
+        while attempt < attempts:
+            attempt += 1
             t0 = time.perf_counter()
             try:
                 c = self.transport.complete(
@@ -240,7 +273,15 @@ class LLMClient:
                 return c, time.perf_counter() - t0
             except Exception as exc:  # noqa: BLE001 - classified below
                 last = exc
-                if not _is_transient(exc) or attempt == attempts:
+                hint = _rate_limit_wait(exc)
+                if hint is not None and hint <= 180 and rate_waits < 60:
+                    # A per-minute quota is not a failure: wait as asked without spending a retry.
+                    rate_waits += 1
+                    attempt -= 1
+                    log.warning("rate limited; waiting %.0fs as requested", hint)
+                    time.sleep(hint)
+                    continue
+                if not _is_transient(exc) or attempt >= attempts:
                     break
                 wait = min(2 ** attempt, 20)
                 log.warning("LLM call failed (%s), retry %d/%d in %ss", type(exc).__name__, attempt, attempts - 1, wait)

@@ -230,6 +230,9 @@ def optimize(d0: AgentDef, load: LoadResult, req: Requirements, cases: list[Eval
                     refuse_ids = [r for r in fl if case_by_id[r.case_id].expected_refusal]
                     sym = (f"{len(refuse_ids)} question(s) the assistant should have declined were answered from general knowledge or loosely related text. "
                            f"Topics it must decline: {'; '.join(req.must_refuse_topics) or 'anything not in the documents'}.")
+                elif cat == "prompt_defect" and all(case_by_id[i].type == "tool" for i in ids):
+                    sym = ("Questions needing a record lookup and/or arithmetic returned wrong or no values. Available tools: "
+                           + ", ".join(t.name for t in cand.tools) + ". Say when and how to call them.")
                 else:
                     sym = ""
                 text, how = _new_rule(client, settings.gen_model, req, cat, fl, cases, it, sym)
@@ -252,7 +255,7 @@ def optimize(d0: AgentDef, load: LoadResult, req: Requirements, cases: list[Eval
         h_new, h_old = score(res, "holdout"), score(best_res, "holdout")
         n_h = max(1, sum(1 for r in res if r.split == "holdout"))
         regress = d_new < d_old or (h_new < h_old - 1.5 / n_h)
-        accepted = not regress and (d_new > d_old or h_new >= h_old)
+        accepted = not regress and (d_new > d_old or h_new > h_old)  # a change must earn its place
         note = ("accepted" if accepted else
                 f"rolled back: dev {d_old:.2f}->{d_new:.2f}, holdout {h_old:.2f}->{h_new:.2f}" if regress else "no improvement; kept previous agent")
         logs.append(mk(it, cand, res, changes, accepted, note, before=score(best_res)))

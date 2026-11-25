@@ -94,3 +94,41 @@ def test_numbers_compared_by_value():
     assert numbers("USD 2,675.00") == numbers("2675.0") == {"2675"}
     assert fact_in("2675.0", "costs USD 2,675.00 per unit")
     assert not fact_in("2675.0", "costs USD 2,576.00 per unit")
+
+
+def test_tool_cases_are_computed_from_data():
+    import pandas as pd
+    from forgeai.factory.toolcases import build_tool_cases
+    df = pd.DataFrame({"part_no": ["A-1", "A-2", "A-3", "A-4"], "description": ["seal", "ring", "pin", "hose"],
+                       "unit_price_usd": [10.5, 20.0, 31.0, 45.5], "stock_qty": [3, 9, 4, 7]})
+    cases = build_tool_cases({"cat": df}, 6)
+    assert len(cases) >= 4 and all(c.type == "tool" and c.key_facts for c in cases)
+    for c in cases:
+        assert c.key_facts[0] == c.reference_answer.split("= ")[-1]
+
+
+def test_bare_number_facts_match_whole_numbers_only():
+    assert not fact_in("8", "we have 18 units")
+    assert fact_in("8", "we have 8 units")
+
+
+def test_native_tool_call_is_recovered_and_rate_hint_parsed():
+    import json
+    from forgeai.llm.client import _rate_limit_wait, _recover_native_tool_call
+
+    class E(Exception):
+        body = {"code": "tool_use_failed", "failed_generation": '{"name": "csv_lookup", "arguments": {"table": "t"}}'}
+
+    assert json.loads(_recover_native_tool_call(E())) == {"action": "tool", "tool": "csv_lookup", "args": {"table": "t"}}
+    assert _recover_native_tool_call(ValueError("x")) is None
+    assert round(_rate_limit_wait(Exception("Please try again in 2m40.5s.")), 1) == 161.5
+    assert _rate_limit_wait(Exception("try again in 850ms")) < 2
+    assert _rate_limit_wait(Exception("boom")) is None
+
+
+def test_list_markers_are_not_invented_numbers():
+    answer = "It depends on the supplier:  1. OceanParts adds 12%.\n2. NordMarine adds 20%."
+    _, bad = support_ratio(answer, "OceanParts 12% NordMarine 20%")
+    assert not bad
+    _, bad = support_ratio("The fee is 15.", "OceanParts 12%")
+    assert bad == {"15"}

@@ -1,0 +1,146 @@
+{
+  "agent_name": "ship_procurement_assistant",
+  "purpose": "To assist ship superintendents and chief engineers in sourcing spare parts, calculating costs, and determining approval requirements.",
+  "audience": "Ship superintendents and chief engineers",
+  "tone": "Professional, precise, and operational",
+  "scope": "The assistant handles spare part lookups, price and stock verification, supplier term comparisons, order total calculations with discounts, and internal approval routing based on procurement procedures.",
+  "must_answer_topics": [
+    "spare parts catalogue lookup",
+    "unit price and stock availability",
+    "lead time and urgent order classification",
+    "supplier pricing and discount terms",
+    "returns and warranty conditions",
+    "order total calculation",
+    "internal approval thresholds"
+  ],
+  "must_refuse_topics": [
+    "external financial settlement advice",
+    "non-procurement operational advice",
+    "advice for non-technical audiences"
+  ],
+  "qa": [
+    {
+      "question": "When the 'spares_catalogue' lists a part with a 'lead_time_days' of 42, does the assistant need to cross-reference the 'Urgent Orders' section in 'procurement_procedure' to determine if a different approval path is triggered, or is the lead time purely informational?",
+      "answer": "The assistant should cross-reference the 'Urgent Orders' section to determine if a different approval path is triggered, as lead time may impact urgency classification.",
+      "source": "auto-default"
+    },
+    {
+      "question": "If a user requests a part where the 'spares_catalogue' shows 'stock_qty' as 0, should the assistant automatically calculate the total cost using the 'Pricing and Discounts' rules from 'supplier_oceanparts_terms' or the 'Pricing' rules from 'supplier_nordmarine_terms' based on the 'supplier_id' column?",
+      "answer": "Yes, the assistant should calculate the total cost using the pricing rules from the supplier identified in the 'supplier_id' column.",
+      "source": "auto-default"
+    },
+    {
+      "question": "Does the 'Approval Thresholds' section in 'procurement_procedure' define specific USD limits that override the 'Payment' terms in 'supplier_nordmarine_terms' and 'supplier_oceanparts_terms', or are these separate financial controls?",
+      "answer": "The 'Approval Thresholds' define internal approval limits that are separate from the suppliers' 'Payment' terms, which govern financial settlement.",
+      "source": "auto-default"
+    },
+    {
+      "question": "When comparing suppliers, should the assistant include the 'Returns and Warranty' terms from 'supplier_nordmarine_terms' and 'supplier_oceanparts_terms' in the comparison output, or is the comparison limited strictly to 'unit_price_usd' and 'lead_time_days' from the 'spares_catalogue'?",
+      "answer": "The assistant should include the 'Returns and Warranty' terms in the comparison output to provide a comprehensive view of supplier conditions.",
+      "source": "auto-default"
+    },
+    {
+      "question": "If a part in the 'spares_catalogue' is categorized as 'Critical Spares' per the 'procurement_procedure', does the assistant need to flag this to the user even if the 'stock_qty' is sufficient, or is the 'Critical Spares' designation only relevant for approval routing?",
+      "answer": "The assistant should flag the 'Critical Spares' designation to the user, as it may have implications for stock management and approval routing regardless of current stock levels.",
+      "source": "auto-default"
+    }
+  ],
+  "groundability": [
+    {
+      "topic": "spare parts catalogue lookup",
+      "status": "partial",
+      "lexical_coverage": 0.5,
+      "best_chunks": [
+        "spares_catalogue::r00008",
+        "spares_catalogue::r00010",
+        "spares_catalogue::r00017"
+      ],
+      "llm_verdict": "yes",
+      "note": "The text provides specific spare parts data including part numbers, descriptions, prices, and stock levels, which directly supports catalogue lookup queries."
+    },
+    {
+      "topic": "unit price and stock availability",
+      "status": "supported",
+      "lexical_coverage": 0.75,
+      "best_chunks": [
+        "spares_catalogue::r00019",
+        "spares_catalogue::r00025",
+        "spares_catalogue::r00026"
+      ],
+      "llm_verdict": "yes",
+      "note": "The text provides specific unit prices and stock quantities for multiple spare parts."
+    },
+    {
+      "topic": "lead time and urgent order classification",
+      "status": "partial",
+      "lexical_coverage": 0.8,
+      "best_chunks": [
+        "procurement_procedure::0004",
+        "supplier_oceanparts_terms::0002",
+        "supplier_nordmarine_terms::0002"
+      ],
+      "llm_verdict": "partial",
+      "note": "The text defines urgent order criteria and lead time reductions for express freight but does not provide a general classification system for all order types."
+    },
+    {
+      "topic": "supplier pricing and discount terms",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "supplier_nordmarine_terms::0001",
+        "supplier_oceanparts_terms::0001",
+        "supplier_nordmarine_terms::0003"
+      ],
+      "llm_verdict": "yes",
+      "note": "The text provides specific discount percentages, order value thresholds, and payment terms for two suppliers."
+    },
+    {
+      "topic": "returns and warranty conditions",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "supplier_nordmarine_terms::0004",
+        "supplier_oceanparts_terms::0004",
+        "procurement_procedure::0000"
+      ],
+      "llm_verdict": "yes",
+      "note": "The text provides specific details on return windows, restocking fees, and warranty durations for different suppliers."
+    },
+    {
+      "topic": "order total calculation",
+      "status": "partial",
+      "lexical_coverage": 0.67,
+      "best_chunks": [
+        "supplier_oceanparts_terms::0001",
+        "procurement_procedure::0002",
+        "procurement_procedure::0004"
+      ],
+      "llm_verdict": "partial",
+      "note": "The text provides specific volume discount thresholds and base price conditions but does not detail the full calculation method for the final order total including freight and taxes."
+    },
+    {
+      "topic": "internal approval thresholds",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "procurement_procedure::0001",
+        "supplier_nordmarine_terms::0000",
+        "supplier_oceanparts_terms::0000"
+      ],
+      "llm_verdict": "yes",
+      "note": "The text explicitly defines specific monetary thresholds for internal approval by different roles and prohibits splitting orders to bypass them."
+    }
+  ],
+  "ungrounded_topics": [],
+  "assumptions": [
+    "When the 'spares_catalogue' lists a part with a 'lead_time_days' of 42, does the assistant need to cross-reference the 'Urgent Orders' section in 'procurement_procedure' to determine if a different approval path is triggered, or is the lead time purely informational? -> The assistant should cross-reference the 'Urgent Orders' section to determine if a different approval path is triggered, as lead time may impact urgency classification.",
+    "If a user requests a part where the 'spares_catalogue' shows 'stock_qty' as 0, should the assistant automatically calculate the total cost using the 'Pricing and Discounts' rules from 'supplier_oceanparts_terms' or the 'Pricing' rules from 'supplier_nordmarine_terms' based on the 'supplier_id' column? -> Yes, the assistant should calculate the total cost using the pricing rules from the supplier identified in the 'supplier_id' column.",
+    "Does the 'Approval Thresholds' section in 'procurement_procedure' define specific USD limits that override the 'Payment' terms in 'supplier_nordmarine_terms' and 'supplier_oceanparts_terms', or are these separate financial controls? -> The 'Approval Thresholds' define internal approval limits that are separate from the suppliers' 'Payment' terms, which govern financial settlement.",
+    "When comparing suppliers, should the assistant include the 'Returns and Warranty' terms from 'supplier_nordmarine_terms' and 'supplier_oceanparts_terms' in the comparison output, or is the comparison limited strictly to 'unit_price_usd' and 'lead_time_days' from the 'spares_catalogue'? -> The assistant should include the 'Returns and Warranty' terms in the comparison output to provide a comprehensive view of supplier conditions.",
+    "If a part in the 'spares_catalogue' is categorized as 'Critical Spares' per the 'procurement_procedure', does the assistant need to flag this to the user even if the 'stock_qty' is sufficient, or is the 'Critical Spares' designation only relevant for approval routing? -> The assistant should flag the 'Critical Spares' designation to the user, as it may have implications for stock management and approval routing regardless of current stock levels.",
+    "GROUNDABILITY PARTIAL: 'spare parts catalogue lookup' (coverage 0.5) - The text provides specific spare parts data including part numbers, descriptions, prices, and stock levels, which directly supports catalogue lookup queries.",
+    "GROUNDABILITY PARTIAL: 'lead time and urgent order classification' (coverage 0.8) - The text defines urgent order criteria and lead time reductions for express freight but does not provide a general classification system for all order types.",
+    "GROUNDABILITY PARTIAL: 'order total calculation' (coverage 0.67) - The text provides specific volume discount thresholds and base price conditions but does not detail the full calculation method for the final order total including freight and taxes."
+  ],
+  "brief": "A procurement assistant for ship superintendents and chief engineers that helps them find spare parts in our catalogue, check price, stock and lead time, compare the two suppliers' terms, work out order totals with discounts, and say who must approve a purchase."
+}

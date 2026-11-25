@@ -155,7 +155,11 @@ def chat(
             break
         if not q:
             continue
-        r = agent.ask(q, history)
+        try:
+            r = agent.ask(q, history)
+        except Exception as exc:  # noqa: BLE001 - keep the session alive during an outage
+            console.print(f"[red]model unavailable:[/] {str(exc)[:200]}")
+            continue
         console.print(f"[bold green]agent>[/] {r.answer}")
         if r.citations:
             console.print(f"[dim]sources: {', '.join(r.citations)}[/]")

@@ -3,7 +3,7 @@
   "docs": "demos/spares_docs",
   "models": {
     "gen": "qwen/qwen3.8-27b",
-    "judge": "qwen/qwen3.8-27b",
+    "judge": "openai/gpt-oss-120b",
     "agent": "qwen/qwen3.8-27b"
   },
   "usage": {
@@ -32,42 +32,58 @@
       "total_tokens": 0
     },
     "evalgen": {
-      "calls": 20,
-      "cache_hits": 20,
-      "prompt_tokens": 0,
-      "completion_tokens": 0,
-      "seconds": 0.0,
-      "total_tokens": 0
+      "calls": 14,
+      "cache_hits": 13,
+      "prompt_tokens": 360,
+      "completion_tokens": 90,
+      "seconds": 2.8840267999999014,
+      "total_tokens": 450
     },
     "agent": {
-      "calls": 24,
-      "cache_hits": 24,
-      "prompt_tokens": 0,
-      "completion_tokens": 0,
-      "seconds": 0.0,
-      "total_tokens": 0
+      "calls": 112,
+      "cache_hits": 1,
+      "prompt_tokens": 167210,
+      "completion_tokens": 6367,
+      "seconds": 122.0358855000004,
+      "total_tokens": 173577
     },
     "judge": {
-      "calls": 10,
+      "calls": 36,
       "cache_hits": 10,
-      "prompt_tokens": 0,
-      "completion_tokens": 0,
-      "seconds": 0.0,
-      "total_tokens": 0
+      "prompt_tokens": 20932,
+      "completion_tokens": 2004,
+      "seconds": 18.06060259999913,
+      "total_tokens": 22936
+    },
+    "agent_rewrite": {
+      "calls": 48,
+      "cache_hits": 24,
+      "prompt_tokens": 2026,
+      "completion_tokens": 352,
+      "seconds": 4.045236400000249,
+      "total_tokens": 2378
+    },
+    "optimize": {
+      "calls": 1,
+      "cache_hits": 0,
+      "prompt_tokens": 291,
+      "completion_tokens": 33,
+      "seconds": 0.2329525999998623,
+      "total_tokens": 324
     },
     "_total": {
-      "calls": 67,
-      "cache_hits": 67,
-      "total_tokens": 0,
-      "seconds": 0.0
+      "calls": 224,
+      "cache_hits": 61,
+      "total_tokens": 199665,
+      "seconds": 147.26
     }
   },
-  "seconds": 29.9,
+  "seconds": 1411.0,
   "notes": [
     "intake: 5 questions, 100% reference real document terms"
   ],
   "seed": 7,
-  "final_score": 1.0,
+  "final_score": 0.9583,
   "tools": [
     "csv_lookup",
     "calculator"

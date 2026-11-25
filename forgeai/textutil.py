@@ -22,6 +22,8 @@ REFUSAL_PATTERNS = [
 ]
 _REFUSAL_RE = re.compile("|".join(REFUSAL_PATTERNS), re.I)
 
+_LIST_MARKER = re.compile(r"(?m)(?:^|(?<=:)|(?<=[.;]\s))\s*\d{1,2}[.)](?=\s)")  # "1. ", "2) " enumeration, not data
+
 _STOP = set(
     "a an the of to in on for and or is are was were be been by with as at from that this it its "
     "what which who how when where why do does did can i my me we you your they their there not no "
@@ -68,6 +70,8 @@ def fact_in(fact: str, text: str) -> bool:
     f, t = norm(fact), norm(text)
     if not f:
         return True
+    if _NUM.fullmatch(f):  # a bare number must match a whole number by value ("8" is not inside "18")
+        return _canon_num(f) in numbers(t)
     if f in t:
         return True
     fn = numbers(f)
@@ -87,5 +91,5 @@ def support_ratio(answer: str, context: str, question: str = "") -> tuple[float,
     ans_t = content_tokens(answer)
     ref = content_tokens(context) | content_tokens(question)
     ratio = (len(ans_t & ref) / len(ans_t)) if ans_t else 1.0
-    bad = numbers(answer) - numbers(context) - numbers(question)
+    bad = numbers(_LIST_MARKER.sub("", answer)) - numbers(context) - numbers(question)
     return ratio, bad

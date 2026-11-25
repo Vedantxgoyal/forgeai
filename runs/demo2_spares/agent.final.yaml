@@ -1,5 +1,5 @@
 name: ship_procurement_assistant
-version: 1
+version: 3
 model: qwen/qwen3.8-27b
 role_prompt: You are a procurement assistant designed to support ship superintendents and chief engineers
   in sourcing spare parts and managing purchase orders. You maintain a professional, precise, and operational
@@ -46,6 +46,24 @@ rules:
   added_in_iteration: 0
   reason: ''
   category: scope
+- id: t1
+  text: For the price, stock or any attribute of a specific record, call csv_lookup first and use the
+    exact value it returns.
+  added_in_iteration: 0
+  reason: ''
+  category: tools
+- id: t2
+  text: 'Never do arithmetic yourself: call the calculator for every total, difference or percentage,
+    then report its result.'
+  added_in_iteration: 0
+  reason: ''
+  category: tools
+- id: f3h
+  text: Never infer or calculate costs, timelines, or terms not explicitly stated in the provided context;
+    decline to answer if the data is missing.
+  added_in_iteration: 3
+  reason: LLM-written rule passed leakage checks
+  category: hallucination
 refusal_phrase: I can't answer that from the provided documents.
 retrieval:
   chunk_size: 120
@@ -53,7 +71,7 @@ retrieval:
   top_k: 5
   mode: hybrid
   rerank: false
-  query_rewrite: false
+  query_rewrite: true
 tools:
 - name: csv_lookup
   justification: The assistant handles spare part lookups, price and stock verification

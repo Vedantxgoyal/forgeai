@@ -82,7 +82,7 @@ def run_factory(brief: str, docs: str | Path, out: str | Path, *, settings: Sett
     save_agent_def(d0, out / "03_agent.v1.yaml")
 
     on_event("[5/7] generating verified eval cases")
-    cases, gstats = evalgen.generate_cases(client, index, req, target=n_cases, seed=s.seed, model=s.gen_model)
+    cases, gstats = evalgen.generate_cases(client, index, req, target=n_cases, seed=s.seed, model=s.gen_model, tables=load.tables)
     _dump(out / "04_evals.json", {"stats": gstats, "cases": [c.model_dump() for c in cases]})
     on_event(f"      {len(cases)} cases kept {gstats['by_type']} ({gstats['dropped_unverified']} unverified dropped)")
     if len(cases) < 20:

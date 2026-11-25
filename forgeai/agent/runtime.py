@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from pathlib import Path
 
@@ -17,7 +18,7 @@ import yaml
 from forgeai.config import Settings, get_settings
 from forgeai.ingest.chunker import ChunkParams, chunk_documents
 from forgeai.ingest.loaders import LoadResult, load_folder
-from forgeai.llm.client import LLMClient
+from forgeai.llm.client import LLMClient, LLMUnavailable
 from forgeai.llm.structured import generate_structured
 from forgeai.retrieval.embed import get_embedder
 from forgeai.retrieval.index import HybridIndex, Reranker, SearchParams
@@ -82,6 +83,9 @@ class Agent:
         if not self.tools:
             return 'No tools are available. Always set action="answer".'
         specs = json.dumps([t.spec() for t in self.tools.values()], ensure_ascii=False)
+        if "csv_lookup" in self.tools:
+            tables = "; ".join(f"{name}(columns: {', '.join(map(str, df.columns))})" for name, df in self.ctx.tables.items())
+            specs += f" | Tables for csv_lookup: {tables}"
         return 'TOOLS (use at most one per step: action="tool", tool=<name>, args={...}; you then see the result):\n' + specs
 
     def ask(self, question: str, history: list[dict] | None = None) -> AgentResponse:
@@ -120,7 +124,9 @@ class Agent:
                     ctx_text += f"\n\n[tool:{turn.tool}] {text}"
                     continue
                 break
-        except Exception as exc:  # noqa: BLE001 - never crash the chat loop
+        except Exception as exc:  # noqa: BLE001 - a bad model reply must not crash the chat loop
+            if isinstance(exc, LLMUnavailable) and re.search(r"RateLimit|Connection|Timeout|InternalServer", str(exc)):
+                raise  # an outage is not agent behaviour: never let it be scored as a refusal
             err = f"{type(exc).__name__}: {exc}"[:200]
             turn = fallback
         if turn.action == "tool":
