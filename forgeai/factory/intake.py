@@ -56,7 +56,6 @@ def make_questions(client: LLMClient, brief: str, profile: CorpusProfile, model:
         q.grounded_in = grounded_terms(q.question, vocab)
     generic = [q for q in qs.questions if not q.grounded_in]
     if generic and not res.used_fallback:
-        # one targeted retry telling the model which questions were generic
         feedback = (
             "These questions were generic (they mention nothing from the documents): "
             + " | ".join(q.question for q in generic)

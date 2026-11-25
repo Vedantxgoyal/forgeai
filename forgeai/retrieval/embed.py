@@ -77,10 +77,9 @@ class SentenceTransformerEmbedder:
 
         self._model = SentenceTransformer(model_name, device="cpu")
         self.name = f"st:{model_name}"
-        # bge models expect an instruction prefix on queries only.
         self._query_prefix = "Represent this sentence for searching relevant passages: " if "bge" in model_name else ""
 
-    def fit(self, corpus):  # pretrained; nothing to fit
+    def fit(self, corpus):
         pass
 
     def embed(self, texts):
@@ -97,7 +96,6 @@ class OllamaEmbedder:
         self._http = httpx.Client(base_url=base_url, timeout=timeout)
         self._model = model
         self.name = f"ollama:{model}"
-        # Probe once so 'auto' can fall through quickly if Ollama is absent.
         r = self._http.post("/api/embed", json={"model": model, "input": ["probe"]})
         r.raise_for_status()
 
@@ -136,7 +134,7 @@ class TfidfLsaEmbedder:
         corpus = [t for t in corpus if t.strip()] or ["empty corpus placeholder"]
         try:
             m = self._vec.fit_transform(corpus)
-        except ValueError:  # only stop words / symbols: fall back to character n-grams
+        except ValueError:
             self._vec = TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 4), sublinear_tf=True)
             m = self._vec.fit_transform(corpus)
         n_comp = min(256, m.shape[0] - 1, m.shape[1] - 1)
@@ -170,11 +168,10 @@ def get_embedder(settings: Settings, cache: bool = True) -> Embedder:
             else:
                 emb = TfidfLsaEmbedder()
             break
-        except Exception as exc:  # noqa: BLE001 - fall through to next backend
+        except Exception as exc:
             log.info("embedder '%s' unavailable: %s", backend, str(exc)[:160])
     assert emb is not None
     log.info("using embedder %s", emb.name)
-    # Corpus-fitted embedders must not be cached across corpora.
     if cache and settings.use_cache and not isinstance(emb, TfidfLsaEmbedder):
         return _Cached(emb, settings.cache_dir)
     return emb

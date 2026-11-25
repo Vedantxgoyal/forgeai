@@ -64,9 +64,6 @@ class ChatTransport(Protocol):
     ) -> Completion: ...
 
 
-# --------------------------------------------------------------------------- #
-# Metering
-# --------------------------------------------------------------------------- #
 @dataclass
 class StageUsage:
     calls: int = 0
@@ -107,20 +104,17 @@ class UsageMeter:
         return out
 
 
-# --------------------------------------------------------------------------- #
-# Real transport
-# --------------------------------------------------------------------------- #
 class OpenAICompatTransport:
     """Talks to Ollama / Groq / vLLM / LM Studio through the OpenAI SDK."""
 
     def __init__(self, settings: Settings):
-        from openai import OpenAI  # local import keeps tests dependency-light
+        from openai import OpenAI
 
         self._client = OpenAI(
             base_url=settings.llm_base_url,
             api_key=settings.llm_api_key,
             timeout=settings.request_timeout_s,
-            max_retries=0,  # retries are handled (and logged) by LLMClient
+            max_retries=0,
         )
         self._json_mode_supported = True
 
@@ -133,14 +127,13 @@ class OpenAICompatTransport:
             seed=seed,
         )
         if "gpt-oss" in model:
-            # Reasoning models spend hidden tokens thinking; keep it short and leave headroom for the answer.
             kwargs["extra_body"] = {"reasoning_effort": "low"}
             kwargs["max_tokens"] = max(max_tokens, 1500)
         if json_mode and self._json_mode_supported:
             kwargs["response_format"] = {"type": "json_object"}
         try:
             resp = self._client.chat.completions.create(**kwargs)
-        except Exception as exc:  # some servers reject response_format/seed
+        except Exception as exc:
             recovered = _recover_native_tool_call(exc)
             if recovered is not None:
                 return Completion(text=recovered)
@@ -171,17 +164,21 @@ def _recover_native_tool_call(exc: Exception) -> str | None:
         name = str(call["name"]).split(".")[-1]
         args = call.get("arguments") or {}
         args = json.loads(args) if isinstance(args, str) else args
-        if "action" in args:  # the model wrapped our own answer object in a fake function call
+        if "action" in args:
             return json.dumps(args)
         return json.dumps({"action": "tool", "tool": name, "args": args})
     except (ValueError, KeyError, TypeError):
         return None
 
 
-# Only the provider's own wording: matching loose phrases like "per day" would fire on document text.
 _UNAVAILABLE = re.compile(
     r"(tokens|requests) per day|model_not_found|The model `[^`]+` does not exist|model_decommissioned", re.I
 )
+
+
+def _redact(text: str) -> str:
+    """Provider errors name the account; they end up in run artifacts, which get published."""
+    return re.sub(r"org_[A-Za-z0-9]{10,}", "org_REDACTED", text)
 
 
 def _rate_limit_wait(exc: Exception) -> float | None:
@@ -208,9 +205,6 @@ def _is_transient(exc: Exception) -> bool:
     return name in transient or "rate limit" in str(exc).lower()
 
 
-# --------------------------------------------------------------------------- #
-# Client
-# --------------------------------------------------------------------------- #
 class LLMClient:
     def __init__(
         self,
@@ -222,8 +216,8 @@ class LLMClient:
         self.settings = settings or get_settings()
         self.transport = transport or OpenAICompatTransport(self.settings)
         self.meter = meter or UsageMeter()
-        self.substitutions: dict[str, int] = {}  # "wanted -> used": calls answered by a stand-in model
-        self._exhausted: dict[str, float] = {}  # model -> time before which it is not tried again
+        self.substitutions: dict[str, int] = {}
+        self._exhausted: dict[str, float] = {}
         self._local: ChatTransport | None = None
         self._injected = transport is not None
         self._cache = None
@@ -232,7 +226,6 @@ class LLMClient:
 
             self._cache = diskcache.Cache(str(self.settings.cache_dir / "llm"))
 
-    # -- public ------------------------------------------------------------
     def chat(
         self,
         messages: list[Message],
@@ -264,12 +257,11 @@ class LLMClient:
                 continue
             self.meter.record(stage, completion, seconds, cached=False)
             self._note_substitution(wanted, candidate)
-            if self._cache is not None and completion.text.strip():  # never cache empty replies
+            if self._cache is not None and completion.text.strip():
                 self._cache[key] = completion
             return completion.text
         raise last or QuotaExhausted(f"RateLimitError: every model in the chain for {wanted} is cooling down")
 
-    # -- internals ---------------------------------------------------------
     def _chain(self, wanted: str) -> list[str]:
         extra = [m.strip() for m in self.settings.fallback_models.split(",") if m.strip()]
         return [wanted, *[m for m in extra if m != wanted]]
@@ -327,13 +319,14 @@ class LLMClient:
                     seed=self.settings.seed,
                 )
                 return c, time.perf_counter() - t0
-            except Exception as exc:  # noqa: BLE001 - classified below
+            except Exception as exc:
                 last = exc
                 hint = _rate_limit_wait(exc)
                 if _UNAVAILABLE.search(str(exc)) or (hint or 0) > 180:
-                    raise QuotaExhausted(f"LLM model {model} unavailable: {exc!r}", retry_after=hint or 3600.0) from exc
+                    raise QuotaExhausted(
+                        f"LLM model {model} unavailable: {_redact(repr(exc))}", retry_after=hint or 3600.0
+                    ) from exc
                 if hint is not None and hint <= 180 and rate_waits < 60:
-                    # A per-minute quota is not a failure: wait as asked without spending a retry.
                     rate_waits += 1
                     attempt -= 1
                     log.warning("rate limited; waiting %.0fs as requested", hint)
@@ -344,4 +337,4 @@ class LLMClient:
                 wait = min(2**attempt, 20)
                 log.warning("LLM call failed (%s), retry %d/%d in %ss", type(exc).__name__, attempt, attempts - 1, wait)
                 time.sleep(wait)
-        raise LLMUnavailable(f"LLM call failed after {attempts} attempt(s): {last!r}") from last
+        raise LLMUnavailable(f"LLM call failed after {attempts} attempt(s): {_redact(repr(last))}") from last

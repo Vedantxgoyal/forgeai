@@ -42,7 +42,7 @@ def tokenize(text: str) -> list[str]:
         if tok in _STOP:
             continue
         out.append(tok)
-        if re.search(r"[-_./]", tok):  # also index the parts of compound ids
+        if re.search(r"[-_./]", tok):
             out.extend(p for p in re.split(r"[-_./]", tok) if p and p not in _STOP)
     return out
 
@@ -50,7 +50,7 @@ def tokenize(text: str) -> list[str]:
 @dataclass
 class Hit:
     chunk: Chunk
-    score: float  # final score used for ordering (RRF or rerank)
+    score: float
     dense_rank: int | None = None
     dense_score: float | None = None
     bm25_rank: int | None = None
@@ -73,9 +73,9 @@ class Hit:
 @dataclass
 class SearchParams:
     top_k: int = 5
-    mode: str = "hybrid"  # dense | bm25 | hybrid
+    mode: str = "hybrid"
     rerank: bool = False
-    candidates: int = 30  # pool size per retriever before fusion / rerank
+    candidates: int = 30
 
 
 class Reranker:
@@ -93,7 +93,7 @@ class Reranker:
                 from sentence_transformers import CrossEncoder
 
                 self._model = CrossEncoder(self.model_name, device="cpu")
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:
                 self.available = False
                 self.error = str(exc)[:200]
                 log.warning("reranker unavailable (%s); rerank requests become no-ops", self.error)
@@ -130,7 +130,6 @@ class HybridIndex:
     def get(self, chunk_id: str) -> Chunk | None:
         return self._by_id.get(chunk_id)
 
-    # ------------------------------------------------------------------ #
     def _dense(self, query: str, n: int) -> list[tuple[int, float]]:
         if not len(self.chunks):
             return []

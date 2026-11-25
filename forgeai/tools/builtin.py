@@ -14,9 +14,6 @@ from rapidfuzz import fuzz, process
 
 from forgeai.tools.base import CapabilityCard, Tool, ToolInputError
 
-# --------------------------------------------------------------------------- #
-# Calculator - safe AST evaluation (no eval/exec, bounded exponent)
-# --------------------------------------------------------------------------- #
 _BIN = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -44,7 +41,6 @@ _MAX_LEN = 300
 def safe_eval(expr: str) -> float | int:
     if len(expr) > _MAX_LEN:
         raise ToolInputError("expression too long")
-    # '^' as power and thousands separators ('1,250.50') are common model habits.
     expr = re.sub(r"(?<=\d),(?=\d{3}(?!\d))", "", expr.replace("^", "**"))
     try:
         tree = ast.parse(expr, mode="eval")
@@ -98,9 +94,6 @@ class Calculator(Tool):
         return {"expression": expression, "result": safe_eval(expression)}
 
 
-# --------------------------------------------------------------------------- #
-# CSV lookup
-# --------------------------------------------------------------------------- #
 class CsvLookup(Tool):
     name = "csv_lookup"
     card = CapabilityCard(
@@ -177,9 +170,6 @@ class CsvLookup(Tool):
         return {"table": table, "matched": int(len(out)), "rows": out.head(limit).to_dict(orient="records")}
 
 
-# --------------------------------------------------------------------------- #
-# Weather (open-meteo, keyless)
-# --------------------------------------------------------------------------- #
 class Weather(Tool):
     name = "weather"
     card = CapabilityCard(
@@ -236,9 +226,6 @@ class Weather(Tool):
         }
 
 
-# --------------------------------------------------------------------------- #
-# Current date
-# --------------------------------------------------------------------------- #
 class CurrentDate(Tool):
     name = "current_date"
     card = CapabilityCard(

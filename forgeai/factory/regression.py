@@ -56,7 +56,7 @@ def staleness(case: EvalCase, new: LoadResult) -> list[str]:
     """Reasons why this case's expectation no longer matches the new documents (empty = still valid)."""
     if case.expected_refusal:
         return []
-    if case.evidence:  # computed answers: compare the exact table cells they were derived from
+    if case.evidence:
         reasons = []
         for e in case.evidence:
             df = new.tables.get(e["table"])

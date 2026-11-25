@@ -60,7 +60,7 @@ class _Rule(BaseModel):
 @dataclass
 class Change:
     category: str
-    kind: str  # retrieval | rule | none
+    kind: str
     detail: str
     addresses: list[str] = field(default_factory=list)
     rejected_reason: str = ""
@@ -106,7 +106,6 @@ def run_exam(
         return list(ex.map(one, cases))
 
 
-# ---------------------------------------------------------------------- #
 def _rule_is_clean(rule: str, cases: list[EvalCase], failing: list[CaseResult]) -> str:
     """Return '' if OK, else the reason the rule is rejected."""
     if not 6 <= len(rule.split()) <= 45:
@@ -152,7 +151,7 @@ def _new_rule(
             client, _Rule, [{"role": "user", "content": prompt}], model=model, stage="optimize", max_tokens=200, retries=1
         )
         cand = res.value.rule.strip()
-    except Exception:  # noqa: BLE001
+    except Exception:
         cand = ""
     why = _rule_is_clean(cand, all_cases, failing) if cand else "LLM produced no valid rule"
     if why:
@@ -320,7 +319,7 @@ def optimize(
                 else:
                     sym = ""
                 text, how = _new_rule(client, settings.gen_model, req, cat, fl, cases, it, sym)
-                if norm(text) in rejected_rules:  # same rule was already tried and rolled back
+                if norm(text) in rejected_rules:
                     text, how = FALLBACK_RULES[cat], "previous LLM rule was rolled back; tried vetted template rule instead"
                 if norm(text) in rejected_rules:
                     changes.append(
@@ -345,7 +344,7 @@ def optimize(
         h_new, h_old = score(res, "holdout"), score(best_res, "holdout")
         n_h = max(1, sum(1 for r in res if r.split == "holdout"))
         regress = d_new < d_old or (h_new < h_old - 1.5 / n_h)
-        accepted = not regress and (d_new > d_old or h_new > h_old)  # a change must earn its place
+        accepted = not regress and (d_new > d_old or h_new > h_old)
         note = (
             "accepted"
             if accepted

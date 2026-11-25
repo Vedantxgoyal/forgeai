@@ -1,4 +1,3 @@
-# Hand-written baseline for the HR demo. Edit this in your own words before comparing (see README.md).
 name: hr_handwritten
 version: 1
 model: ''

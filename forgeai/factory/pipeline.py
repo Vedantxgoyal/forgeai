@@ -99,7 +99,7 @@ def run_factory(
             _dump(out / "02_requirements.generated.json", req.model_dump())
             topics_changed = decision.must_answer_topics != req.must_answer_topics
             req = decision
-            if topics_changed:  # a person may add topics: the guard has the same duty towards them
+            if topics_changed:
                 req = req.model_copy(update={"ungrounded_topics": [], "groundability": []})
                 req = guard.run_guard(client, index, req, s.gen_model, extra_evidence=evidence)
             _dump(out / "02_requirements.json", req.model_dump())
@@ -119,7 +119,6 @@ def run_factory(
         notes.append(f"WARNING: only {len(cases)} verified cases could be generated (<20 target); score is less reliable.")
 
     on_event("[6/7] baseline exam + optimizer loop")
-    # the index used for the agent must follow the agent's own chunking (same as probe by construction)
     agent_index = (
         build_index(load, d0, s)
         if (d0.retrieval.chunk_size, d0.retrieval.chunk_overlap) != (cp.chunk_size, cp.chunk_overlap)

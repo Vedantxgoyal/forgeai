@@ -30,7 +30,7 @@ from forgeai.textutil import content_tokens, fact_in, norm
 
 log = logging.getLogger(__name__)
 MIN_CHUNK_WORDS = 15
-MIN_CASES = 20  # the assignment's floor
+MIN_CASES = 20
 MAX_ROUNDS = 3
 
 STYLE = {
@@ -78,7 +78,7 @@ def _qa_for_chunk(client, model, chunk: Chunk, audience: str, style_key: str, av
         res = generate_structured(
             client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=500, retries=1
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         log.info("evalgen skipped chunk %s: %s", chunk.chunk_id, exc)
         return None
     return res.value
@@ -134,9 +134,6 @@ def generate_cases(
         cases.append(c)
         return True
 
-    # ---- answerable + paraphrase (single chunk) ---- #
-    # Passages are visited in rounds. A small corpus runs out of passages before the exam is big enough, so later
-    # rounds ask the same passage for a DIFFERENT detail (the questions already used are listed in the prompt).
     pool = _stratified_sample(chunks, len(chunks), seed)
     asked: dict[str, list[str]] = defaultdict(list)
     queue = [(rnd, ch) for rnd in range(MAX_ROUNDS) for ch in pool]
@@ -172,7 +169,6 @@ def generate_cases(
     for kind in order:
         single(kind)
 
-    # ---- multi-document ---- #
     if n_multi:
         base = [c for c in _stratified_sample(chunks, n_multi * 4, seed + 2)]
         made = 0
@@ -201,7 +197,7 @@ def generate_cases(
                 qa = generate_structured(
                     client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=600, retries=1
                 ).value
-            except Exception:  # noqa: BLE001
+            except Exception:
                 stats["dropped_unverified"] += 1
                 continue
             in_a = any(fact_in(f, a.body) for f in qa.key_facts)
@@ -222,7 +218,6 @@ def generate_cases(
             ):
                 made += 1
 
-    # ---- ambiguous: one underspecified question that two passages answer differently ---- #
     made = 0
     for a in _stratified_sample(chunks, n_amb * 5, seed + 3):
         if made >= n_amb:
@@ -247,11 +242,10 @@ def generate_cases(
                 max_tokens=500,
                 retries=1,
             ).value
-        except Exception:  # noqa: BLE001
+        except Exception:
             stats["dropped_unverified"] += 1
             continue
         fa, fb = raw.facts_a[0].strip(), raw.facts_b[0].strip()
-        # each reading must be verbatim in its own passage, differ from the other, and not be given away by the question
         if (
             not (fact_in(fa, a.body) and fact_in(fb, b.body) and norm(fa) != norm(fb))
             or norm(fa) in norm(raw.question)
@@ -272,7 +266,6 @@ def generate_cases(
         ):
             made += 1
 
-    # ---- refusals ---- #
     terms = ", ".join(sorted({c.doc_id for c in chunks}))
     n_off = max(2, n_refuse // 2)
     n_near = n_refuse - n_off
@@ -310,7 +303,7 @@ def generate_cases(
                 max_tokens=500,
                 retries=1,
             ).value.questions
-        except Exception:  # noqa: BLE001
+        except Exception:
             qs = []
         made = 0
         for q in qs:
@@ -319,24 +312,21 @@ def generate_cases(
             stats["proposed"] += 1
             cov = _answerability(index, q)
             limit = 0.45 if kind == "out_of_scope" else 0.75
-            if cov > limit:  # the corpus seems to answer it -> not a valid refusal case
+            if cov > limit:
                 stats["dropped_answerable_refusal"] += 1
                 continue
             if add(EvalCase(id=_case_id(kind, q), type=kind, question=q.strip(), expected_refusal=True)):
                 made += 1
 
-    # ---- tool cases: expected values computed in Python from the tables ---- #
     for c in tool_cases:
         stats["proposed"] += 1
-        cases.append(c)  # near-identical wording is intentional (different rows), so no token de-dup
+        cases.append(c)
 
-    # ---- top-up: other generators can fall short, the exam must not ---- #
     floor = min(target, MIN_CASES + 2)
     turn = 0
     while len(cases) < floor and single("paraphrase" if turn % 3 == 2 else "answerable"):
         turn += 1
 
-    # ---- stratified dev / holdout split ---- #
     by_type: dict[str, list[EvalCase]] = defaultdict(list)
     for c in cases:
         by_type[c.type].append(c)

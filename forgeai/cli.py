@@ -117,7 +117,7 @@ def ping():
                 [{"role": "user", "content": "Reply with the single word: ok"}], model=model, max_tokens=5, stage="ping"
             )
             console.print(f"[green]OK[/] {label:9} {model}: {out.strip()[:30]!r}")
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             console.print(f"[red]FAIL[/] {label:9} {model}: {exc}")
 
 
@@ -167,7 +167,7 @@ def run(
             try:
                 changed = yaml.safe_load(path.read_text(encoding="utf-8"))
                 return Requirements.model_validate({**req.model_dump(), **changed})
-            except Exception as exc:  # noqa: BLE001 - let the reviewer fix the file
+            except Exception as exc:
                 console.print(f"[red]The file is not valid:[/] {str(exc)[:300]}")
 
     run_factory(
@@ -235,7 +235,7 @@ def chat(
             continue
         try:
             r = agent.ask(q, history)
-        except Exception as exc:  # noqa: BLE001 - keep the session alive during an outage
+        except Exception as exc:
             console.print(f"[red]model unavailable:[/] {str(exc)[:200]}")
             continue
         console.print(f"[bold green]agent>[/] {r.answer}")

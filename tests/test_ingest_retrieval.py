@@ -17,7 +17,7 @@ def test_load_folder_mixed_formats(corpus):
     assert ids["travel"].n_pages == 1 and "Economy class" in ids["travel"].text
     assert any(b.is_heading and b.text == "Code of Conduct" for b in ids["conduct"].blocks)
     assert any(f == "image.png" for f, _ in res.skipped)
-    assert not any(".hidden" in f for f, _ in res.skipped)  # hidden files silently ignored
+    assert not any(".hidden" in f for f, _ in res.skipped)
 
 
 def test_duplicate_files_are_skipped(corpus):
@@ -60,7 +60,7 @@ def test_heading_detection(line, expected):
 
 def test_chunks_respect_sections_size_and_overlap(tmp_path):
     sentence = "Rule {i} says staff must follow procedure number {i} carefully at all times."
-    body = " ".join(sentence.format(i=i) for i in range(60))  # ~780 words
+    body = " ".join(sentence.format(i=i) for i in range(60))
     doc = Document(
         doc_id="pol",
         path=tmp_path / "x",
@@ -72,7 +72,6 @@ def test_chunks_respect_sections_size_and_overlap(tmp_path):
     assert chunks[-1].section == "Section B" and chunks[-1].body == "Short rule."
     a = [c for c in chunks if c.section == "Section A"]
     assert len(a) >= 6
-    # overlap: the tail of chunk n reappears at the head of chunk n+1
     assert a[0].body.split()[-5:] == a[1].body.split()[:20][-5:] or set(a[0].body.split()[-10:]) & set(a[1].body.split()[:25])
     assert chunks[0].text.startswith("[pol > Section A]")
 

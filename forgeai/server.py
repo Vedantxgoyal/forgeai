@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parent.parent
 RUNS = ROOT / "runs"
 DIST = ROOT / "web" / "dist"
 _NAME = re.compile(r"^[A-Za-z0-9_-]{1,60}$")
-os.chdir(ROOT)  # .env, the LLM cache and relative document paths resolve against the project folder
+os.chdir(ROOT)
 _ALLOWED = {".pdf", ".docx", ".csv", ".tsv", ".xlsx", ".md", ".txt", ".html", ".htm"}
 MAX_UPLOAD = 15 * 1024 * 1024
 MAX_TOTAL_UPLOAD = 40 * 1024 * 1024
@@ -68,7 +68,6 @@ def require_builder(x_access_code: str = Header(default="")) -> None:
 
 
 def limit_chat(request: Request) -> None:
-    # behind a hosting proxy the client address arrives in X-Forwarded-For (last hop is the proxy's own)
     forwarded = request.headers.get("x-forwarded-for", "")
     who = forwarded.split(",")[0].strip() if PUBLIC and forwarded else (request.client.host if request.client else "?")
     now = time.time()
@@ -162,7 +161,7 @@ def chat(name: str, body: ChatIn):
             if m.get("role") in ("user", "assistant")
         ]
         r = _agents[name][1].ask(question, history)
-    except Exception as exc:  # noqa: BLE001 - report the reason (usually a model quota) to the page
+    except Exception as exc:
         raise HTTPException(503, f"{type(exc).__name__}: {str(exc)[:300]}") from exc
     return r.model_dump(exclude={"context_text"})
 
@@ -193,7 +192,7 @@ def _build(job: dict, brief: str, docs: Path, out: Path, cases: int, review: boo
         if stage:
             job["stage"] = int(stage.group(1))
 
-    with _build_lock:  # one build at a time: free-tier rate limits make parallel builds pointless
+    with _build_lock:
         job["status"] = "running"
         try:
             s = get_settings()
@@ -211,7 +210,7 @@ def _build(job: dict, brief: str, docs: Path, out: Path, cases: int, review: boo
             )
             (out / "docs_path.txt").write_text(str(docs), encoding="utf-8")
             job["status"] = "done"
-        except BaseException as exc:  # noqa: BLE001 - SystemExit included: show the reason on the page
+        except BaseException as exc:
             job["status"], job["error"] = "failed", f"{type(exc).__name__}: {str(exc)[:400]}"
 
 

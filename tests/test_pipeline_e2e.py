@@ -143,8 +143,8 @@ def test_factory_end_to_end(tmp_path):
     ):
         assert (out / f).exists(), f
     req = res["requirements"]
-    assert "salary bands for engineers" in req.ungrounded_topics  # groundability guard
-    assert res["final"].tools == []  # fake tool justification was not in the brief -> dropped
+    assert "salary bands for engineers" in req.ungrounded_topics
+    assert res["final"].tools == []
     assert res["final"].dropped_tools and res["final"].dropped_tools[0]["tool"] == "weather"
     evals = json.loads((out / "04_evals.json").read_text(encoding="utf-8"))
     types = {c["type"] for c in evals["cases"]}

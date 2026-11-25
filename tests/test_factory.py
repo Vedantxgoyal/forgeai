@@ -54,15 +54,12 @@ def test_judge_pass_and_hallucination():
 
 
 def test_judge_refusal_classes():
-    # facts in context but agent refused -> wrong refusal
     r = judge_case(NoLLM(), "m", case(), resp("I can't answer that.", refused=True), use_llm=False)
     assert r.failure == "wrong_refusal"
-    # facts not retrieved -> retrieval miss
     r = judge_case(
         NoLLM(), "m", case(), resp("I can't answer that.", refused=True, ctx="unrelated text about travel"), use_llm=False
     )
     assert r.failure == "retrieval_miss"
-    # must-refuse question answered -> hallucination; refused -> pass
     oos = case(type="out_of_scope", expected_refusal=True, key_facts=[])
     assert judge_case(NoLLM(), "m", oos, resp("Paris is the capital."), use_llm=False).failure == "hallucination"
     assert judge_case(NoLLM(), "m", oos, resp("no", refused=True), use_llm=False).passed
@@ -223,7 +220,7 @@ def test_quota_exhausted_model_falls_back_and_is_reported():
     c = LLMClient(s, transport=T(), use_cache=False)
     assert c.chat([{"role": "user", "content": "hi"}], model="big") == "hello"
     assert c.chat([{"role": "user", "content": "hi2"}], model="big") == "hello"
-    assert T.calls == ["big", "small", "small"]  # the exhausted model is not retried while cooling down
+    assert T.calls == ["big", "small", "small"]
     assert c.substitutions == {"big -> small@local": 2}
 
 
@@ -264,3 +261,9 @@ def test_stale_cases_are_detected_from_changed_cells():
     assert staleness(case_, same) == []
     changed = df.assign(unit_price_usd=["99.0", "98.0"])
     assert "changed" in staleness(case_, LoadResult([Document("cat", None, "table", table=changed)], []))[0]
+
+
+def test_account_id_is_redacted_from_errors():
+    from forgeai.llm.client import _redact
+
+    assert _redact("limit for organization `org_01abcdefghijklmnop` hit") == "limit for organization `org_REDACTED` hit"

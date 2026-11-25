@@ -64,7 +64,6 @@ class Agent:
         s = get_settings()
         return cls(load_agent_def(definition), load_folder(docs), client or LLMClient(s), s)
 
-    # ------------------------------------------------------------------ #
     def _retrieval_query(self, question: str, history: list[dict]) -> tuple[str, str]:
         if not self.d.retrieval.query_rewrite:
             return question, ""
@@ -80,7 +79,7 @@ class Agent:
         try:
             q = self.client.chat(msgs, model=self.model, max_tokens=60, stage="agent_rewrite").strip().strip('"')
             return (q if 3 <= len(q) <= 300 else question), q
-        except Exception:  # noqa: BLE001
+        except Exception:
             return question, ""
 
     def _tool_block(self) -> str:
@@ -138,9 +137,9 @@ class Agent:
                     ctx_text += f"\n\n[tool:{turn.tool}] {text}"
                     continue
                 break
-        except Exception as exc:  # noqa: BLE001 - a bad model reply must not crash the chat loop
+        except Exception as exc:
             if isinstance(exc, LLMUnavailable) and re.search(r"RateLimit|Connection|Timeout|InternalServer", str(exc)):
-                raise  # an outage is not agent behaviour: never let it be scored as a refusal
+                raise
             err = f"{type(exc).__name__}: {exc}"[:200]
             turn = fallback
         if turn.action == "tool":

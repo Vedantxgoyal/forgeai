@@ -33,8 +33,6 @@ def select_tools(
     client: LLMClient, req: Requirements, load: LoadResult, profile: CorpusProfile, model: str | None = None
 ) -> tuple[list[ToolChoice], list[dict]]:
     ctx = ToolContext(tables=load.tables)
-    # Quotes may come only from what the client said (brief, their answers) or the distilled duties, never from
-    # model-written text such as interview questions or auto-filled assumptions.
     req_text = json.dumps(req.model_dump(exclude={"groundability", "qa", "assumptions"}), ensure_ascii=False)
     req_text += " " + " ".join(x.answer for x in req.qa if x.source == "user")
     corpus_text = f"BRIEF: {req.brief}\nPURPOSE: {req.purpose}\nSCOPE: {req.scope}\nTOPICS: {', '.join(req.must_answer_topics)}"
@@ -80,7 +78,6 @@ def select_tools(
             )
             continue
         keep.append(ToolChoice(name=name, justification=quote))
-    # Deterministic safety net: tables exist but the model forgot the lookup tool.
     if load.tables and "csv_lookup" not in {t.name for t in keep}:
         keep.append(ToolChoice(name="csv_lookup", justification=f"corpus contains structured table(s): {', '.join(load.tables)}"))
     return keep, dropped
@@ -179,8 +176,6 @@ def build_agent(
     corpus_text = _corpus_text(load) + " " + req.brief.lower()
     dropped_rules: list[dict] = []
     for text in draft.rules[:5]:
-        # Evidence-gated prompt: a model-written domain rule is NOT trusted into the prompt (small models invent
-        # plausible policy). It is held back and logged; the optimizer may add rules only to fix a failing test.
         why = (
             _invented_content(text, corpus_text, req.ungrounded_topics)
             or "held back: rules enter the prompt only when a failing test justifies them"

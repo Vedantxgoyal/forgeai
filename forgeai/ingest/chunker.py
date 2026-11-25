@@ -22,11 +22,11 @@ _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'(])")
 class Chunk:
     chunk_id: str
     doc_id: str
-    text: str  # what gets embedded / shown to the agent (with header)
-    body: str  # raw content without header (used for fact verification)
+    text: str
+    body: str
     section: str = ""
     page: int | None = None
-    kind: str = "text"  # text | row
+    kind: str = "text"
     row_index: int | None = None
 
     def to_dict(self) -> dict:
@@ -35,8 +35,8 @@ class Chunk:
 
 @dataclass(frozen=True)
 class ChunkParams:
-    chunk_size: int = 220  # words
-    chunk_overlap: int = 40  # words
+    chunk_size: int = 220
+    chunk_overlap: int = 40
 
     def __post_init__(self):
         if self.chunk_size < 30:
@@ -45,9 +45,6 @@ class ChunkParams:
             raise ValueError("chunk_overlap must be in [0, chunk_size/2)")
 
 
-# --------------------------------------------------------------------------- #
-# Sections
-# --------------------------------------------------------------------------- #
 @dataclass
 class _Section:
     title: str
@@ -77,16 +74,12 @@ def _split_long(text: str, max_words: int) -> list[str]:
     return out
 
 
-# --------------------------------------------------------------------------- #
-# Public API
-# --------------------------------------------------------------------------- #
 def chunk_document(doc: Document, params: ChunkParams) -> list[Chunk]:
     if doc.table is not None:
         return _chunk_table(doc)
 
     chunks: list[Chunk] = []
     for sec in _sections(doc):
-        # Units = (text, page) at sentence-or-paragraph granularity.
         units: list[tuple[str, int | None]] = []
         for b in sec.blocks:
             if len(b.text.split()) > params.chunk_size:
@@ -129,9 +122,6 @@ def suggest_params(docs: list[Document]) -> ChunkParams:
     return ChunkParams(chunk_size=size, chunk_overlap=max(10, int(size * 0.15)))
 
 
-# --------------------------------------------------------------------------- #
-# Internals
-# --------------------------------------------------------------------------- #
 def _overlap_tail(buf: list[tuple[str, int | None]], overlap_words: int):
     if overlap_words <= 0:
         return [], 0

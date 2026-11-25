@@ -27,7 +27,7 @@ REFUSAL_PATTERNS = [
 ]
 _REFUSAL_RE = re.compile("|".join(REFUSAL_PATTERNS), re.I)
 
-_LIST_MARKER = re.compile(r"(?m)(?:^|(?<=:)|(?<=[.;]\s))\s*\d{1,2}[.)](?=\s)")  # "1. ", "2) " enumeration, not data
+_LIST_MARKER = re.compile(r"(?m)(?:^|(?<=:)|(?<=[.;]\s))\s*\d{1,2}[.)](?=\s)")
 
 _STOP = set(
     "a an the of to in on for and or is are was were be been by with as at from that this it its "
@@ -75,7 +75,7 @@ def fact_in(fact: str, text: str) -> bool:
     f, t = norm(fact), norm(text)
     if not f:
         return True
-    if _NUM.fullmatch(f):  # a bare number must match a whole number by value ("8" is not inside "18")
+    if _NUM.fullmatch(f):
         return _canon_num(f) in numbers(t)
     if f in t:
         return True

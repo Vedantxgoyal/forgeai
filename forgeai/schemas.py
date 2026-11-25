@@ -7,11 +7,10 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-# ----------------------------- intake / guard ----------------------------- #
 class Question(BaseModel):
     question: str
-    why: str = ""  # which document feature motivated it
-    grounded_in: list[str] = Field(default_factory=list)  # doc terms/headings/columns it references
+    why: str = ""
+    grounded_in: list[str] = Field(default_factory=list)
 
 
 class QuestionSet(BaseModel):
@@ -55,7 +54,6 @@ class Requirements(RequirementsDraft):
     brief: str = ""
 
 
-# ----------------------------- agent definition --------------------------- #
 class Rule(BaseModel):
     id: str
     text: str
@@ -75,7 +73,7 @@ class RetrievalConfig(BaseModel):
 
 class ToolChoice(BaseModel):
     name: str
-    justification: str  # verbatim quote from the brief/requirements that makes the tool necessary
+    justification: str
 
 
 class AgentDef(BaseModel):
@@ -127,7 +125,6 @@ class RoleDraft(BaseModel):
     rules: list[str] = Field(default_factory=list)
 
 
-# ----------------------------- evals / judging ---------------------------- #
 CaseType = Literal["answerable", "multi_doc", "paraphrase", "out_of_scope", "near_miss", "tool", "ambiguous"]
 
 
@@ -142,7 +139,7 @@ class EvalCase(BaseModel):
     gold_chunks: list[str] = Field(default_factory=list)
     split: Literal["dev", "holdout"] = "dev"
     verified: bool = True
-    evidence: list[dict] = Field(default_factory=list)  # table cells a computed answer depends on
+    evidence: list[dict] = Field(default_factory=list)
 
 
 class RawQA(BaseModel):
@@ -188,7 +185,7 @@ class CaseResult(BaseModel):
     grounded: bool = True
     citation_ok: bool = True
     retrieval_hit: bool = True
-    failure: str = ""  # retrieval_miss | prompt_defect | hallucination | wrong_refusal
+    failure: str = ""
     judge_note: str = ""
     judge_unstable: bool = False
     llm_overrode: bool = False

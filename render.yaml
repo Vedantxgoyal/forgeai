@@ -1,4 +1,3 @@
-# Render blueprint (free web service). Secrets are entered in the dashboard, never committed.
 services:
   - type: web
     name: forgeai

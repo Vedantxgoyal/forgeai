@@ -50,7 +50,7 @@ class CapabilityCard:
 class Tool(ABC):
     name: str
     card: CapabilityCard
-    parameters: dict  # JSON schema of arguments
+    parameters: dict
 
     def available(self, ctx: ToolContext) -> tuple[bool, str]:
         return True, ""
@@ -63,7 +63,7 @@ class Tool(ABC):
             return ToolResult(ok=True, output=self._run(ctx, **kwargs))
         except ToolInputError as exc:
             return ToolResult(ok=False, error=str(exc))
-        except Exception as exc:  # noqa: BLE001 - tools must never crash the agent
+        except Exception as exc:
             return ToolResult(ok=False, error=f"{type(exc).__name__}: {exc}"[:300])
 
     def spec(self) -> dict:

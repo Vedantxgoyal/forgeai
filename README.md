@@ -45,6 +45,18 @@ forge ui                          # web UI at http://127.0.0.1:8600 (build it on
 pytest                            # offline tests, including a whole-factory run on a scripted fake model
 ```
 
+### Beyond the core
+
+| Feature | How | What it does |
+|---|---|---|
+| Human checkpoint | `forge run … --approve` (or the checkbox in the web form) | Pauses on the requirements; you can **edit** them. Changed topics go through the guard again |
+| Regression mode | `forge regress runs/demo1_hr demos/hr_docs_v2` | Regenerates the agent from changed documents, re-runs the **old** exam, and separates real breaks from tests whose expected facts no longer exist |
+| Prompt tournament | `--tournament` | Three prompt strategies compete on dev cases; the table is in the report |
+| Budget | `--token-budget N`, `--max-minutes M` | The loop stops before an exam it cannot afford, and after two iterations in a row that do not help |
+| Factory vs hand-written | `forge compare <run> <agent.yaml>` | Both sit the same exam |
+| Model fallback | `FORGE_FALLBACK_MODELS` | A spent quota switches to a stand-in (optionally local Ollama); every substitution is written into the report |
+| Hosting | [docs/HOSTING.md](docs/HOSTING.md) | Docker + Render blueprint, access code and rate limits |
+
 ### Web UI (Vite + three.js, served by a small FastAPI layer)
 
 ```powershell
@@ -59,7 +71,7 @@ forge ui
 The 3D forge is the pipeline itself: seven stages orbit the agent, node colour shows each stage's outcome, the core
 colour follows the exam score, and picking a node opens that stage's artifacts. It also chats with any agent (with the
 tool and retrieval trace) and builds a new one from an uploaded brief and documents with live stage progress.
-The server binds to localhost and has no authentication. For frontend development: `npm run dev` with `forge ui` running.
+`forge ui` binds to localhost. For public hosting see [docs/HOSTING.md](docs/HOSTING.md). For frontend development: `npm run dev` with `forge ui` running.
 
 ## What happens in `forge run`
 
@@ -68,7 +80,7 @@ The server binds to localhost and has no authentication. For frontend developmen
 | 1 | Intake | Questions are built from a deterministic corpus profile; a question that names nothing in the documents is rejected as *generic* and regenerated. The share of document-grounded questions is reported. | `factory/intake.py` |
 | 2 | Groundability guard | Each requested topic is searched in the corpus. Lexical coverage (deterministic) + LLM verdict; the LLM can only *lower* a status. Unsupported topics become prompt rules and near-miss tests. | `factory/guard.py` |
 | 3 | Agent generator | Prompt is **composed from named rules** (vetted grounding skeleton + domain rules), so the optimizer can patch one rule. A tool survives only if it is available for the corpus **and** justified by a quote that actually occurs in the brief or the client's requirements (never in model-written questions); dropped tools are logged with reasons. | `factory/generator.py` |
-| 4 | Eval generator | ≥20 cases from the documents. For tables, **tool cases** (lookup, total, difference) have expected values computed in Python. Answerable/paraphrase: every key fact must appear **verbatim** in the source chunk or the case is discarded. Refusal cases are discarded if the corpus can actually answer them. Multi-document cases need facts from two docs. Stratified **dev / hold-out** split. | `factory/evalgen.py` |
+| 4 | Eval generator | ≥20 cases from the documents, including **ambiguous** ones (two passages answer one underspecified question; asking which is meant also passes). For tables, **tool cases** (lookup, total, difference) have expected values computed in Python. Answerable/paraphrase: every key fact must appear **verbatim** in the source chunk or the case is discarded. Refusal cases are discarded if the corpus can actually answer them. Multi-document cases need facts from two docs. Stratified **dev / hold-out** split. | `factory/evalgen.py` |
 | 5 | Judge | Deterministic first: refusal detection, key-fact match, citation validity, groundedness (token + number support). The LLM only arbitrates missing facts, asked per-fact yes/no (verbosity), twice with reversed order (position bias), and only counts if both votes agree; judge model is separate (self-preference) and the report warns if it equals the agent model. | `factory/judge.py` |
 | 6 | Critic–optimizer | Failure classes (`retrieval_miss`, `wrong_refusal`, `hallucination`, `prompt_defect`) come from evidence, e.g. *were the required facts present in the retrieved context?* Each class gets the smallest fix: a retrieval ladder (top_k → query rewrite → rerank → smaller chunks) or one new prompt rule that is rejected if it leaks test facts or copies a test question. A change is kept only if a score improves, and rolled back if dev or hold-out gets worse. | `factory/optimizer.py` |
 | 7 | Report | Scorecard per iteration, change log with before/after, what still fails and why, Wilson 95% interval, judge-reliability stats, token cost. Never claims more than the evidence. | `factory/report.py` |
@@ -85,7 +97,7 @@ forgeai/
   retrieval/  dense + BM25 + RRF, optional cross-encoder rerank, per-hit trace
   tools/      csv_lookup, calculator (AST-safe), weather (open-meteo, keyless), current_date — each with a capability card
   agent/      generic runtime: loads any AgentDef + folder, tool loop, retrieval trace
-  factory/    intake, guard, generator, evalgen, judge, optimizer, report, pipeline
+  factory/    intake, guard, generator, evalgen, toolcases, judge, optimizer, tournament, report, pipeline, regression, baseline
   prompts/    every generation prompt as a versioned .md file
 server.py     web API (in forgeai/)
 web/          Vite + three.js frontend

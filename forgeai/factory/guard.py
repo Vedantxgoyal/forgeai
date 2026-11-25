@@ -44,8 +44,6 @@ def lexical_coverage(topic: str, passages: list[str]) -> float:
     return len(want & have) / len(want)
 
 
-# Tools that bring in information the documents cannot contain (live data). A topic they serve is not
-# "ungrounded". Table and arithmetic tools are not listed: they only work on what the documents hold.
 LIVE_DATA_TOOLS = {
     "weather": {"weather", "forecast", "temperature", "rainfall"},
     "current_date": {"today", "current date", "days remaining", "days left"},
@@ -65,7 +63,6 @@ def check_topic(
     client: LLMClient, index: HybridIndex, topic: str, model: str | None = None, extra_evidence: str = ""
 ) -> TopicCheck:
     hits = index.search(topic, SearchParams(top_k=3, mode="hybrid"))
-    # Evidence = best passages (with section headings) + what the available tools can do + table column names.
     texts = [h.chunk.text for h in hits] + ([extra_evidence] if extra_evidence else [])
     cov = lexical_coverage(topic, texts)
     passages = "\n---\n".join(f"[{h.chunk.chunk_id}] {h.chunk.body[:700]}" for h in hits) or "(nothing found)"
@@ -84,8 +81,6 @@ def check_topic(
     else:
         verdict = "no"
 
-    # Two signals must AGREE before a topic is declared unsupported. A lexical miss alone is common for
-    # tables (column names/values rarely echo the topic phrasing), so an LLM "yes" downgrades it to partial.
     if verdict == "no":
         status = "partial" if cov >= 0.67 else "unsupported"
     elif cov < 0.34:
@@ -117,7 +112,7 @@ def run_guard(
     req.groundability = checks
     req.ungrounded_topics = unsupported
     kept = [t for t in req.must_answer_topics if t not in unsupported]
-    req.must_answer_topics = kept or req.must_answer_topics  # never leave the agent with zero duties
+    req.must_answer_topics = kept or req.must_answer_topics
     for c in checks:
         if c.status in ("unsupported", "partial"):
             req.assumptions.append(f"GROUNDABILITY {c.status.upper()}: '{c.topic}' (coverage {c.lexical_coverage}) - {c.note}")

@@ -27,8 +27,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Better dense embeddings + cross-encoder reranking. Without it ForgeAI falls back
-# to Ollama embeddings, then to a TF-IDF/LSA embedder, so it never hard-fails.
 embed = ["sentence-transformers>=3.0"]
 xlsx = ["openpyxl>=3.1"]
 ui = ["fastapi>=0.110", "uvicorn>=0.29", "python-multipart>=0.0.9"]
@@ -49,7 +47,7 @@ extend-exclude = ["runs", "web"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]
-ignore = ["E501"]  # long prompt/report strings are kept readable in one piece
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

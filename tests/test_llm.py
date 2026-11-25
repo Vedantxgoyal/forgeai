@@ -11,9 +11,6 @@ class Questions(BaseModel):
     questions: list[str] = Field(max_length=5)
 
 
-# --------------------------------------------------------------------------- #
-# extract_json
-# --------------------------------------------------------------------------- #
 @pytest.mark.parametrize(
     "raw, expected",
     [
@@ -33,16 +30,12 @@ def test_extract_json_rejects_garbage():
         extract_json("no json here at all")
 
 
-# --------------------------------------------------------------------------- #
-# generate_structured
-# --------------------------------------------------------------------------- #
 def test_structured_repairs_after_feedback(settings, fake):
     fake.push("not json", '{"questions": ["Who is the audience?"]}')
     client = LLMClient(settings, transport=fake)
     res = generate_structured(client, Questions, [{"role": "user", "content": "ask"}], stage="intake")
     assert res.value.questions == ["Who is the audience?"]
     assert res.attempts == 2 and not res.used_fallback
-    # the repair turn must contain the error so the model can fix it
     assert "invalid" in fake.calls[1]["messages"][-1]["content"]
 
 
@@ -74,10 +67,7 @@ def test_structured_raises_without_fallback(settings, fake):
         generate_structured(client, Questions, [{"role": "user", "content": "x"}])
 
 
-# --------------------------------------------------------------------------- #
-# client: retries, cache, budget, metering
-# --------------------------------------------------------------------------- #
-class APIConnectionError(Exception):  # name matches the transient classifier
+class APIConnectionError(Exception):
     pass
 
 
@@ -102,7 +92,7 @@ def test_cache_makes_reruns_free(settings, fake):
     client = LLMClient(s, transport=fake)
     msgs = [{"role": "user", "content": "same prompt"}]
     assert client.chat(msgs, stage="a") == "first"
-    assert client.chat(msgs, stage="a") == "first"  # no second scripted response needed
+    assert client.chat(msgs, stage="a") == "first"
     assert client.meter.stages["a"].cache_hits == 1
 
 
@@ -110,7 +100,7 @@ def test_budget_stops_new_calls(settings, fake):
     s = settings.model_copy(update={"token_budget": 10})
     fake.push("one", "two")
     client = LLMClient(s, transport=fake)
-    client.chat([{"role": "user", "content": "a"}])  # uses 15 tokens
+    client.chat([{"role": "user", "content": "a"}])
     with pytest.raises(BudgetExceeded):
         client.chat([{"role": "user", "content": "b"}])
 

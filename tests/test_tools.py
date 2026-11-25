@@ -20,7 +20,6 @@ def ctx():
     return ToolContext(tables={"catalogue": df}, timezone="Asia/Kolkata")
 
 
-# calculator ------------------------------------------------------------------
 @pytest.mark.parametrize(
     "expr, value",
     [
@@ -54,7 +53,6 @@ def test_calculator_rejects_unsafe_or_invalid(expr):
     assert not res.ok and res.error
 
 
-# csv lookup ------------------------------------------------------------------
 def test_csv_filter_exact(ctx):
     res = REGISTRY["csv_lookup"].run(ctx, filters={"part_no": "ab-2207"})
     assert res.ok and res.output["matched"] == 1 and res.output["rows"][0]["unit_price_usd"] == "640.00"
@@ -80,7 +78,6 @@ def test_csv_unavailable_without_tables():
     assert not ok and "no tabular" in why
 
 
-# date / weather ---------------------------------------------------------------
 def test_current_date(ctx):
     res = REGISTRY["current_date"].run(ctx)
     assert res.ok and res.output["timezone"] == "Asia/Kolkata" and len(res.output["date"]) == 10
@@ -118,7 +115,6 @@ def test_weather_network_failure_is_contained(monkeypatch, ctx):
     assert not res.ok and "ConnectError" in res.error
 
 
-# registry --------------------------------------------------------------------
 def test_registry_and_cards(ctx):
     assert set(REGISTRY) == {"csv_lookup", "calculator", "weather", "current_date"}
     with pytest.raises(KeyError):

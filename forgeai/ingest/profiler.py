@@ -85,7 +85,7 @@ def _top_terms(docs: list[Document], k: int = 12) -> dict[str, list[str]]:
     )
     try:
         m = vec.fit_transform(texts)
-    except ValueError:  # empty vocabulary
+    except ValueError:
         return {d.doc_id: [] for d in docs}
     vocab = vec.get_feature_names_out()
     out: dict[str, list[str]] = {}

@@ -43,7 +43,7 @@ class Block:
 class Document:
     doc_id: str
     path: Path
-    kind: str  # pdf | docx | text | html | table
+    kind: str
     blocks: list[Block] = field(default_factory=list)
     table: pd.DataFrame | None = None
     n_pages: int | None = None
@@ -64,16 +64,13 @@ class Document:
 @dataclass
 class LoadResult:
     documents: list[Document]
-    skipped: list[tuple[str, str]]  # (relative path, reason)
+    skipped: list[tuple[str, str]]
 
     @property
     def tables(self) -> dict[str, pd.DataFrame]:
         return {d.doc_id: d.table for d in self.documents if d.table is not None}
 
 
-# --------------------------------------------------------------------------- #
-# Helpers
-# --------------------------------------------------------------------------- #
 _SLUG = re.compile(r"[^a-z0-9]+")
 _NUMBERED_HEADING = re.compile(r"^(\d+(\.\d+){0,3}\.?|[IVX]+\.|[A-Z]\.)\s+[A-Z][^.!?]{2,80}$")
 
@@ -93,7 +90,7 @@ def looks_like_heading(line: str) -> bool:
     words = s.split()
     letters = [c for c in s if c.isalpha()]
     if 1 <= len(words) <= 10 and letters and sum(c.isupper() for c in letters) / len(letters) > 0.8:
-        return True  # ALL CAPS short line
+        return True
     return False
 
 
@@ -101,7 +98,6 @@ def _paragraphs(text: str, page: int | None = None) -> list[Block]:
     import unicodedata
 
     text = unicodedata.normalize("NFKC", text).replace("\r\n", "\n").replace("\r", "\n")
-    # De-hyphenate words broken across lines (common in PDFs).
     text = re.sub(r"(\w)-\n(\w)", r"\1\2", text)
     blocks: list[Block] = []
     for para in re.split(r"\n\s*\n", text):
@@ -112,7 +108,6 @@ def _paragraphs(text: str, page: int | None = None) -> list[Block]:
                 blocks.append(Block(re.sub(r"\s+", " ", " ".join(buf)), page))
                 buf.clear()
 
-        # PDFs often have no blank lines around headings, so detect them line by line.
         for ln in (x.strip() for x in para.split("\n")):
             if not ln:
                 continue
@@ -143,9 +138,6 @@ def _read_text(path: Path) -> str:
     return raw.decode("utf-8", errors="replace")
 
 
-# --------------------------------------------------------------------------- #
-# Per-format loaders
-# --------------------------------------------------------------------------- #
 def _load_pdf(path: Path, doc: Document) -> None:
     import pymupdf
 
@@ -192,7 +184,7 @@ def _load_html(path: Path, doc: Document) -> None:
 def _load_table(path: Path, doc: Document) -> None:
     ext = path.suffix.lower()
     if ext in {".xlsx", ".xls"}:
-        df = pd.read_excel(path)  # needs openpyxl; failure -> file skipped with reason
+        df = pd.read_excel(path)
     else:
         text = _read_text(path)
         sep = "\t" if ext == ".tsv" else None
@@ -210,9 +202,6 @@ def _load_table(path: Path, doc: Document) -> None:
     doc.table = df.reset_index(drop=True)
 
 
-# --------------------------------------------------------------------------- #
-# Public API
-# --------------------------------------------------------------------------- #
 def load_file(path: Path, root: Path | None = None) -> Document:
     rel = path.relative_to(root) if root else Path(path.name)
     ext = path.suffix.lower()
@@ -259,7 +248,7 @@ def load_folder(folder: str | Path) -> LoadResult:
     for p in paths:
         rel = str(p.relative_to(base))
         if any(part.startswith(".") for part in p.relative_to(base).parts):
-            continue  # hidden files / dirs
+            continue
         if p.suffix.lower() not in SUPPORTED:
             skipped.append((rel, f"unsupported type '{p.suffix or 'none'}'"))
             continue
@@ -268,7 +257,7 @@ def load_folder(folder: str | Path) -> LoadResult:
             continue
         try:
             doc = load_file(p, base)
-        except Exception as exc:  # noqa: BLE001 - one bad file must not stop the run
+        except Exception as exc:
             log.warning("failed to load %s: %s", rel, exc)
             skipped.append((rel, f"load error: {type(exc).__name__}: {exc}"[:200]))
             continue

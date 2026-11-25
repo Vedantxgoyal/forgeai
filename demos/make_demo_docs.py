@@ -10,7 +10,7 @@ import csv
 import random
 from pathlib import Path
 
-import fitz  # PyMuPDF
+import fitz
 
 ROOT = Path(__file__).parent
 
@@ -32,7 +32,6 @@ def pdf(path: Path, title: str, sections: list[tuple[str, list[str]]]) -> None:
     writer.close()
 
 
-# ----------------------------------------------------------------- demo 1: HR
 def hr(v2: bool = False) -> None:
     """v2 = a later policy revision, used to demonstrate regression mode."""
     d = ROOT / ("hr_docs_v2" if v2 else "hr_docs")
@@ -154,7 +153,6 @@ def hr(v2: bool = False) -> None:
     )
 
 
-# ----------------------------------------------------------- demo 2: spares
 def spares() -> None:
     d = ROOT / "spares_docs"
     d.mkdir(exist_ok=True, parents=True)

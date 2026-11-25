@@ -89,7 +89,6 @@ def run_tournament(
                 "role_prompt": cand.role_prompt,
             }
         )
-    # highest score wins; on a tie the earlier candidate (the unmodified one first) is kept: change needs evidence
     best = max(range(len(table)), key=lambda i: (table[i]["score"], -i))
     for i, row in enumerate(table):
         row["winner"] = i == best

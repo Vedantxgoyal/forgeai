@@ -57,7 +57,7 @@ def _vote(client: LLMClient, model: str, case: EvalCase, resp: AgentResponse, fa
             retries=1,
             validator=check,
         ).value
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
 
 
@@ -66,7 +66,6 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
         case_id=case.id, type=case.type, split=case.split, refused=resp.refused, answer=resp.answer, question=case.question
     )
 
-    # ---- cases that must be refused ---- #
     if case.expected_refusal:
         if resp.refused:
             return CaseResult(**base, passed=True)
@@ -78,11 +77,9 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
             judge_note="answered a question the documents cannot support",
         )
 
-    # ---- ambiguous questions: asking which meaning is a correct response ---- #
     if case.type == "ambiguous" and not resp.refused and _CLARIFY.search(resp.answer):
         return CaseResult(**base, passed=True, judge_note="asked a clarifying question")
 
-    # ---- cases that must be answered ---- #
     facts = case.key_facts
     ctx = resp.context_text
     retrieval_hit = all(fact_in(f, ctx) for f in facts)
@@ -102,11 +99,11 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
     det_grounded = ratio >= SUPPORT_MIN and not bad_nums
     cites_ok = bool(resp.citations) and all(c in resp.retrieved or c.startswith("tool:") for c in resp.citations)
     if any(t.get("ok") for t in resp.tool_calls):
-        cites_ok = True  # the recorded tool call is the provenance of a computed / looked-up value
+        cites_ok = True
 
     note, unstable, overrode = [], False, False
     grounded = det_grounded
-    if use_llm and facts and not all(present) and case.type != "tool":  # numbers need no interpretation
+    if use_llm and facts and not all(present) and case.type != "tool":
         v1 = _vote(client, judge_model, case, resp, facts)
         v2_facts = list(reversed(facts))
         v2 = _vote(client, judge_model, case, resp, v2_facts)

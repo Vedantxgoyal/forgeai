@@ -43,9 +43,6 @@ class StructuredResult(Generic[T]):
     errors: list[str] = field(default_factory=list)
 
 
-# --------------------------------------------------------------------------- #
-# JSON extraction + repair
-# --------------------------------------------------------------------------- #
 _FENCE = re.compile(r"```(?:json|JSON)?\s*(.*?)```", re.DOTALL)
 _TRAILING_COMMA = re.compile(r",\s*([}\]])")
 
@@ -83,7 +80,6 @@ def _balanced_spans(text: str):
 
 def _repair(candidate: str) -> str:
     s = _TRAILING_COMMA.sub(r"\1", candidate)
-    # Python literals outside of strings are a common small-model slip.
     s = re.sub(r"(?<![\"\w])True(?![\"\w])", "true", s)
     s = re.sub(r"(?<![\"\w])False(?![\"\w])", "false", s)
     s = re.sub(r"(?<![\"\w])None(?![\"\w])", "null", s)
@@ -111,9 +107,6 @@ def extract_json(text: str):
     raise ValueError("no parseable JSON object found in response")
 
 
-# --------------------------------------------------------------------------- #
-# Schema hint
-# --------------------------------------------------------------------------- #
 def schema_hint(model: type[BaseModel]) -> str:
     """Compact JSON schema; small models follow a short schema better than prose."""
     schema = model.model_json_schema()
@@ -130,9 +123,6 @@ def _format_error(exc: Exception) -> str:
     return str(exc)[:500]
 
 
-# --------------------------------------------------------------------------- #
-# Main entry point
-# --------------------------------------------------------------------------- #
 def generate_structured(
     client: LLMClient,
     schema: type[T],
