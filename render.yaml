@@ -18,4 +18,4 @@ services:
       - key: FORGE_JUDGE_MODEL
         value: qwen/qwen3.8-27b
       - key: FORGE_FALLBACK_MODELS
-        value: qwen/qwen3.8-27b,openai/gpt-oss-120b
+        value: openai/gpt-oss-120b,openai/gpt-oss-20b

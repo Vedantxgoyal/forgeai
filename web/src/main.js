@@ -166,6 +166,7 @@ async function poll(id) {
     if (job.status === 'awaiting_approval' && reviewing !== job.id) {
       reviewing = job.id;
       $('#review').hidden = false;
+      requestAnimationFrame(() => $('#review').scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
       $('#review-json').value = JSON.stringify(job.requirements, null, 2);
       $('#review-guard').innerHTML = job.groundability.map((g) => `<span class="chip ${{ supported: 'ok', partial: 'warn', unsupported: 'bad' }[g.status]}">${esc(g.topic)}: ${esc(g.status)}</span>`).join(' ');
     }

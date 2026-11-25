@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hmac
 import json
+import logging
 import os
 import re
 import tempfile
@@ -47,6 +48,7 @@ ACCESS_CODE = os.getenv("FORGE_ACCESS_CODE", "")
 CHAT_PER_MINUTE = int(os.getenv("FORGE_CHAT_PER_MINUTE", "10"))
 CHAT_PER_DAY = int(os.getenv("FORGE_CHAT_PER_DAY", "300"))
 
+log = logging.getLogger(__name__)
 app = FastAPI(title="ForgeAI")
 _agents: dict[str, tuple[float, Agent]] = {}
 _jobs: dict[str, dict] = {}
@@ -162,7 +164,11 @@ def chat(name: str, body: ChatIn):
         ]
         r = _agents[name][1].ask(question, history)
     except Exception as exc:
-        raise HTTPException(503, f"{type(exc).__name__}: {str(exc)[:300]}") from exc
+        log.warning("chat failed: %s: %s", type(exc).__name__, exc)
+        detail = (
+            "The model is busy or out of quota. Please try again later." if PUBLIC else f"{type(exc).__name__}: {str(exc)[:300]}"
+        )
+        raise HTTPException(503, detail) from exc
     return r.model_dump(exclude={"context_text"})
 
 

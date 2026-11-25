@@ -7,3 +7,4 @@
 web/dist
 runs/_history
 *.log
+runs/_new/
