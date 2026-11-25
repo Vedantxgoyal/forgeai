@@ -36,6 +36,11 @@ def _dump(path: Path, obj) -> None:
     path.write_text(json.dumps(obj, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
 
 
+def _models_used(wanted: str, substitutions: dict[str, int]) -> set[str]:
+    """The configured model plus every stand-in that answered for it."""
+    return {wanted} | {k.split(" -> ")[1] for k in substitutions if k.split(" -> ")[0] == wanted}
+
+
 def run_factory(
     brief: str,
     docs: str | Path,
@@ -171,6 +176,12 @@ def run_factory(
     models = {"gen": s.gen_model, "judge": s.judge_model, "agent": s.effective_agent_model}
     for swap, n in client.substitutions.items():
         notes.append(f"MODEL SUBSTITUTION: {swap} for {n} call(s) because the configured model was unavailable")
+    shared = _models_used(s.effective_agent_model, client.substitutions) & _models_used(s.judge_model, client.substitutions)
+    if client.substitutions and shared:
+        notes.append(
+            f"WARNING: after substitutions the agent and the judge were both served by {', '.join(sorted(shared))} for some calls; "
+            "self-preference bias is possible and the configured judge/agent separation did not hold."
+        )
     if token_budget or max_seconds:
         notes.append(
             f"budget: tokens {usage['_total']['total_tokens']}/{token_budget or 'unlimited'}, "

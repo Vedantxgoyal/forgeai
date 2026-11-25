@@ -267,3 +267,29 @@ def test_account_id_is_redacted_from_errors():
     from forgeai.llm.client import _redact
 
     assert _redact("limit for organization `org_01abcdefghijklmnop` hit") == "limit for organization `org_REDACTED` hit"
+
+
+def test_ambiguous_questions_must_fit_both_passages():
+    from forgeai.factory.evalgen import _truly_ambiguous
+
+    a = "Annual leave requests need 14 days notice."
+    b = "Emergency leave of 3 days may be approved for a family emergency."
+    assert _truly_ambiguous("How many days of leave?", a, b)
+    assert not _truly_ambiguous("How many days of leave for a personal emergency?", a, b)  # only one passage fits
+    assert not _truly_ambiguous("What is the maximum number of days in this situation?", a, b)
+
+
+def test_shared_model_after_substitution_is_detected():
+    from forgeai.factory.pipeline import _models_used
+
+    subs = {"small -> big": 3, "judge -> big": 1}
+    assert _models_used("small", subs) & _models_used("judge", subs) == {"big"}
+
+
+def test_domain_rule_gate_catches_invented_currency_and_numbers():
+    from forgeai.factory.generator import _invented_content
+
+    corpus = "per diem is usd 60 per day"
+    assert "GBP" in _invented_content("Figures are expressed in GBP.", corpus, [])
+    assert "1.25" in _invented_content("Leave accrues at 1.25 days.", corpus, [])
+    assert _invented_content("Quote the USD 60 allowance exactly.", corpus, []) == ""

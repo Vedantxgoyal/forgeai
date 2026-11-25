@@ -5,20 +5,21 @@
     "dropped_unverified": 0,
     "dropped_answerable_refusal": 0,
     "by_type": {
+      "answerable": 8,
       "paraphrase": 4,
-      "answerable": 10,
       "multi_doc": 4,
+      "ambiguous": 2,
       "out_of_scope": 3,
       "near_miss": 3
     }
   },
   "cases": [
     {
-      "id": "par-b428c9",
-      "type": "paraphrase",
-      "question": "If I want to report harassment, how long will it take for the company to acknowledge my complaint and finish the investigation?",
+      "id": "ans-e07e04",
+      "type": "answerable",
+      "question": "How long does Meridian take to acknowledge a harassment report and complete an investigation?",
       "expected_refusal": false,
-      "reference_answer": "Meridian will let you know they received your complaint within 2 working days, and they usually finish the investigation within 30 calendar days.",
+      "reference_answer": "Meridian acknowledges reports within 2 working days and normally completes investigations within 30 calendar days.",
       "key_facts": [
         "2 working days",
         "30 calendar days"
@@ -29,18 +30,18 @@
       "gold_chunks": [
         "code_of_conduct::0003"
       ],
-      "split": "holdout",
-      "verified": true
+      "split": "dev",
+      "verified": true,
+      "evidence": []
     },
     {
-      "id": "ans-bfc816",
-      "type": "answerable",
-      "question": "How many unused days may Shore staff carry forward to the next year and when do they expire?",
+      "id": "par-b579e1",
+      "type": "paraphrase",
+      "question": "How many of my unused vacation days can I keep for next year?",
       "expected_refusal": false,
-      "reference_answer": "Up to 10 unused days may be carried forward to the next year, and they expire on 31 March of the following year.",
+      "reference_answer": "You can carry forward up to 10 unused days to the next year.",
       "key_facts": [
-        "10 unused days",
-        "expire on 31 March"
+        "Up to 10 unused days may be carried forward to the next year."
       ],
       "source_docs": [
         "leave_policy"
@@ -48,8 +49,9 @@
       "gold_chunks": [
         "leave_policy::0001"
       ],
-      "split": "holdout",
-      "verified": true
+      "split": "dev",
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "ans-fd3e82",
@@ -66,19 +68,18 @@
       "gold_chunks": [
         "travel_expense_policy::0002"
       ],
-      "split": "holdout",
-      "verified": true
+      "split": "dev",
+      "verified": true,
+      "evidence": []
     },
     {
-      "id": "par-62fb6b",
-      "type": "paraphrase",
-      "question": "If I get a gift card from a client, what should I do?",
+      "id": "ans-f39538",
+      "type": "answerable",
+      "question": "What is the maximum value of a gift that Meridian Shipping shore-based employees may accept from suppliers, customers or agents?",
       "expected_refusal": false,
-      "reference_answer": "You must decline the gift card or report it to Compliance within 5 working days. Employees are not allowed to accept cash or cash equivalents, such as gift cards, no matter the value, and any gift over USD 50 must be handled this way.",
+      "reference_answer": "Meridian Shipping shore-based employees may not accept gifts worth more than USD 50 from suppliers, customers or agents.",
       "key_facts": [
-        "USD 50",
-        "5 working days",
-        "Cash or cash equivalents, such as gift cards, may never be accepted regardless of value"
+        "USD 50"
       ],
       "source_docs": [
         "code_of_conduct"
@@ -86,15 +87,16 @@
       "gold_chunks": [
         "code_of_conduct::0002"
       ],
-      "split": "dev",
-      "verified": true
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
     },
     {
-      "id": "ans-b8e462",
-      "type": "answerable",
-      "question": "How long does a line manager have to approve a leave request before it escalates to the Head of Department?",
+      "id": "par-fd04ab",
+      "type": "paraphrase",
+      "question": "How long does it usually take for a line manager to approve a leave request?",
       "expected_refusal": false,
-      "reference_answer": "A line manager must approve a leave request within 3 working days; if not answered within that time it escalates automatically to the Head of Department.",
+      "reference_answer": "The line manager must approve the request within 3 working days.",
       "key_facts": [
         "3 working days"
       ],
@@ -105,17 +107,17 @@
         "leave_policy::0005"
       ],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
-      "id": "par-1de1e7",
-      "type": "paraphrase",
-      "question": "How far ahead do I need to book my flight and hotel for work trips?",
+      "id": "ans-549a09",
+      "type": "answerable",
+      "question": "How far in advance must flights and hotels be booked?",
       "expected_refusal": false,
-      "reference_answer": "You must book both flights and hotels through the corporate travel desk at least 7 days before departure.",
+      "reference_answer": "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure.",
       "key_facts": [
-        "at least 7 days before departure",
-        "corporate travel desk"
+        "7 days before departure"
       ],
       "source_docs": [
         "travel_expense_policy"
@@ -124,14 +126,15 @@
         "travel_expense_policy::0001"
       ],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
-      "id": "ans-947a6e",
-      "type": "answerable",
-      "question": "If a Meridian Shipping shore-based employee loses or steals a company laptop, to whom must they report it and within what time frame?",
+      "id": "par-88ef2c",
+      "type": "paraphrase",
+      "question": "If I lose my company laptop, who do I need to tell and how soon?",
       "expected_refusal": false,
-      "reference_answer": "They must report the lost or stolen device to IT Security within 24 hours.",
+      "reference_answer": "You should let IT Security know within 24 hours of losing the device.",
       "key_facts": [
         "IT Security",
         "24 hours"
@@ -142,13 +145,14 @@
       "gold_chunks": [
         "code_of_conduct::0004"
       ],
-      "split": "holdout",
-      "verified": true
+      "split": "dev",
+      "verified": true,
+      "evidence": []
     },
     {
-      "id": "ans-de39bd",
-      "type": "answerable",
-      "question": "How many days of paid sick leave do employees receive per year?",
+      "id": "par-c4a85a",
+      "type": "paraphrase",
+      "question": "How many paid sick days do I get each year?",
       "expected_refusal": false,
       "reference_answer": "Employees receive 12 days of paid sick leave per year.",
       "key_facts": [
@@ -160,8 +164,9 @@
       "gold_chunks": [
         "leave_policy::0002"
       ],
-      "split": "dev",
-      "verified": true
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "ans-658d41",
@@ -178,18 +183,20 @@
       "gold_chunks": [
         "travel_expense_policy::0003"
       ],
-      "split": "dev",
-      "verified": true
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
     },
     {
-      "id": "par-e9c8ba",
-      "type": "paraphrase",
-      "question": "How many days a year can I work from another country?",
+      "id": "ans-4bbf8e",
+      "type": "answerable",
+      "question": "What are the core working hours for Meridian Shipping shore-based employees?",
       "expected_refusal": false,
-      "reference_answer": "You can work from another country for up to 20 days per year, but you need written approval from HR.",
+      "reference_answer": "Core working hours are 09:30 to 17:30, Monday to Friday, with a one hour lunch break.",
       "key_facts": [
-        "20 days per year",
-        "written approval from HR"
+        "09:30 to 17:30",
+        "Monday to Friday",
+        "one hour lunch break"
       ],
       "source_docs": [
         "code_of_conduct"
@@ -198,7 +205,8 @@
         "code_of_conduct::0001"
       ],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "ans-aa562e",
@@ -216,7 +224,8 @@
         "leave_policy::0004"
       ],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "ans-6ef141",
@@ -235,43 +244,8 @@
         "travel_expense_policy::0004"
       ],
       "split": "dev",
-      "verified": true
-    },
-    {
-      "id": "ans-c73819",
-      "type": "answerable",
-      "question": "What is the maximum duration of a suspension for serious misconduct?",
-      "expected_refusal": false,
-      "reference_answer": "A suspension for serious misconduct may last up to 10 working days.",
-      "key_facts": [
-        "up to 10 working days"
-      ],
-      "source_docs": [
-        "code_of_conduct"
-      ],
-      "gold_chunks": [
-        "code_of_conduct::0005"
-      ],
-      "split": "dev",
-      "verified": true
-    },
-    {
-      "id": "ans-b5a524",
-      "type": "answerable",
-      "question": "How many weeks of paid maternity leave are mothers entitled to?",
-      "expected_refusal": false,
-      "reference_answer": "Mothers are entitled to 26 weeks of paid maternity leave.",
-      "key_facts": [
-        "26 weeks"
-      ],
-      "source_docs": [
-        "leave_policy"
-      ],
-      "gold_chunks": [
-        "leave_policy::0003"
-      ],
-      "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "mul-cf9c70",
@@ -292,7 +266,8 @@
         "travel_expense_policy::0001"
       ],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "mul-41158f",
@@ -313,7 +288,8 @@
         "code_of_conduct::0002"
       ],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "mul-03152d",
@@ -334,7 +310,8 @@
         "code_of_conduct::0001"
       ],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "mul-64d4be",
@@ -355,7 +332,50 @@
         "leave_policy::0005"
       ],
       "split": "holdout",
-      "verified": true
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "amb-f2b83b",
+      "type": "ambiguous",
+      "question": "What is the maximum number of days allowed for this situation?",
+      "expected_refusal": false,
+      "reference_answer": "Either ask which is meant, or give both: up to 10 working days / up to 2 days per week",
+      "key_facts": [
+        "up to 10 working days",
+        "up to 2 days per week"
+      ],
+      "source_docs": [
+        "code_of_conduct"
+      ],
+      "gold_chunks": [
+        "code_of_conduct::0005",
+        "code_of_conduct::0001"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "amb-066fc0",
+      "type": "ambiguous",
+      "question": "How many days of leave can be taken for a personal emergency?",
+      "expected_refusal": false,
+      "reference_answer": "Either ask which is meant, or give both: Leave requests are approved by the line manager within 3 working days. / Emergency leave of up to 3 days per year may be approved by a line manager for urgent personal matters such as a house fire or hospitalisation of a family member.",
+      "key_facts": [
+        "Leave requests are approved by the line manager within 3 working days.",
+        "Emergency leave of up to 3 days per year may be approved by a line manager for urgent personal matters such as a house fire or hospitalisation of a family member."
+      ],
+      "source_docs": [
+        "leave_policy"
+      ],
+      "gold_chunks": [
+        "leave_policy::0005",
+        "leave_policy::0004"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "out-aae766",
@@ -367,7 +387,8 @@
       "source_docs": [],
       "gold_chunks": [],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "out-e16eec",
@@ -379,7 +400,8 @@
       "source_docs": [],
       "gold_chunks": [],
       "split": "holdout",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "out-5f838a",
@@ -391,7 +413,8 @@
       "source_docs": [],
       "gold_chunks": [],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "nea-567f31",
@@ -403,7 +426,8 @@
       "source_docs": [],
       "gold_chunks": [],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "nea-0a7eaf",
@@ -415,7 +439,8 @@
       "source_docs": [],
       "gold_chunks": [],
       "split": "dev",
-      "verified": true
+      "verified": true,
+      "evidence": []
     },
     {
       "id": "nea-ae162a",
@@ -427,7 +452,8 @@
       "source_docs": [],
       "gold_chunks": [],
       "split": "holdout",
-      "verified": true
+      "verified": true,
+      "evidence": []
     }
   ]
 }

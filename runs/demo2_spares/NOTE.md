@@ -8,3 +8,7 @@ the disk cache of the previous run (same prompts), so this run finished quickly.
 - Tool cases cover lookup, multiplication and difference. None applies a supplier volume discount or an approval
   threshold to a computed total, which is the hardest thing a real user would ask.
 - Questions are generated from the same documents the agent reads.
+
+**Code version.** This run was produced by an earlier version of the code: it has no ambiguous cases and uses the same
+output contract as every other agent of that time. A re-run on the current code stopped during its first exam because
+the free tier's daily quota was spent, so this complete run is kept.

@@ -11,12 +11,17 @@ improvement rounds, and an honest quality report. Every stage is designed for a 
 
 | Demo | Tools chosen | Baseline -> final | Dev / hold-out | Models (Groq free tier) |
 |---|---|---|---|---|
-| [HR policy assistant](runs/demo1_hr/report.md) | none | 18/24 -> **21/24** | 88% / 86% | agent `gpt-oss-20b`, judge `qwen3.8-27b` |
+| [HR policy assistant](runs/demo1_hr/report.md) | none | 22/24 -> **22/24** | 89% / 100% | `gpt-oss-20b` + `qwen3.8-27b` judge, mostly served by the `gpt-oss-120b` fallback |
 | [Ship-spares procurement](runs/demo2_spares/report.md) | `csv_lookup`, `calculator` | 23/24 -> **24/24** | 100% / 100% | agent `qwen3.8-27b`, judge `gpt-oss-120b` |
 
-Each run folder has a `NOTE.md` with provenance and known issues. With 24 cases the 95% interval is wide
-(HR 69-96%, spares 86-100%). The spares 24/24 has stated weaknesses in its NOTE.md. The exams come from the same documents the agents read, so treat the scores as
-faithfulness estimates, not a guarantee.
+**Read each run's `NOTE.md` before quoting a score.** In short:
+- HR: the agent and judge shared a model for part of the run, both failures look like badly written ambiguous
+  questions, and the loop stopped early on exhausted quota. 95% interval 74-98%.
+- Spares: produced by an earlier version of the code (before ambiguous cases and per-agent output contracts);
+  its two-document passes rest on the LLM judge. 95% interval 86-100%.
+
+The exams come from the same documents the agents read, so treat the scores as faithfulness estimates, not a guarantee.
+Regression mode and the hand-written comparison are covered by offline tests but have no committed real-model run yet.
 
 ## What real runs broke, and how it was fixed
 
@@ -28,7 +33,8 @@ Earlier passes are kept in `runs/_history/`. Each fix is in the pipeline, with a
 - Test facts required details the question never asked for, or merely echoed the question.
 - A spares exam scored 100% without ever needing a tool; tool cases are now computed in Python from the tables.
 - `gpt-oss` made native function calls that the API rejected and were silently scored as refusals.
-- Rate-limit outages could be counted as agent failures.
+- Rate-limit outages were counted as agent failures.
+- "Ambiguous" test questions that only one passage could answer.
 
 ## Run it
 

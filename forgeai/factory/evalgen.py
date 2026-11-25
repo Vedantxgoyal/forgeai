@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import random
+import re
 from collections import defaultdict
 
 from forgeai.factory.toolcases import build_tool_cases
@@ -93,6 +94,24 @@ def _verify_facts(qa: RawQA, texts: list[str]) -> bool:
         return False
     qa.key_facts = facts
     return all(fact_in(f, joined) for f in facts)
+
+
+_DANGLING = re.compile(r"\b(this|that|these|those) (situation|case|scenario|instance|one)\b|\bhere\b", re.I)
+_GENERIC = {"many", "much", "maximum", "minimum", "long", "number", "allowed", "take", "taken", "get", "need", "limit", "time"}
+
+
+def _truly_ambiguous(question: str, a: str, b: str) -> bool:
+    """Both passages must be plausible targets: the question shares a subject with both and names nothing that
+    appears in only one of them. A dangling reference ("this situation") makes a question meaningless, not ambiguous."""
+    if _DANGLING.search(question):
+        return False
+
+    def words(text: str) -> set[str]:
+        return {w.rstrip("s") for w in content_tokens(text)}
+
+    asked = words(question) - {w.rstrip("s") for w in _GENERIC}
+    in_a, in_b = words(a), words(b)
+    return bool(asked & in_a & in_b) and not (asked & (in_a ^ in_b))
 
 
 def _answerability(index: HybridIndex, question: str) -> float:
@@ -250,7 +269,7 @@ def generate_cases(
             not (fact_in(fa, a.body) and fact_in(fb, b.body) and norm(fa) != norm(fb))
             or norm(fa) in norm(raw.question)
             or norm(fb) in norm(raw.question)
-        ):
+        ) or not _truly_ambiguous(raw.question, a.body, b.body):
             stats["dropped_unverified"] += 1
             continue
         if add(

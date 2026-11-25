@@ -91,7 +91,7 @@ def _corpus_text(load: LoadResult) -> str:
 
 def _invented_content(rule: str, corpus: str, ungrounded: list[str]) -> str:
     """A generated domain rule may not introduce facts: numbers, currencies or uncovered topics."""
-    for tok in re.findall(r"\d[\d.,]*\d|\d|[A-Z]{3,}", rule):
+    for tok in re.findall(r"\d[\d.,]*\d|\d|\b[A-Z]{3,}\b", rule):
         if tok.lower() not in corpus:
             return f"introduces '{tok}', which appears in neither documents nor brief"
     low = rule.lower()

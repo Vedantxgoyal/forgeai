@@ -150,7 +150,7 @@ def render_report(
         )
     L += [
         "- The exam is generated from the same documents the agent retrieves from; it measures faithfulness to those documents, not real-world user satisfaction.",
-        f"- Small models: agent `{models['agent']}`, generator `{models['gen']}`, judge `{models['judge']}`.",
+        f"- Configured models: agent `{models['agent']}`, generator `{models['gen']}`, judge `{models['judge']}`.",
     ]
     L += [f"- {x}" for x in manifest_notes]
     tot = usage.get("_total", {})

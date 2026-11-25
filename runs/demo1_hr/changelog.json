@@ -1,66 +1,18 @@
 [
   {
     "iteration": 1,
-    "accepted": true,
-    "note": "accepted",
-    "score_before": 0.75,
+    "accepted": false,
+    "note": "no improvement; kept previous agent | stopped: iteration 2 could not finish (QuotaExhausted); keeping the best agent so far",
+    "score_before": 0.9167,
     "score_after": 0.875,
     "changes": [
       {
-        "category": "hallucination",
-        "kind": "rule",
-        "detail": "[f1h] Never provide information not directly supported by the provided policy context; if unsure, decline.  (LLM-written rule passed leakage checks)",
+        "category": "retrieval_miss",
+        "kind": "retrieval",
+        "detail": "top_k 5 -> 8 (answer may sit just below the cut-off)",
         "addresses": [
-          "par-62fb6b"
-        ],
-        "rejected_reason": ""
-      },
-      {
-        "category": "prompt_defect",
-        "kind": "rule",
-        "detail": "[f1p] When responding, always provide a complete answer that includes every required detail and a valid citation to the relevant policy document; do not omit any part of the answer.  (LLM-written rule passed leakage checks)",
-        "addresses": [
-          "par-e9c8ba",
-          "ans-c73819",
-          "mul-cf9c70"
-        ],
-        "rejected_reason": ""
-      }
-    ]
-  },
-  {
-    "iteration": 2,
-    "accepted": false,
-    "note": "rolled back: dev 0.88->0.82, holdout 0.86->0.86",
-    "score_before": 0.875,
-    "score_after": 0.8333,
-    "changes": [
-      {
-        "category": "prompt_defect",
-        "kind": "rule",
-        "detail": "[f2p] When responding to a user query, the assistant must provide a complete answer that includes all relevant details, steps, and required citations from the policy documents, and must not omit any mandatory information.  (LLM-written rule passed leakage checks)",
-        "addresses": [
-          "par-62fb6b",
-          "mul-cf9c70"
-        ],
-        "rejected_reason": ""
-      }
-    ]
-  },
-  {
-    "iteration": 3,
-    "accepted": false,
-    "note": "rolled back: dev 0.88->0.59, holdout 0.86->0.86",
-    "score_before": 0.875,
-    "score_after": 0.6667,
-    "changes": [
-      {
-        "category": "prompt_defect",
-        "kind": "rule",
-        "detail": "[f3p] When responding to any query, the assistant must provide a complete, detailed answer that includes all relevant procedural steps, required documentation, and internal policy references, citing the specific policy section or document name.  (LLM-written rule passed leakage checks)",
-        "addresses": [
-          "par-62fb6b",
-          "mul-cf9c70"
+          "amb-f2b83b",
+          "amb-066fc0"
         ],
         "rejected_reason": ""
       }

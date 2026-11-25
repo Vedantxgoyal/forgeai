@@ -2,42 +2,43 @@
 
 ## Verdict
 
-**Final agent (v2) passes 21/24 generated test cases (88%).** With only 24 cases the 95% confidence interval is roughly **69% - 96%**, so treat it as an estimate, not a guarantee.
-Dev split 88% (used by the optimizer) vs hold-out 86% (never inspected by it). Hold-out is close to dev: no obvious over-fitting.
+**Final agent (v1) passes 22/24 generated test cases (92%).** With only 24 cases the 95% confidence interval is roughly **74% - 98%**, so treat it as an estimate, not a guarantee.
+Dev split 89% (used by the optimizer) vs hold-out 100% (never inspected by it). Hold-out is close to dev: no obvious over-fitting.
 
 ## Scorecard per iteration
 
 | Iter | Agent | Overall | Dev | Hold-out | Failures by class | Outcome |
 |---|---|---|---|---|---|---|
-| 0 | v1 | 18/24 (75%) | 76% | 71% | hallucination:2, prompt_defect:4 | baseline (as generated) |
-| 1 | v2 | 21/24 (88%) | 88% | 86% | prompt_defect:2, hallucination:1 | accepted |
-| 2 | v3 | 20/24 (83%) | 82% | 86% | prompt_defect:3, hallucination:1 | rolled back: dev 0.88->0.82, holdout 0.86->0.86 |
-| 3 | v3 | 16/24 (67%) | 59% | 86% | prompt_defect:1, wrong_refusal:7 | rolled back: dev 0.88->0.59, holdout 0.86->0.86 |
+| 0 | v1 | 22/24 (92%) | 89% | 100% | retrieval_miss:2 | baseline (as generated) |
+| 1 | v2 | 21/24 (88%) | 89% | 83% | prompt_defect:2, hallucination:1 | no improvement; kept previous agent | stopped: iteration 2 could not finish (QuotaExhausted); keeping the best agent so far |
 
-By case type (final): answerable 10/10, multi_doc 3/4, near_miss 2/3, out_of_scope 3/3, paraphrase 3/4
+By case type (final): ambiguous 0/2, answerable 8/8, multi_doc 4/4, near_miss 3/3, out_of_scope 3/3, paraphrase 4/4
+
+## Prompt tournament (development cases only)
+
+| Candidate | Passed | Prompt words | Result |
+|---|---|---|---|
+| as-generated | 7/10 | 60 |  |
+| quote-first | 6/10 | 79 |  |
+| checklist | 8/10 | 74 | **winner** |
+
+Ties keep the unmodified prompt. With this few cases a one-case lead is weak evidence.
 
 ## Change log (what the optimizer changed and why)
 
-- **Iter 1 / hallucination / rule** (kept; overall 75% -> 88%): [f1h] Never provide information not directly supported by the provided policy context; if unsure, decline.  (LLM-written rule passed leakage checks)  
-  targeted cases: par-62fb6b
-- **Iter 1 / prompt_defect / rule** (kept; overall 75% -> 88%): [f1p] When responding, always provide a complete answer that includes every required detail and a valid citation to the relevant policy document; do not omit any part of the answer.  (LLM-written rule passed leakage checks)  
-  targeted cases: par-e9c8ba, ans-c73819, mul-cf9c70
-- **Iter 2 / prompt_defect / rule** (ROLLED BACK; overall 88% -> 83%): [f2p] When responding to a user query, the assistant must provide a complete answer that includes all relevant details, steps, and required citations from the policy documents, and must not omit any mandatory information.  (LLM-written rule passed leakage checks)  
-  targeted cases: par-62fb6b, mul-cf9c70
-- **Iter 3 / prompt_defect / rule** (ROLLED BACK; overall 88% -> 67%): [f3p] When responding to any query, the assistant must provide a complete, detailed answer that includes all relevant procedural steps, required documentation, and internal policy references, citing the specific policy section or document name.  (LLM-written rule passed leakage checks)  
-  targeted cases: par-62fb6b, mul-cf9c70
+- **Iter 1 / retrieval_miss / retrieval** (ROLLED BACK; overall 92% -> 88%): top_k 5 -> 8 (answer may sit just below the cut-off)  
+  targeted cases: amb-f2b83b, amb-066fc0
 
 ## What still fails, and why
 
-- `par-62fb6b` (paraphrase, dev) **prompt_defect**: "If I get a gift card from a client, what should I do?"  
-  agent said: "You must decline the gift card and report it to Compliance within 5 working days."  
-  judge: facts missing from answer despite being retrieved
-- `mul-cf9c70` (multi_doc, dev) **prompt_defect**: "If a business traveler loses a company laptop during a trip, what must they do and what travel booking rule applies to their flight?"  
-  agent said: "If a business traveler loses a company laptop during a trip, they must report the loss to IT Security within 24 hours. For their flight, the travel booking rule"  
-  judge: judge votes disagreed under fact reordering; deterministic verdict kept; facts missing from answer despite being retrieved
-- `nea-ae162a` (near_miss, holdout) **hallucination**: "What is the maximum annual leave entitlement for a manager under the leave_policy?"  
-  agent said: "The maximum annual leave entitlement for a manager is 24 days per calendar year."  
-  judge: answered a question the documents cannot support
+- `amb-f2b83b` (ambiguous, dev) **retrieval_miss**: "What is the maximum number of days allowed for this situation?"  
+  agent said: "Maximum days per policy:
+- Annual leave carry‑forward: up to 10 days (expires 31 Mar next year) ["leave_policy::0001"].
+- Paid bereavement leave for spouse/chil"  
+  judge: -
+- `amb-066fc0` (ambiguous, dev) **retrieval_miss**: "How many days of leave can be taken for a personal emergency?"  
+  agent said: "Up to 3 days of emergency leave may be approved per year for urgent personal matters such as a house fire or a family member’s hospitalisation."  
+  judge: -
 
 ## Requirements and groundability
 
@@ -60,16 +61,19 @@ Chosen: none (no tool needed for this brief)
 
 ## How trustworthy is this score?
 
-- Exam: 24 cases kept of 24 proposed; 0 discarded because their key facts were not found verbatim in the source; 0 'refusal' questions discarded because the documents could actually answer them. Types: {'paraphrase': 4, 'answerable': 10, 'multi_doc': 4, 'out_of_scope': 3, 'near_miss': 3}.
+- Exam: 24 cases kept of 24 proposed; 0 discarded because their key facts were not found verbatim in the source; 0 'refusal' questions discarded because the documents could actually answer them. Types: {'answerable': 8, 'paraphrase': 4, 'multi_doc': 4, 'ambiguous': 2, 'out_of_scope': 3, 'near_miss': 3}.
 - Judge: deterministic checks decide; LLM judge (qwen/qwen3.8-27b) only arbitrates when some key facts are missing, and counts only if two votes with reversed fact order agree.
-  Overrides by LLM judge: 3; unstable judgements: 1.
+  Overrides by LLM judge: 5; unstable judgements: 0.
+- Output contract: 0 answer(s) exceeded the word limit of 90 (reported, not scored).
 - The exam is generated from the same documents the agent retrieves from; it measures faithfulness to those documents, not real-world user satisfaction.
 - Small models: agent `openai/gpt-oss-20b`, generator `openai/gpt-oss-20b`, judge `qwen/qwen3.8-27b`.
 - intake: 5 questions, 100% reference real document terms
+- MODEL SUBSTITUTION: openai/gpt-oss-20b -> openai/gpt-oss-120b for 122 call(s) because the configured model was unavailable
+- MODEL SUBSTITUTION: qwen/qwen3.8-27b -> openai/gpt-oss-120b for 59 call(s) because the configured model was unavailable
 
 ## Cost
 
-158 LLM calls (30 cache hits), 129503 tokens, 65.59s of model time.
+229 LLM calls (52 cache hits), 177873 tokens, 112.43s of model time.
 
 ## Final agent rules
 
@@ -77,10 +81,9 @@ Chosen: none (no tool needed for this brief)
 2. Cite the chunk ids you used in "citations", e.g. ["doc#3"]. Cite only passages that actually contain the answer.
 3. If the CONTEXT does not contain the answer, set refused=true and use the refusal sentence. A partial answer must say what is missing.
 4. Copy numbers, durations, names, codes and conditions exactly as written in the CONTEXT; never round or convert unless asked.
-5. Politely decline these topics, even if the CONTEXT mentions them: legal advice; salary negotiation; pension investment advice; personal medical advice.
-6. The documents do NOT cover: salary; pension. Say so instead of answering from general knowledge.
-7. You only help with: annual leave; sick leave; bereavement leave; harassment; disciplinary process; company equipment use. Questions unrelated to these topics are out of scope: refuse them in one sentence.
-8. Never provide information not directly supported by the provided policy context; if unsure, decline.  _(added iter 1: hallucination)_
-9. When responding, always provide a complete answer that includes every required detail and a valid citation to the relevant policy document; do not omit any part of the answer.  _(added iter 1: prompt_defect)_
+5. If a question could mean more than one thing in the CONTEXT, either answer each meaning briefly and label it, or ask which one is meant.
+6. Politely decline these topics, even if the CONTEXT mentions them: legal advice; salary negotiation; pension investment advice; personal medical advice.
+7. The documents do NOT cover: salary; pension. Say so instead of answering from general knowledge.
+8. You only help with: annual leave; sick leave; bereavement leave; harassment; disciplinary process; company equipment use. Questions unrelated to these topics are out of scope: refuse them in one sentence.
 
 Retrieval: chunk 120/18 words, top_k 5, mode hybrid, rerank False, query_rewrite False
