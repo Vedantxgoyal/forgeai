@@ -20,32 +20,14 @@
   {
     "iteration": 2,
     "accepted": true,
-    "note": "accepted",
+    "note": "accepted | stopped: no dev failures remain",
     "score_before": 0.9583,
-    "score_after": 0.9583,
+    "score_after": 1.0,
     "changes": [
       {
         "category": "retrieval_miss",
         "kind": "retrieval",
         "detail": "enable LLM query rewrite (user wording differs from document vocabulary)",
-        "addresses": [
-          "par-f06b90"
-        ],
-        "rejected_reason": ""
-      }
-    ]
-  },
-  {
-    "iteration": 3,
-    "accepted": true,
-    "note": "accepted",
-    "score_before": 0.9583,
-    "score_after": 0.9583,
-    "changes": [
-      {
-        "category": "hallucination",
-        "kind": "rule",
-        "detail": "[f3h] Never infer or calculate costs, timelines, or terms not explicitly stated in the provided context; decline to answer if the data is missing.  (LLM-written rule passed leakage checks)",
         "addresses": [
           "par-f06b90"
         ],

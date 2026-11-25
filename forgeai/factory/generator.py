@@ -31,7 +31,10 @@ from forgeai.tools.base import ToolContext
 def select_tools(client: LLMClient, req: Requirements, load: LoadResult, profile: CorpusProfile,
                  model: str | None = None) -> tuple[list[ToolChoice], list[dict]]:
     ctx = ToolContext(tables=load.tables)
-    req_text = json.dumps(req.model_dump(exclude={"groundability", "qa"}), ensure_ascii=False)
+    # Quotes may come only from what the client said (brief, their answers) or the distilled duties, never from
+    # model-written text such as interview questions or auto-filled assumptions.
+    req_text = json.dumps(req.model_dump(exclude={"groundability", "qa", "assumptions"}), ensure_ascii=False)
+    req_text += " " + " ".join(x.answer for x in req.qa if x.source == "user")
     corpus_text = f"BRIEF: {req.brief}\nPURPOSE: {req.purpose}\nSCOPE: {req.scope}\nTOPICS: {', '.join(req.must_answer_topics)}"
     facts = f"{len(profile.docs)} documents; tables: {list(load.tables) or 'none'}"
     res = generate_structured(client, ToolPicks, [{"role": "user", "content": render(

@@ -168,5 +168,14 @@ def chat(
         history += [{"role": "user", "content": q}, {"role": "assistant", "content": r.answer}]
 
 
+@app.command()
+def ui(port: int = 8600):
+    """Serve the web frontend (build it once: cd web, npm install, npm run build)."""
+    import uvicorn
+
+    console.print(f"ForgeAI UI on http://127.0.0.1:{port}")
+    uvicorn.run("forgeai.server:app", host="127.0.0.1", port=port, log_level="warning")
+
+
 if __name__ == "__main__":
     app()

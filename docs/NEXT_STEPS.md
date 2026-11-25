@@ -10,7 +10,7 @@ Groq free tier: 200k tokens per day **per model**, rolling. One demo run uses ~1
    Check that it picks the `weather` tool and nothing unnecessary.
 3. Record the video using `docs/DEMO_SCRIPT.md` (do this AFTER step 1 so the numbers match; update README table too).
 4. Create an empty GitHub repo, then: `git remote add origin <url>` and `git push -u origin main`.
-5. Optional hosted link: Streamlit Community Cloud, main file `app.py`, put FORGE_* values in the app's Secrets.
-   Needs a requirements.txt (`-e .[embed,ui]`).
+5. Optional hosted link: any host that can run `uvicorn forgeai.server:app` with Node used only to build `web/`
+   (e.g. a Docker Space). Add authentication or disable /api/build and chat limits before making it public.
 
 `.env` holds the Groq key and is git-ignored. Never commit it.

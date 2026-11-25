@@ -12,6 +12,8 @@ Unsupported topics are removed from must_answer and recorded as ungrounded, whic
 
 from __future__ import annotations
 
+import re
+
 from pydantic import BaseModel
 
 from forgeai.llm.client import LLMClient
@@ -42,6 +44,23 @@ def lexical_coverage(topic: str, passages: list[str]) -> float:
     return len(want & have) / len(want)
 
 
+# Tools that bring in information the documents cannot contain (live data). A topic they serve is not
+# "ungrounded". Table and arithmetic tools are not listed: they only work on what the documents hold.
+LIVE_DATA_TOOLS = {
+    "weather": {"weather", "forecast", "temperature", "rainfall"},
+    "current_date": {"today", "current date", "days remaining", "days left"},
+}
+_LIVE = re.compile(r"real.?time|live|current|today|now|forecast|latest", re.I)
+
+
+def live_tool_for(topic: str) -> str:
+    """Name of the live-data tool that serves this topic, or ''. Needs a live-data cue AND the tool's subject."""
+    low = topic.lower()
+    if not _LIVE.search(low):
+        return ""
+    return next((name for name, words in LIVE_DATA_TOOLS.items() if any(w in low for w in words)), "")
+
+
 def check_topic(client: LLMClient, index: HybridIndex, topic: str, model: str | None = None, extra_evidence: str = "") -> TopicCheck:
     hits = index.search(topic, SearchParams(top_k=3, mode="hybrid"))
     # Evidence = best passages (with section headings) + what the available tools can do + table column names.
@@ -68,6 +87,9 @@ def check_topic(client: LLMClient, index: HybridIndex, topic: str, model: str | 
         status = "supported"
     else:
         status = "partial"
+    tool = live_tool_for(topic)
+    if tool and status == "unsupported":
+        status, note = "partial", f"not in the documents; live data comes from the {tool} tool"
     return TopicCheck(topic=topic, status=status, lexical_coverage=round(cov, 2), best_chunks=[h.chunk.chunk_id for h in hits],
                       llm_verdict=verdict, note=note)
 

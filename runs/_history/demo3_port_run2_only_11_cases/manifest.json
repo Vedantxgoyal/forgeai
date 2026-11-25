@@ -1,0 +1,75 @@
+{
+  "brief": "An assistant for vessel masters planning port calls: it answers questions from our Rotterdam and Singapore port guides, and checks the current weather at the port to say whether operations are within the weather limits.",
+  "docs": "demos/port_docs",
+  "models": {
+    "gen": "openai/gpt-oss-120b",
+    "judge": "qwen/qwen3.8-27b",
+    "agent": "openai/gpt-oss-120b"
+  },
+  "usage": {
+    "intake": {
+      "calls": 3,
+      "cache_hits": 0,
+      "prompt_tokens": 2059,
+      "completion_tokens": 697,
+      "seconds": 3.4985386000007566,
+      "total_tokens": 2756
+    },
+    "guard": {
+      "calls": 6,
+      "cache_hits": 0,
+      "prompt_tokens": 2249,
+      "completion_tokens": 430,
+      "seconds": 3.5672823000022618,
+      "total_tokens": 2679
+    },
+    "generate": {
+      "calls": 2,
+      "cache_hits": 0,
+      "prompt_tokens": 1330,
+      "completion_tokens": 255,
+      "seconds": 1.0191751999991538,
+      "total_tokens": 1585
+    },
+    "evalgen": {
+      "calls": 8,
+      "cache_hits": 0,
+      "prompt_tokens": 3045,
+      "completion_tokens": 1646,
+      "seconds": 6.403197499999806,
+      "total_tokens": 4691
+    },
+    "agent": {
+      "calls": 11,
+      "cache_hits": 0,
+      "prompt_tokens": 11158,
+      "completion_tokens": 1041,
+      "seconds": 5.892003500004648,
+      "total_tokens": 12199
+    },
+    "judge": {
+      "calls": 4,
+      "cache_hits": 0,
+      "prompt_tokens": 2460,
+      "completion_tokens": 64,
+      "seconds": 0.7073703999976715,
+      "total_tokens": 2524
+    },
+    "_total": {
+      "calls": 34,
+      "cache_hits": 0,
+      "total_tokens": 26434,
+      "seconds": 21.09
+    }
+  },
+  "seconds": 118.6,
+  "notes": [
+    "intake: 3 questions, 100% reference real document terms",
+    "WARNING: only 11 verified cases could be generated (<20 target); score is less reliable."
+  ],
+  "seed": 7,
+  "final_score": 0.9091,
+  "tools": [
+    "weather"
+  ]
+}

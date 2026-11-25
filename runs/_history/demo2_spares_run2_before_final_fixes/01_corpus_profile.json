@@ -1,0 +1,168 @@
+{
+  "docs": [
+    {
+      "doc_id": "procurement_procedure",
+      "file": "procurement_procedure.pdf",
+      "kind": "pdf",
+      "n_words": 163,
+      "n_pages": 1,
+      "headings": [
+        "1. Approval Thresholds",
+        "2. Quotes",
+        "3. Critical Spares",
+        "4. Urgent Orders"
+      ],
+      "top_terms": [
+        "approval",
+        "critical",
+        "orders usd",
+        "orders",
+        "urgent",
+        "superintendent",
+        "urgent orders",
+        "usd require",
+        "quotes",
+        "purchase",
+        "spares",
+        "require approval"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    },
+    {
+      "doc_id": "spares_catalogue",
+      "file": "spares_catalogue.csv",
+      "kind": "table",
+      "n_words": 503,
+      "n_pages": null,
+      "headings": [],
+      "top_terms": [
+        "sp-",
+        "oceanparts sp-",
+        "nordmarine sp-",
+        "oceanparts",
+        "nordmarine",
+        "deck",
+        "engine",
+        "boiler",
+        "engine wartsila",
+        "engine man",
+        "auxiliary engine",
+        "auxiliary"
+      ],
+      "columns": [
+        "part_no",
+        "description",
+        "category",
+        "equipment",
+        "unit_price_usd",
+        "stock_qty",
+        "lead_time_days",
+        "min_order_qty",
+        "supplier_id"
+      ],
+      "n_rows": 39,
+      "sample_rows": [
+        {
+          "part_no": "SP-1007",
+          "description": "Fuel injector nozzle",
+          "category": "Main engine",
+          "equipment": "MAN B&W 6S50MC",
+          "unit_price_usd": "412.5",
+          "stock_qty": "8",
+          "lead_time_days": "42",
+          "min_order_qty": "1",
+          "supplier_id": "OceanParts"
+        },
+        {
+          "part_no": "SP-1014",
+          "description": "Piston ring set",
+          "category": "Main engine",
+          "equipment": "MAN B&W 6S50MC",
+          "unit_price_usd": "1890.0",
+          "stock_qty": "8",
+          "lead_time_days": "14",
+          "min_order_qty": "1",
+          "supplier_id": "OceanParts"
+        },
+        {
+          "part_no": "SP-1021",
+          "description": "Cylinder liner",
+          "category": "Main engine",
+          "equipment": "MAN B&W 6S50MC",
+          "unit_price_usd": "7450.0",
+          "stock_qty": "1",
+          "lead_time_days": "45",
+          "min_order_qty": "1",
+          "supplier_id": "NordMarine"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "doc_id": "supplier_nordmarine_terms",
+      "file": "supplier_nordmarine_terms.pdf",
+      "kind": "pdf",
+      "n_words": 141,
+      "n_pages": 1,
+      "headings": [
+        "1. Pricing",
+        "2. Delivery",
+        "3. Payment",
+        "4. Returns and Warranty"
+      ],
+      "top_terms": [
+        "delivery",
+        "non-oem parts",
+        "non-oem",
+        "usd discount",
+        "discount",
+        "parts",
+        "order",
+        "usd",
+        "discount applies",
+        "applies",
+        "warranty",
+        "months"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    },
+    {
+      "doc_id": "supplier_oceanparts_terms",
+      "file": "supplier_oceanparts_terms.pdf",
+      "kind": "pdf",
+      "n_words": 179,
+      "n_pages": 1,
+      "headings": [
+        "1. Pricing and Discounts",
+        "2. Delivery",
+        "3. Payment",
+        "4. Returns and Warranty"
+      ],
+      "top_terms": [
+        "delivery",
+        "date",
+        "days",
+        "payment",
+        "order",
+        "order value",
+        "usd",
+        "value",
+        "applies",
+        "warranty",
+        "catalogue",
+        "discount"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    }
+  ],
+  "skipped": []
+}

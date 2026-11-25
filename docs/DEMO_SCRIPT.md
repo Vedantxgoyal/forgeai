@@ -23,14 +23,16 @@ Open `runs/demo1_hr/report.md`:
 - "What still fails and why": three cases with causes. Confidence interval 69–96%. "A well-explained 88% beats a suspicious 100%."
 - Judge section: deterministic checks decide; LLM only arbitrates with two votes in reversed order (position bias); different model family (self-preference); per-fact yes/no (verbosity).
 
-## 4:30–5:45 — Demo 2: ship-spares procurement (very different)
-1. `runs/demo2_spares/agent.final.yaml`: picks **csv_lookup + calculator**, with quoted justifications from the brief; nothing else.
-2. `runs/demo2_spares/04_evals.json`: show a `tool` case — the expected total is computed in Python from the CSV.
-3. Report: 23/24. Iteration 1 (bigger top_k) was rolled back. Say openly: the one remaining failure is likely my judge
-   counting a list marker "1." as a number (see NOTE.md), fixed in code afterwards.
-4. Live chat (`streamlit run app.py`, Chat tab, open the Trace panel):
-   - "What is the total for 8 units of SP-1042?"  (lookup + arithmetic)
-   - "Who must approve a purchase order of USD 7,840?"  (procedure document)
+## 4:30–5:45 — Demo 2: ship-spares procurement (very different), shown in the web UI
+1. `forge ui`, open http://127.0.0.1:8600, choose **demo2_spares**. Rotate the forge; explain node colours.
+2. Stage 4 Agent: **csv_lookup + calculator**, each with the quote that justifies it.
+3. Stage 5 Exam: filter to `tool` — expected totals are computed in Python from the CSV.
+4. Stage 6 Optimizer: iteration 1 (bigger top_k) rolled back, iteration 2 (query rewrite) kept, 23/24 to 24/24.
+   Say it openly: "24/24 is on this exam only; the interval is 86-100%, the two-document cases rest on the LLM judge,
+   and no case applies a discount to a total."
+5. Chat (open the Trace):
+   - "What is the total for 8 units of SP-1042?"
+   - "Who must approve a purchase order of USD 7,840?"
    - "How do I cook a steak?"  (refusal)
 
 ## 5:45–6:30 — Robustness + what I'd do next

@@ -1,0 +1,417 @@
+{
+  "stats": {
+    "proposed": 24,
+    "kept": 24,
+    "dropped_unverified": 0,
+    "dropped_answerable_refusal": 0,
+    "by_type": {
+      "paraphrase": 4,
+      "answerable": 4,
+      "multi_doc": 4,
+      "out_of_scope": 3,
+      "near_miss": 3,
+      "tool": 6
+    }
+  },
+  "cases": [
+    {
+      "id": "par-a8b756",
+      "type": "paraphrase",
+      "question": "How quickly do we need to order more of a vital component if we only have one left?",
+      "expected_refusal": false,
+      "reference_answer": "A replenishment order must be raised within 2 working days when a critical part has stock of 1 or below.",
+      "key_facts": [
+        "2 working days",
+        "stock of 1 or below"
+      ],
+      "source_docs": [
+        "procurement_procedure"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0003"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "ans-e5fb2b",
+      "type": "answerable",
+      "question": "What is the lead time in days for the SP-1028 Exhaust valve spindle?",
+      "expected_refusal": false,
+      "reference_answer": "The lead time for the SP-1028 Exhaust valve spindle is 45 days.",
+      "key_facts": [
+        "45"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [
+        "spares_catalogue::r00003"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "par-f06b90",
+      "type": "paraphrase",
+      "question": "If I need my parts to arrive faster than the standard schedule, what is the cost and how much quicker will it be?",
+      "expected_refusal": false,
+      "reference_answer": "Express delivery costs an extra 20% of the order value and reduces the stated lead time by half.",
+      "key_facts": [
+        "20%",
+        "halves the stated lead time"
+      ],
+      "source_docs": [
+        "supplier_nordmarine_terms"
+      ],
+      "gold_chunks": [
+        "supplier_nordmarine_terms::0002"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "par-2f80f8",
+      "type": "paraphrase",
+      "question": "If I need to send back some spare components that I haven't opened, how long do I have to do it and will I get my full money back?",
+      "expected_refusal": false,
+      "reference_answer": "You can return unused parts in their original packaging within 30 days, but you will only receive a refund after a 15% restocking fee is deducted.",
+      "key_facts": [
+        "30 days",
+        "15% restocking fee"
+      ],
+      "source_docs": [
+        "supplier_oceanparts_terms"
+      ],
+      "gold_chunks": [
+        "supplier_oceanparts_terms::0004"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-4786ec",
+      "type": "answerable",
+      "question": "Who is required to approve purchase orders from USD 2,001 to USD 10,000?",
+      "expected_refusal": false,
+      "reference_answer": "Orders from USD 2,001 to USD 10,000 require approval from the Superintendent.",
+      "key_facts": [
+        "Superintendent"
+      ],
+      "source_docs": [
+        "procurement_procedure"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "par-920d4f",
+      "type": "paraphrase",
+      "question": "How much does the turbocharger bearing kit for the ABB TPL77 engine cost?",
+      "expected_refusal": false,
+      "reference_answer": "The turbocharger bearing kit for the ABB TPL77 engine costs $2675.00.",
+      "key_facts": [
+        "2675.0"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [
+        "spares_catalogue::r00004"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-6bacf2",
+      "type": "answerable",
+      "question": "What is the cost for certificates for non-OEM parts per order?",
+      "expected_refusal": false,
+      "reference_answer": "Certificates for non-OEM parts cost USD 150 per order.",
+      "key_facts": [
+        "USD 150"
+      ],
+      "source_docs": [
+        "supplier_nordmarine_terms"
+      ],
+      "gold_chunks": [
+        "supplier_nordmarine_terms::0001"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "ans-542cd9",
+      "type": "answerable",
+      "question": "What volume discount applies to a single order with a value above USD 15,000?",
+      "expected_refusal": false,
+      "reference_answer": "A volume discount of 8% applies to a single order above USD 15,000.",
+      "key_facts": [
+        "8%"
+      ],
+      "source_docs": [
+        "supplier_oceanparts_terms"
+      ],
+      "gold_chunks": [
+        "supplier_oceanparts_terms::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-5a4be8",
+      "type": "multi_doc",
+      "question": "If a vessel arrives in 10 days and the buyer chooses express air freight from OceanParts, what is the surcharge percentage and who must approve the express surcharge?",
+      "expected_refusal": false,
+      "reference_answer": "The express air freight surcharge is 12% of the order value, and the Superintendent must approve the express surcharge regardless of order value.",
+      "key_facts": [
+        "The Superintendent must approve the express surcharge regardless of order value.",
+        "Express air freight is available at a surcharge of 12% of the order value"
+      ],
+      "source_docs": [
+        "procurement_procedure",
+        "supplier_oceanparts_terms"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0004",
+        "supplier_oceanparts_terms::0002"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-0ec499",
+      "type": "multi_doc",
+      "question": "What is the surcharge percentage for express delivery with Nordmarine, and what is the maximum credit percentage a buyer can receive from Oceanparts for late delivery?",
+      "expected_refusal": false,
+      "reference_answer": "The surcharge for express delivery with Nordmarine is 20% of the order value, while the maximum credit a buyer can receive from Oceanparts for late delivery is capped at 10% of the order value.",
+      "key_facts": [
+        "Express delivery is available at a surcharge of 20% of the order value",
+        "capped at 10% of the order value"
+      ],
+      "source_docs": [
+        "supplier_nordmarine_terms",
+        "supplier_oceanparts_terms"
+      ],
+      "gold_chunks": [
+        "supplier_nordmarine_terms::0002",
+        "supplier_oceanparts_terms::0002"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-238d7c",
+      "type": "multi_doc",
+      "question": "If an urgent order for a vessel arriving in 8 days is shipped via express air freight, what is the surcharge percentage and who must approve it?",
+      "expected_refusal": false,
+      "reference_answer": "The surcharge is 12% of the order value, and the Superintendent must approve it regardless of the order value.",
+      "key_facts": [
+        "Express air freight is available at a surcharge of 12% of the order value",
+        "The Superintendent must approve the express surcharge regardless of order value"
+      ],
+      "source_docs": [
+        "supplier_oceanparts_terms",
+        "procurement_procedure"
+      ],
+      "gold_chunks": [
+        "supplier_oceanparts_terms::0002",
+        "procurement_procedure::0004"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-365fa1",
+      "type": "multi_doc",
+      "question": "If a critical steering gear part is returned to Nordmarine 10 days after delivery, what is the restocking fee, and what is the maximum time allowed to raise a replenishment order if the stock of that part drops to 1?",
+      "expected_refusal": false,
+      "reference_answer": "The restocking fee is 25%, and a replenishment order must be raised within 2 working days.",
+      "key_facts": [
+        "a 25% restocking fee",
+        "a replenishment order must be raised within 2 working days"
+      ],
+      "source_docs": [
+        "procurement_procedure",
+        "supplier_nordmarine_terms"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0003",
+        "supplier_nordmarine_terms::0004"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "out-ee1d81",
+      "type": "out_of_scope",
+      "question": "What is the best way to season a steak for a barbecue?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "out-8f6989",
+      "type": "out_of_scope",
+      "question": "Can you explain the rules of cricket to a beginner?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "out-46fea6",
+      "type": "out_of_scope",
+      "question": "How do I write a Python script to sort a list of integers?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-8442f1",
+      "type": "near_miss",
+      "question": "According to the supplier_nordmarine_terms, what is the specific penalty fee percentage for late payment on a spares_catalogue item if the invoice is 15 days overdue?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-8bef18",
+      "type": "near_miss",
+      "question": "The procurement_procedure states that orders over 5000 EUR require approval; what is the exact email address of the regional finance director who must sign off on this approval?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-90c590",
+      "type": "near_miss",
+      "question": "In the supplier_oceanparts_terms, what is the maximum storage temperature allowed for the hydraulic seals listed in the spares_catalogue before they degrade?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "too-a13b92",
+      "type": "tool",
+      "question": "What is the total for 8 units of SP-1042 (Fuel pump plunger) based on its unit price usd, before any discounts, surcharges or taxes?",
+      "expected_refusal": false,
+      "reference_answer": "8 x 980 = 7840",
+      "key_facts": [
+        "7840"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "too-57b868",
+      "type": "tool",
+      "question": "What is the exact difference in unit price usd between SP-1091 (Mechanical seal) and SP-1140 (Flame sensor)?",
+      "expected_refusal": false,
+      "reference_answer": "|218 - 163| = 55",
+      "key_facts": [
+        "55"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "too-14f359",
+      "type": "tool",
+      "question": "What is the min order qty recorded for SP-1112 (Purifier disc stack)?",
+      "expected_refusal": false,
+      "reference_answer": "min order qty = 1",
+      "key_facts": [
+        "1"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "too-0b81ce",
+      "type": "tool",
+      "question": "What is the total for 6 units of SP-1217 (Immersion suit) based on its unit price usd, before any discounts, surcharges or taxes?",
+      "expected_refusal": false,
+      "reference_answer": "6 x 340 = 2040",
+      "key_facts": [
+        "2040"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "too-a8221e",
+      "type": "tool",
+      "question": "What is the exact difference in unit price usd between SP-1063 (Cylinder head gasket) and SP-1084 (Seawater pump impeller)?",
+      "expected_refusal": false,
+      "reference_answer": "|134 - 346| = 212",
+      "key_facts": [
+        "212"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "too-8bd1f7",
+      "type": "tool",
+      "question": "What is the min order qty recorded for SP-1273 (Deck crane wire rope 20mm 100m)?",
+      "expected_refusal": false,
+      "reference_answer": "min order qty = 1",
+      "key_facts": [
+        "1"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    }
+  ]
+}

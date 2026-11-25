@@ -1,0 +1,42 @@
+{
+  "grounded_share": 1.0,
+  "questions": [
+    {
+      "question": "Should the assistant prioritize the \"Weather Limits\" section from the Rotterdam Port Call Guide over the Singapore guide when the wind speed forecasts differ?",
+      "why": "Both guides contain a Weather Limits section, and we need to know which takes precedence in case of conflicting data.",
+      "grounded_in": [
+        "call",
+        "guide",
+        "limits",
+        "port",
+        "rotterdam",
+        "singapore",
+        "speed",
+        "weather",
+        "wind"
+      ]
+    },
+    {
+      "question": "When a vessel master asks about crew shore leave, should the assistant reference the \"Crew Shore Leave\" heading from the Singapore guide exclusively, ignoring Rotterdam’s sections?",
+      "why": "The Singapore guide includes a specific Crew Shore Leave section not present in Rotterdam, raising a potential scope question.",
+      "grounded_in": [
+        "crew",
+        "guide",
+        "leave",
+        "rotterdam",
+        "shore",
+        "singapore"
+      ]
+    },
+    {
+      "question": "If a pre‑arrival notice is required, does the assistant need to combine details from both the \"Pre‑arrival Notice\" sections of Rotterdam and Singapore guides into a single response?",
+      "why": "Both documents have a Pre‑arrival Notice heading, and we must decide whether to merge or separate the information.",
+      "grounded_in": [
+        "arrival",
+        "notice",
+        "rotterdam",
+        "singapore"
+      ]
+    }
+  ]
+}

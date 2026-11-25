@@ -1,0 +1,174 @@
+{
+  "stats": {
+    "proposed": 11,
+    "kept": 10,
+    "dropped_unverified": 1,
+    "dropped_answerable_refusal": 0,
+    "by_type": {
+      "answerable": 3,
+      "multi_doc": 2,
+      "out_of_scope": 2,
+      "near_miss": 3
+    }
+  },
+  "cases": [
+    {
+      "id": "ans-d2decd",
+      "type": "answerable",
+      "question": "What is required for bunkering according to the passage?",
+      "expected_refusal": false,
+      "reference_answer": "Bunkering requires a completed safety checklist signed by the Chief Engineer.",
+      "key_facts": [
+        "Bunkering requires a completed safety checklist signed by the Chief Engineer"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0004"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-446141",
+      "type": "answerable",
+      "question": "When must the pilot be requested for vessels of 300 gross tonnage and above?",
+      "expected_refusal": false,
+      "reference_answer": "The pilot must be requested at least 12 hours in advance through the Port Operations Control Centre.",
+      "key_facts": [
+        "12 hours",
+        "Port Operations Control Centre"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-ebe037",
+      "type": "answerable",
+      "question": "When must a vessel longer than 75 metres request a pilot?",
+      "expected_refusal": false,
+      "reference_answer": "The pilot must be requested 6 hours before the estimated time of arrival on VHF channel 2.",
+      "key_facts": [
+        "6 hours",
+        "VHF channel 2"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0001"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "mul-33ccaf",
+      "type": "multi_doc",
+      "question": "What must be done before departure regarding garbage, and what is required for pilotage for vessels of 300 gross tonnage and above?",
+      "expected_refusal": false,
+      "reference_answer": "Garbage must be landed before departure unless storage capacity is sufficient for the next voyage, and pilotage is compulsory for vessels of 300 gross tonnage and above, with the pilot requested at least 12 hours in advance through the Port Operations Control Centre.",
+      "key_facts": [
+        "Garbage must be landed before departure unless storage capacity is sufficient for the next voyage.",
+        "Pilotage is compulsory for vessels of 300 gross tonnage and above."
+      ],
+      "source_docs": [
+        "rotterdam_port_guide",
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0004",
+        "singapore_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-a2c3e5",
+      "type": "multi_doc",
+      "question": "What are the pilotage requirements and the required advance notice for vessels longer than 75 metres in Rotterdam and vessels of 300 gross tonnage and above in Singapore?",
+      "expected_refusal": false,
+      "reference_answer": "In Rotterdam, vessels longer than 75 metres must have a pilot and must request the pilot 6 hours before arrival, while in Singapore, vessels of 300 gross tonnage and above must have a pilot and must request the pilot at least 12 hours in advance.",
+      "key_facts": [
+        "Pilot boards at the Maas Center pilot station. Request the pilot 6 hours before the estimated time of arrival on VHF channel 2.",
+        "Pilot is requested at least 12 hours in advance through the Port Operations Control Centre."
+      ],
+      "source_docs": [
+        "rotterdam_port_guide",
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0001",
+        "singapore_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "out-6c3396",
+      "type": "out_of_scope",
+      "question": "What is the capital of France?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "out-12805e",
+      "type": "out_of_scope",
+      "question": "How do I bake a chocolate cake?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-43145c",
+      "type": "near_miss",
+      "question": "What is the current wind speed threshold for safe berthing in Rotterdam according to the rotterdam_port_guide?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-2d9d49",
+      "type": "near_miss",
+      "question": "Can you provide the real‑time weather compliance status for Singapore port based on the singapore_port_guide?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-c9f8a0",
+      "type": "near_miss",
+      "question": "What is the exact wind speed limit for mooring operations in Rotterdam as per the rotterdam_port_guide?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true
+    }
+  ]
+}

@@ -1,9 +1,10 @@
-# Provenance and known issues of this run
-Models: agent/generator qwen/qwen3.8-27b, judge openai/gpt-oss-120b (Groq free tier).
+# Provenance and how to read the 24/24
+Models: agent/generator qwen/qwen3.8-27b, judge openai/gpt-oss-120b (Groq free tier). Many LLM calls were served from
+the disk cache of the previous run (same prompts), so this run finished quickly.
 
-Read the score (23/24) with these two caveats, both found by reviewing this report and fixed in code afterwards:
-1. The single remaining "hallucination" (par-f06b90) is very likely a JUDGE FALSE POSITIVE: the judge counted the
-   list marker "1." in the answer as a number missing from the context.
-2. Iterations 2 and 3 were kept although neither improved any score (dev and hold-out unchanged), and the rule added
-   in iteration 3 partly conflicts with the calculator rule. The optimizer now keeps a change only if a score improves.
-The run was not repeated because the free tier's daily token limit was reached. Re-run to confirm.
+24/24 does NOT mean the agent is flawless (95% interval 86-100%). Weaknesses of this exam that a reviewer should know:
+- All 4 multi-document cases passed through the LLM judge's override (their key facts are whole sentences, so exact
+  matching fails on any rewording). The answers were spot-checked by reading them, but the pass rests on the LLM judge.
+- Tool cases cover lookup, multiplication and difference. None applies a supplier volume discount or an approval
+  threshold to a computed total, which is the hardest thing a real user would ask.
+- Questions are generated from the same documents the agent reads.

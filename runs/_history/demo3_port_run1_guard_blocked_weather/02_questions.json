@@ -1,0 +1,66 @@
+{
+  "grounded_share": 1.0,
+  "questions": [
+    {
+      "question": "Should the assistant provide specific wind speed thresholds for weather limits based on the values listed in the Rotterdam Port Call Guide's \"Weather Limits\" section?",
+      "why": "The Rotterdam guide specifies wind speed limits that may need to be referenced for operational decisions.",
+      "grounded_in": [
+        "call",
+        "guide",
+        "limits",
+        "port",
+        "rotterdam",
+        "speed",
+        "weather",
+        "wind"
+      ]
+    },
+    {
+      "question": "Do you require the assistant to confirm pilotage requirements for both Rotterdam and Singapore ports, including the specific hours mentioned in each guide?",
+      "why": "Both guides contain a \"Pilotage\" section with distinct operational hours that may need to be cited.",
+      "grounded_in": [
+        "guide",
+        "hours",
+        "pilotage",
+        "rotterdam",
+        "singapore"
+      ]
+    },
+    {
+      "question": "Should the assistant check real-time weather data against the wind speed limits stated in the Singapore Port Call Guide's \"Weather Limits\" section and alert the master if limits are exceeded?",
+      "why": "The Singapore guide includes weather limits that must be monitored for safety compliance.",
+      "grounded_in": [
+        "call",
+        "guide",
+        "limits",
+        "port",
+        "singapore",
+        "speed",
+        "weather",
+        "wind"
+      ]
+    },
+    {
+      "question": "When the assistant references berthing and mooring procedures, should it prioritize the Rotterdam guide's \"Berthing and Mooring\" section over any similar content in the Singapore guide?",
+      "why": "The Rotterdam guide has a dedicated berthing section that may differ from Singapore's anchorage procedures.",
+      "grounded_in": [
+        "berthing",
+        "guide",
+        "mooring",
+        "rotterdam",
+        "singapore"
+      ]
+    },
+    {
+      "question": "Do you want the assistant to provide waste and bunkering guidance only from the Rotterdam guide, or should it also include any relevant waste handling instructions from the Singapore guide?",
+      "why": "The Rotterdam guide contains a \"Waste and Bunkering\" section, while the Singapore guide does not, potentially creating a gap in waste procedures.",
+      "grounded_in": [
+        "bunkering",
+        "guide",
+        "rotterdam",
+        "singapore",
+        "waste"
+      ]
+    }
+  ]
+}

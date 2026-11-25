@@ -1,0 +1,114 @@
+{
+  "agent_name": "port_call_assistant",
+  "purpose": "Provide vessel masters with port‑specific procedural answers and weather limit checks for Rotterdam and Singapore ports.",
+  "audience": "Vessel masters and ship officers planning port calls",
+  "tone": "formal, concise",
+  "scope": "Answers questions based on the Rotterdam and Singapore port guides and checks current weather against each port's limits. It supplies separate information for each port without merging content.",
+  "must_answer_topics": [
+    "Weather Limits",
+    "Crew Shore Leave",
+    "Pre‑arrival Notice",
+    "Pilotage",
+    "Berthing and Mooring",
+    "Anchorage"
+  ],
+  "must_refuse_topics": [],
+  "qa": [
+    {
+      "question": "Should the assistant prioritize the \"Weather Limits\" section from the Rotterdam Port Call Guide over the Singapore guide when the wind speed forecasts differ?",
+      "answer": "No, use the weather limits of the specific port; do not automatically prioritize Rotterdam over Singapore when forecasts differ.",
+      "source": "auto-default"
+    },
+    {
+      "question": "When a vessel master asks about crew shore leave, should the assistant reference the \"Crew Shore Leave\" heading from the Singapore guide exclusively, ignoring Rotterdam’s sections?",
+      "answer": "Yes, crew shore‑leave queries should be answered using the Singapore guide’s “Crew Shore Leave” section, as Rotterdam has no equivalent.",
+      "source": "auto-default"
+    },
+    {
+      "question": "If a pre‑arrival notice is required, does the assistant need to combine details from both the \"Pre‑arrival Notice\" sections of Rotterdam and Singapore guides into a single response?",
+      "answer": "No, the assistant should provide the pre‑arrival notice requirements for each port separately rather than merging them into one combined response.",
+      "source": "auto-default"
+    }
+  ],
+  "groundability": [
+    {
+      "topic": "Weather Limits",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "singapore_port_guide::0003",
+        "rotterdam_port_guide::0003",
+        "singapore_port_guide::0002"
+      ],
+      "llm_verdict": "yes",
+      "note": "Provides specific wind speed limits for operations"
+    },
+    {
+      "topic": "Crew Shore Leave",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "singapore_port_guide::0004",
+        "rotterdam_port_guide::0001",
+        "rotterdam_port_guide::0004"
+      ],
+      "llm_verdict": "yes",
+      "note": "Specifies shore pass requirement and return time for crew shore leave."
+    },
+    {
+      "topic": "Pre‑arrival Notice",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0000",
+        "singapore_port_guide::0000",
+        "rotterdam_port_guide::0001"
+      ],
+      "llm_verdict": "yes",
+      "note": "Provides specific pre‑arrival notice timing requirements"
+    },
+    {
+      "topic": "Pilotage",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "singapore_port_guide::0001",
+        "rotterdam_port_guide::0001",
+        "rotterdam_port_guide::0004"
+      ],
+      "llm_verdict": "yes",
+      "note": "Provides concrete pilotage requirements"
+    },
+    {
+      "topic": "Berthing and Mooring",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0002",
+        "rotterdam_port_guide::0003",
+        "singapore_port_guide::0002"
+      ],
+      "llm_verdict": "yes",
+      "note": "Provides specific mooring and tug requirements."
+    },
+    {
+      "topic": "Anchorage",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "singapore_port_guide::0002",
+        "singapore_port_guide::0003",
+        "rotterdam_port_guide::0003"
+      ],
+      "llm_verdict": "yes",
+      "note": "Provides specific anchoring rules."
+    }
+  ],
+  "ungrounded_topics": [],
+  "assumptions": [
+    "Should the assistant prioritize the \"Weather Limits\" section from the Rotterdam Port Call Guide over the Singapore guide when the wind speed forecasts differ? -> No, use the weather limits of the specific port; do not automatically prioritize Rotterdam over Singapore when forecasts differ.",
+    "When a vessel master asks about crew shore leave, should the assistant reference the \"Crew Shore Leave\" heading from the Singapore guide exclusively, ignoring Rotterdam’s sections? -> Yes, crew shore‑leave queries should be answered using the Singapore guide’s “Crew Shore Leave” section, as Rotterdam has no equivalent.",
+    "If a pre‑arrival notice is required, does the assistant need to combine details from both the \"Pre‑arrival Notice\" sections of Rotterdam and Singapore guides into a single response? -> No, the assistant should provide the pre‑arrival notice requirements for each port separately rather than merging them into one combined response."
+  ],
+  "brief": "An assistant for vessel masters planning port calls: it answers questions from our Rotterdam and Singapore port guides, and checks the current weather at the port to say whether operations are within the weather limits."
+}

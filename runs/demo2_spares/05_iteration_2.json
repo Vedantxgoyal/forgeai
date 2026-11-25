@@ -1,13 +1,11 @@
 {
   "iteration": 2,
-  "dev_score": 0.9444,
+  "dev_score": 1.0,
   "holdout_score": 1.0,
-  "overall_score": 0.9583,
-  "n_pass": 23,
+  "overall_score": 1.0,
+  "n_pass": 24,
   "n_total": 24,
-  "failures_by_class": {
-    "hallucination": 1
-  },
+  "failures_by_class": {},
   "changes": [
     {
       "category": "retrieval_miss",
@@ -20,18 +18,18 @@
     }
   ],
   "accepted": true,
-  "note": "accepted",
+  "note": "accepted | stopped: no dev failures remain",
   "score_before": 0.9583,
   "by_type": {
     "answerable": "4/4",
     "multi_doc": "4/4",
     "near_miss": "3/3",
     "out_of_scope": "3/3",
-    "paraphrase": "3/4",
+    "paraphrase": "4/4",
     "tool": "6/6"
   },
   "agent_version": 2,
-  "seconds": 1002.4,
+  "seconds": 5.9,
   "results": [
     {
       "case_id": "par-a8b756",
@@ -71,14 +69,14 @@
       "case_id": "par-f06b90",
       "type": "paraphrase",
       "split": "dev",
-      "passed": false,
+      "passed": true,
       "refused": false,
       "fact_coverage": 1.0,
-      "grounded": false,
+      "grounded": true,
       "citation_ok": true,
       "retrieval_hit": true,
-      "failure": "hallucination",
-      "judge_note": "answer support 0.84, numbers not in context: ['1']",
+      "failure": "",
+      "judge_note": "",
       "judge_unstable": false,
       "llm_overrode": false,
       "answer": "The cost and speed improvement depend on the supplier:\n\n1. **OceanParts**: Express air freight is available at a surcharge of 12% of the order value and shortens the lead time by 50%.\n2. **NordMarine**: Express delivery is available at a surcharge of 20% of the order value and halves the stated lead time.\n\nNote: For urgent orders needed for a vessel arriving at port within 10 days, the Superintendent must approve the express surcharge regardless of order value.",

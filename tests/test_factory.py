@@ -132,3 +132,52 @@ def test_list_markers_are_not_invented_numbers():
     assert not bad
     _, bad = support_ratio("The fee is 15.", "OceanParts 12%")
     assert bad == {"15"}
+
+
+def test_live_data_topics_are_served_by_tools_but_document_topics_are_not():
+    from forgeai.factory.guard import live_tool_for
+
+    assert live_tool_for("real-time weather check") == "weather"
+    assert live_tool_for("current weather at the port") == "weather"
+    assert live_tool_for("salary bands") == ""
+    assert live_tool_for("weather limits compliance") == ""
+    assert live_tool_for("current pension contribution") == ""
+
+
+def test_small_corpus_still_yields_twenty_cases():
+    """A handful of short passages must still produce the minimum exam size (several questions per passage)."""
+    import itertools
+    import json
+
+    from forgeai.config import Settings
+    from forgeai.factory.evalgen import generate_cases
+    from forgeai.ingest.chunker import Chunk
+    from forgeai.llm.client import Completion, LLMClient
+    from forgeai.retrieval.embed import TfidfLsaEmbedder
+    from forgeai.retrieval.index import HybridIndex
+    from forgeai.schemas import Requirements
+
+    topics = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel"]
+    chunks = []
+    for n, t in enumerate(topics):
+        body = f"The {t} rule requires notice {n + 11} hours before arrival and applies to every vessel calling at this berth today."
+        chunks.append(Chunk(chunk_id=f"d{n % 2}::{n}", doc_id=f"d{n % 2}", text=body, body=body))
+    counter = itertools.count()
+
+    class Fake:
+        def complete(self, *, messages, **_):
+            user = messages[-1]["content"]
+            k = next(counter)
+            if "MUST REFUSE" in user:
+                return Completion(json.dumps({"questions": [f"Who won the zebra{k}{i} chess trophy quickly?" for i in range(12)]}))
+            word = topics[k % len(topics)]
+            fact = next(c.body for c in chunks if c.body in user)
+            digits = [w for w in fact.split() if w.isdigit()][0]
+            return Completion(json.dumps({"question": f"What notice applies for item{k} {word}{k}?", "answer": "x",
+                                          "key_facts": [f"{digits} hours"]}))
+
+    s = Settings(use_cache=False, embed_backend="tfidf")
+    client = LLMClient(s, transport=Fake(), use_cache=False)
+    req = Requirements(agent_name="a", purpose="p", audience="masters", tone="t", scope="port rules", must_answer_topics=["notice"])
+    cases, _ = generate_cases(client, HybridIndex(chunks, TfidfLsaEmbedder()), req, target=20)
+    assert len(cases) >= 20

@@ -1,0 +1,195 @@
+{
+  "stats": {
+    "proposed": 11,
+    "kept": 11,
+    "dropped_unverified": 0,
+    "dropped_answerable_refusal": 0,
+    "by_type": {
+      "answerable": 3,
+      "multi_doc": 3,
+      "out_of_scope": 2,
+      "near_miss": 3
+    }
+  },
+  "cases": [
+    {
+      "id": "ans-dab72c",
+      "type": "answerable",
+      "question": "When must garbage be landed before departure?",
+      "expected_refusal": false,
+      "reference_answer": "Garbage must be landed before departure unless storage capacity is sufficient for the next voyage.",
+      "key_facts": [
+        "Garbage must be landed before departure",
+        "unless storage capacity is sufficient for the next voyage"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0004"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "ans-95168e",
+      "type": "answerable",
+      "question": "When must a pilot be requested for vessels of 300 gross tonnage and above?",
+      "expected_refusal": false,
+      "reference_answer": "The pilot must be requested at least 12 hours in advance through the Port Operations Control Centre.",
+      "key_facts": [
+        "at least 12 hours"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "ans-07fb8b",
+      "type": "answerable",
+      "question": "When must I request a pilot and on which VHF channel should I make the request?",
+      "expected_refusal": false,
+      "reference_answer": "You must request the pilot 6 hours before the estimated time of arrival on VHF channel 2.",
+      "key_facts": [
+        "6 hours before the estimated time of arrival",
+        "VHF channel 2"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-688012",
+      "type": "multi_doc",
+      "question": "What are the requirements for handling garbage before departure and for requesting a pilot for a vessel of 300 gross tonnage or more?",
+      "expected_refusal": false,
+      "reference_answer": "Garbage must be landed before departure unless storage capacity is sufficient for the next voyage, and a pilot must be requested at least 12 hours in advance through the Port Operations Control Centre for vessels of 300 gross tonnage and above.",
+      "key_facts": [
+        "Garbage must be landed before departure unless storage capacity is sufficient for the next voyage.",
+        "The pilot is requested at least 12 hours in advance through the Port Operations Control Centre."
+      ],
+      "source_docs": [
+        "rotterdam_port_guide",
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0004",
+        "singapore_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "mul-ed0a14",
+      "type": "multi_doc",
+      "question": "What is the minimum advance notice required to request a pilot in Singapore and Rotterdam ports?",
+      "expected_refusal": false,
+      "reference_answer": "In Singapore, a pilot must be requested at least 12 hours in advance, while in Rotterdam the pilot should be requested 6 hours before the estimated time of arrival.",
+      "key_facts": [
+        "The pilot is requested at least 12 hours in advance through the Port Operations Control Centre.",
+        "Request the pilot 6 hours before the estimated time of arrival on VHF channel 2."
+      ],
+      "source_docs": [
+        "singapore_port_guide",
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0001",
+        "rotterdam_port_guide::0001"
+      ],
+      "split": "holdout",
+      "verified": true
+    },
+    {
+      "id": "mul-b683b2",
+      "type": "multi_doc",
+      "question": "What are the pilot request lead times and communication methods for vessels longer than 75 metres in Rotterdam and for vessels of 300 gross tonnage and above in Singapore?",
+      "expected_refusal": false,
+      "reference_answer": "In Rotterdam, a pilot must be requested 6 hours before the estimated time of arrival on VHF channel 2. In Singapore, the pilot must be requested at least 12 hours in advance through the Port Operations Control Centre.",
+      "key_facts": [
+        "Request the pilot 6 hours before the estimated time of arrival on VHF channel 2.",
+        "The pilot is requested at least 12 hours in advance through the Port Operations Control Centre."
+      ],
+      "source_docs": [
+        "rotterdam_port_guide",
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0001",
+        "singapore_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "out-808778",
+      "type": "out_of_scope",
+      "question": "What is the best way to bake a chocolate soufflé?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "out-affb70",
+      "type": "out_of_scope",
+      "question": "Can you explain the offside rule in soccer?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-6ab920",
+      "type": "near_miss",
+      "question": "What is the exact number of cargo containers processed at Rotterdam port on the last day of the previous fiscal year according to the rotterdam_port_guide?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-29c911",
+      "type": "near_miss",
+      "question": "Can you provide the detailed schedule of maintenance activities for the crane 5 at Singapore port as listed in the singapore_port_guide?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true
+    },
+    {
+      "id": "nea-a47111",
+      "type": "near_miss",
+      "question": "What are the specific fuel consumption rates for each type of vessel docked at Rotterdam port mentioned in the rotterdam_port_guide?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true
+    }
+  ]
+}

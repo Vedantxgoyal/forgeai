@@ -1,0 +1,86 @@
+{
+  "grounded_share": 1.0,
+  "questions": [
+    {
+      "question": "When the 'spares_catalogue' lists a part with a 'lead_time_days' of 42, does the assistant need to cross-reference the 'Urgent Orders' section in 'procurement_procedure' to determine if a different approval path is triggered, or is the lead time purely informational?",
+      "why": "The 'spares_catalogue' contains specific 'lead_time_days' values while 'procurement_procedure' has a distinct 'Urgent Orders' section, creating ambiguity about how these two data points interact.",
+      "grounded_in": [
+        "approval",
+        "catalogue",
+        "days",
+        "lead",
+        "orders",
+        "part",
+        "procedure",
+        "procurement",
+        "spares",
+        "time",
+        "urgent"
+      ]
+    },
+    {
+      "question": "If a user requests a part where the 'spares_catalogue' shows 'stock_qty' as 0, should the assistant automatically calculate the total cost using the 'Pricing and Discounts' rules from 'supplier_oceanparts_terms' or the 'Pricing' rules from 'supplier_nordmarine_terms' based on the 'supplier_id' column?",
+      "why": "The 'spares_catalogue' includes a 'supplier_id' column that links to two different supplier documents with distinct 'Pricing' and 'Pricing and Discounts' sections, requiring clarification on how to apply the correct terms.",
+      "grounded_in": [
+        "catalogue",
+        "discounts",
+        "nordmarine",
+        "oceanparts",
+        "part",
+        "pricing",
+        "spares",
+        "stock",
+        "supplier",
+        "terms"
+      ]
+    },
+    {
+      "question": "Does the 'Approval Thresholds' section in 'procurement_procedure' define specific USD limits that override the 'Payment' terms in 'supplier_nordmarine_terms' and 'supplier_oceanparts_terms', or are these separate financial controls?",
+      "why": "The 'procurement_procedure' document contains 'Approval Thresholds' while both supplier documents contain 'Payment' sections, creating potential conflict or redundancy in financial authority.",
+      "grounded_in": [
+        "approval",
+        "nordmarine",
+        "oceanparts",
+        "payment",
+        "procedure",
+        "procurement",
+        "supplier",
+        "terms",
+        "thresholds"
+      ]
+    },
+    {
+      "question": "When comparing suppliers, should the assistant include the 'Returns and Warranty' terms from 'supplier_nordmarine_terms' and 'supplier_oceanparts_terms' in the comparison output, or is the comparison limited strictly to 'unit_price_usd' and 'lead_time_days' from the 'spares_catalogue'?",
+      "why": "The client brief asks to 'compare the two suppliers' terms', but the 'spares_catalogue' only contains price and lead time, while the supplier PDFs contain 'Returns and Warranty' sections that may or may not be part of the comparison.",
+      "grounded_in": [
+        "catalogue",
+        "days",
+        "lead",
+        "nordmarine",
+        "oceanparts",
+        "price",
+        "returns",
+        "spares",
+        "supplier",
+        "terms",
+        "time",
+        "unit",
+        "warranty"
+      ]
+    },
+    {
+      "question": "If a part in the 'spares_catalogue' is categorized as 'Critical Spares' per the 'procurement_procedure', does the assistant need to flag this to the user even if the 'stock_qty' is sufficient, or is the 'Critical Spares' designation only relevant for approval routing?",
+      "why": "The 'procurement_procedure' has a 'Critical Spares' section, but the 'spares_catalogue' does not have a 'critical' column, making it unclear how this status is derived or displayed to the user.",
+      "grounded_in": [
+        "approval",
+        "catalogue",
+        "critical",
+        "part",
+        "procedure",
+        "procurement",
+        "spares",
+        "stock"
+      ]
+    }
+  ]
+}

@@ -29,7 +29,9 @@ from forgeai.schemas import EvalCase, RawQA, RawQuestions, Requirements
 from forgeai.textutil import content_tokens, fact_in, norm
 
 log = logging.getLogger(__name__)
-MIN_CHUNK_WORDS = 25
+MIN_CHUNK_WORDS = 15
+MIN_CASES = 20  # the assignment's floor
+MAX_ROUNDS = 3
 
 STYLE = {
     "answerable": "Use the passage's own key terms in the question.",
@@ -62,9 +64,10 @@ def _case_id(kind: str, question: str) -> str:
     return f"{kind[:3]}-{hashlib.sha1(question.encode()).hexdigest()[:6]}"
 
 
-def _qa_for_chunk(client, model, chunk: Chunk, audience: str, style_key: str) -> RawQA | None:
+def _qa_for_chunk(client, model, chunk: Chunk, audience: str, style_key: str, avoid: list[str] | None = None) -> RawQA | None:
     prompt = render("eval_qa", chunk_id=chunk.chunk_id, doc_id=chunk.doc_id, passage=chunk.body[:1800],
-                    audience=audience, style=STYLE[style_key])
+                    audience=audience, style=STYLE[style_key] + (
+                        " Ask about a DIFFERENT detail than these existing questions: " + " | ".join(avoid) if avoid else ""))
     try:
         res = generate_structured(client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=500, retries=1)
     except Exception as exc:  # noqa: BLE001
@@ -117,25 +120,33 @@ def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, tar
         return True
 
     # ---- answerable + paraphrase (single chunk) ---- #
-    pool = _stratified_sample(chunks, (n_ans + n_para) * 3, seed)
-    want = {"answerable": n_ans, "paraphrase": n_para}
-    got = {"answerable": 0, "paraphrase": 0}
-    order = ["answerable"] * n_ans + ["paraphrase"] * n_para
-    random.Random(seed + 1).shuffle(order)
+    # Passages are visited in rounds. A small corpus runs out of passages before the exam is big enough, so later
+    # rounds ask the same passage for a DIFFERENT detail (the questions already used are listed in the prompt).
+    pool = _stratified_sample(chunks, len(chunks), seed)
+    asked: dict[str, list[str]] = defaultdict(list)
+    queue = [(rnd, ch) for rnd in range(MAX_ROUNDS) for ch in pool]
     pi = 0
-    for kind in order:
-        while pi < len(pool):
-            ch = pool[pi]
+
+    def single(kind: str) -> bool:
+        nonlocal pi
+        while pi < len(queue):
+            rnd, ch = queue[pi]
             pi += 1
             stats["proposed"] += 1
-            qa = _qa_for_chunk(client, model, ch, req.audience, kind)
+            qa = _qa_for_chunk(client, model, ch, req.audience, kind, asked[ch.chunk_id] if rnd else [])
             if qa is None or not _verify_facts(qa, [ch.body]):
                 stats["dropped_unverified"] += 1
                 continue
+            asked[ch.chunk_id].append(qa.question.strip())
             if add(EvalCase(id=_case_id(kind, qa.question), type=kind, question=qa.question.strip(), reference_answer=qa.answer.strip(),
                             key_facts=[f.strip() for f in qa.key_facts], source_docs=[ch.doc_id], gold_chunks=[ch.chunk_id])):
-                got[kind] += 1
-                break
+                return True
+        return False
+
+    order = ["answerable"] * n_ans + ["paraphrase"] * n_para
+    random.Random(seed + 1).shuffle(order)
+    for kind in order:
+        single(kind)
 
     # ---- multi-document ---- #
     if n_multi:
@@ -198,6 +209,12 @@ def generate_cases(client: LLMClient, index: HybridIndex, req: Requirements, tar
     for c in tool_cases:
         stats["proposed"] += 1
         cases.append(c)  # near-identical wording is intentional (different rows), so no token de-dup
+
+    # ---- top-up: other generators can fall short, the exam must not ---- #
+    floor = min(target, MIN_CASES + 2)
+    turn = 0
+    while len(cases) < floor and single("paraphrase" if turn % 3 == 2 else "answerable"):
+        turn += 1
 
     # ---- stratified dev / holdout split ---- #
     by_type: dict[str, list[EvalCase]] = defaultdict(list)

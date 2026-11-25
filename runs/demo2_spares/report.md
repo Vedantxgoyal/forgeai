@@ -2,8 +2,8 @@
 
 ## Verdict
 
-**Final agent (v3) passes 23/24 generated test cases (96%).** With only 24 cases the 95% confidence interval is roughly **80% - 99%**, so treat it as an estimate, not a guarantee.
-Dev split 94% (used by the optimizer) vs hold-out 100% (never inspected by it). Hold-out is close to dev: no obvious over-fitting.
+**Final agent (v2) passes 24/24 generated test cases (100%).** With only 24 cases the 95% confidence interval is roughly **86% - 100%**, so treat it as an estimate, not a guarantee.
+Dev split 100% (used by the optimizer) vs hold-out 100% (never inspected by it). Hold-out is close to dev: no obvious over-fitting.
 
 ## Scorecard per iteration
 
@@ -11,27 +11,20 @@ Dev split 94% (used by the optimizer) vs hold-out 100% (never inspected by it). 
 |---|---|---|---|---|---|---|
 | 0 | v1 | 23/24 (96%) | 94% | 100% | retrieval_miss:1 | baseline (as generated) |
 | 1 | v2 | 22/24 (92%) | 89% | 100% | retrieval_miss:1, wrong_refusal:1 | rolled back: dev 0.94->0.89, holdout 1.00->1.00 |
-| 2 | v2 | 23/24 (96%) | 94% | 100% | hallucination:1 | accepted |
-| 3 | v3 | 23/24 (96%) | 94% | 100% | hallucination:1 | accepted |
+| 2 | v2 | 24/24 (100%) | 100% | 100% | none | accepted | stopped: no dev failures remain |
 
-By case type (final): answerable 4/4, multi_doc 4/4, near_miss 3/3, out_of_scope 3/3, paraphrase 3/4, tool 6/6
+By case type (final): answerable 4/4, multi_doc 4/4, near_miss 3/3, out_of_scope 3/3, paraphrase 4/4, tool 6/6
 
 ## Change log (what the optimizer changed and why)
 
 - **Iter 1 / retrieval_miss / retrieval** (ROLLED BACK; overall 96% -> 92%): top_k 5 -> 8 (answer may sit just below the cut-off)  
   targeted cases: par-f06b90
-- **Iter 2 / retrieval_miss / retrieval** (kept; overall 96% -> 96%): enable LLM query rewrite (user wording differs from document vocabulary)  
-  targeted cases: par-f06b90
-- **Iter 3 / hallucination / rule** (kept; overall 96% -> 96%): [f3h] Never infer or calculate costs, timelines, or terms not explicitly stated in the provided context; decline to answer if the data is missing.  (LLM-written rule passed leakage checks)  
+- **Iter 2 / retrieval_miss / retrieval** (kept; overall 96% -> 100%): enable LLM query rewrite (user wording differs from document vocabulary)  
   targeted cases: par-f06b90
 
 ## What still fails, and why
 
-- `par-f06b90` (paraphrase, dev) **hallucination**: "If I need my parts to arrive faster than the standard schedule, what is the cost and how much quicker will it be?"  
-  agent said: "The cost and speed improvement depend on the supplier:
-
-1. **OceanParts**: Express air freight is available at a surcharge of 12% of the order value and shorten"  
-  judge: answer support 0.84, numbers not in context: ['1']
+Nothing failed on this exam. That does not mean the agent is perfect: the exam was generated from the same documents by a small model, so it can miss question styles real users will try.
 
 ## Requirements and groundability
 
@@ -60,7 +53,7 @@ Chosen: `csv_lookup` (because: "The assistant handles spare part lookups, price 
 
 ## Cost
 
-224 LLM calls (61 cache hits), 199665 tokens, 147.26s of model time.
+163 LLM calls (163 cache hits), 0 tokens, 0.0s of model time.
 
 ## Final agent rules
 
@@ -72,6 +65,5 @@ Chosen: `csv_lookup` (because: "The assistant handles spare part lookups, price 
 6. You only help with: spare parts catalogue lookup; unit price and stock availability; lead time and urgent order classification; supplier pricing and discount terms; returns and warranty conditions; order total calculation; internal approval thresholds. Questions unrelated to these topics are out of scope: refuse them in one sentence.
 7. For the price, stock or any attribute of a specific record, call csv_lookup first and use the exact value it returns.
 8. Never do arithmetic yourself: call the calculator for every total, difference or percentage, then report its result.
-9. Never infer or calculate costs, timelines, or terms not explicitly stated in the provided context; decline to answer if the data is missing.  _(added iter 3: hallucination)_
 
 Retrieval: chunk 120/18 words, top_k 5, mode hybrid, rerank False, query_rewrite True

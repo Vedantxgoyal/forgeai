@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ForgeAI · the agent that builds agents</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 2l12 7v14l-12 7L4 23V9z' fill='%23ff7a1a'/></svg>" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="mark"></span><div><strong>ForgeAI</strong><small>the agent that builds agents</small></div></div>
+    <div class="actions">
+      <label class="sr" for="run">Run</label>
+      <select id="run"></select>
+      <button id="open-chat" class="ghost">Chat with agent</button>
+      <button id="open-build" class="primary">Forge a new agent</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div id="stage3d" aria-hidden="true"></div>
+    <div id="labels"></div>
+    <div class="verdict" id="verdict"></div>
+    <p class="hint">Drag to rotate · pick a stage to inspect what it produced</p>
+  </section>
+
+  <nav class="rail" id="rail" aria-label="Pipeline stages"></nav>
+  <main id="panel" class="panel" aria-live="polite"></main>
+
+  <aside id="chat" class="drawer" hidden>
+    <div class="drawer-head"><div><strong>Agent runner</strong><small id="chat-agent"></small></div><button class="ghost" data-close="chat">Close</button></div>
+    <div id="messages" class="messages"></div>
+    <div id="suggestions" class="suggestions"></div>
+    <form id="ask" class="ask"><input id="q" autocomplete="off" maxlength="2000" placeholder="Ask this agent…" /><button class="primary">Send</button></form>
+  </aside>
+
+  <dialog id="build">
+    <form id="build-form">
+      <h2>Forge a new agent</h2>
+      <p class="muted">One paragraph and a folder of documents. The factory interviews, builds, examines, fixes and reports.</p>
+      <label>Brief<textarea name="brief" rows="4" required minlength="20" placeholder="An assistant that answers … for …"></textarea></label>
+      <label>Run name<input name="name" required pattern="[A-Za-z0-9_\-]{1,60}" placeholder="my_agent" /></label>
+      <label>Documents<input name="files" type="file" multiple required accept=".pdf,.docx,.csv,.tsv,.xlsx,.md,.txt,.html,.htm" /></label>
+      <label>Test cases <output id="cases-out">24</output><input name="cases" type="range" min="20" max="30" value="24" /></label>
+      <div id="job" class="job" hidden><div id="job-status"></div><pre id="job-log"></pre></div>
+      <div class="row"><button type="button" class="ghost" data-close="build">Close</button><button class="primary" id="forge-btn">Start forging</button></div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

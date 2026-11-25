@@ -12,10 +12,10 @@ improvement rounds, and an honest quality report. Every stage is designed for a 
 | Demo | Tools chosen | Baseline -> final | Dev / hold-out | Models (Groq free tier) |
 |---|---|---|---|---|
 | [HR policy assistant](runs/demo1_hr/report.md) | none | 18/24 -> **21/24** | 88% / 86% | agent `gpt-oss-20b`, judge `qwen3.8-27b` |
-| [Ship-spares procurement](runs/demo2_spares/report.md) | `csv_lookup`, `calculator` | 23/24 -> **23/24** | 94% / 100% | agent `qwen3.8-27b`, judge `gpt-oss-120b` |
+| [Ship-spares procurement](runs/demo2_spares/report.md) | `csv_lookup`, `calculator` | 23/24 -> **24/24** | 100% / 100% | agent `qwen3.8-27b`, judge `gpt-oss-120b` |
 
 Each run folder has a `NOTE.md` with provenance and known issues. With 24 cases the 95% interval is wide
-(HR 69-96%, spares 80-99%). The exams come from the same documents the agents read, so treat the scores as
+(HR 69-96%, spares 86-100%). The spares 24/24 has stated weaknesses in its NOTE.md. The exams come from the same documents the agents read, so treat the scores as
 faithfulness estimates, not a guarantee.
 
 ## What real runs broke, and how it was fixed
@@ -41,9 +41,25 @@ forge run demos/hr_docs     --brief @demos/briefs/hr.txt     --out runs/demo1_hr
 forge run demos/spares_docs --brief @demos/briefs/spares.txt --out runs/demo2_spares
 forge chat runs/demo1_hr/agent.final.yaml demos/hr_docs --trace     # generic runner: works with ANY definition
 forge run <any folder> --brief "…" -i --approve     # interview yourself, approve requirements before generation
-streamlit run app.py              # web UI: scorecard, chat with trace, requirements, exam, build a new agent
+forge ui                          # web UI at http://127.0.0.1:8600 (build it once, see below)
 pytest                            # offline tests, including a whole-factory run on a scripted fake model
 ```
+
+### Web UI (Vite + three.js, served by a small FastAPI layer)
+
+```powershell
+pip install -e ".[ui]"
+cd web
+npm install
+npm run build
+cd ..
+forge ui
+```
+
+The 3D forge is the pipeline itself: seven stages orbit the agent, node colour shows each stage's outcome, the core
+colour follows the exam score, and picking a node opens that stage's artifacts. It also chats with any agent (with the
+tool and retrieval trace) and builds a new one from an uploaded brief and documents with live stage progress.
+The server binds to localhost and has no authentication. For frontend development: `npm run dev` with `forge ui` running.
 
 ## What happens in `forge run`
 
@@ -51,7 +67,7 @@ pytest                            # offline tests, including a whole-factory run
 |---|---|---|---|
 | 1 | Intake | Questions are built from a deterministic corpus profile; a question that names nothing in the documents is rejected as *generic* and regenerated. The share of document-grounded questions is reported. | `factory/intake.py` |
 | 2 | Groundability guard | Each requested topic is searched in the corpus. Lexical coverage (deterministic) + LLM verdict; the LLM can only *lower* a status. Unsupported topics become prompt rules and near-miss tests. | `factory/guard.py` |
-| 3 | Agent generator | Prompt is **composed from named rules** (vetted grounding skeleton + domain rules), so the optimizer can patch one rule. A tool survives only if it is available for the corpus **and** justified by a quote that actually occurs in the brief; dropped tools are logged with reasons. | `factory/generator.py` |
+| 3 | Agent generator | Prompt is **composed from named rules** (vetted grounding skeleton + domain rules), so the optimizer can patch one rule. A tool survives only if it is available for the corpus **and** justified by a quote that actually occurs in the brief or the client's requirements (never in model-written questions); dropped tools are logged with reasons. | `factory/generator.py` |
 | 4 | Eval generator | ≥20 cases from the documents. For tables, **tool cases** (lookup, total, difference) have expected values computed in Python. Answerable/paraphrase: every key fact must appear **verbatim** in the source chunk or the case is discarded. Refusal cases are discarded if the corpus can actually answer them. Multi-document cases need facts from two docs. Stratified **dev / hold-out** split. | `factory/evalgen.py` |
 | 5 | Judge | Deterministic first: refusal detection, key-fact match, citation validity, groundedness (token + number support). The LLM only arbitrates missing facts, asked per-fact yes/no (verbosity), twice with reversed order (position bias), and only counts if both votes agree; judge model is separate (self-preference) and the report warns if it equals the agent model. | `factory/judge.py` |
 | 6 | Critic–optimizer | Failure classes (`retrieval_miss`, `wrong_refusal`, `hallucination`, `prompt_defect`) come from evidence, e.g. *were the required facts present in the retrieved context?* Each class gets the smallest fix: a retrieval ladder (top_k → query rewrite → rerank → smaller chunks) or one new prompt rule that is rejected if it leaks test facts or copies a test question. A change is kept only if a score improves, and rolled back if dev or hold-out gets worse. | `factory/optimizer.py` |
@@ -71,7 +87,8 @@ forgeai/
   agent/      generic runtime: loads any AgentDef + folder, tool loop, retrieval trace
   factory/    intake, guard, generator, evalgen, judge, optimizer, report, pipeline
   prompts/    every generation prompt as a versioned .md file
-app.py        Streamlit UI
+server.py     web API (in forgeai/)
+web/          Vite + three.js frontend
 demos/        synthetic corpora + briefs + the script that builds them
 runs/         committed artifacts of the demo runs
 ```
