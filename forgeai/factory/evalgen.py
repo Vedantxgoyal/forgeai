@@ -20,6 +20,7 @@ import random
 import re
 from collections import defaultdict
 
+from forgeai.factory.cloze import build_cloze_cases
 from forgeai.factory.toolcases import build_tool_cases
 from forgeai.ingest.chunker import Chunk
 from forgeai.llm.client import LLMClient, is_outage
@@ -370,6 +371,12 @@ def generate_cases(
     turn = 0
     while len(cases) < floor and single("paraphrase" if turn % 3 == 2 else "answerable"):
         turn += 1
+    if len(cases) < floor:  # the model could not reach the minimum: build the rest from the documents directly
+        for case_ in build_cloze_cases(chunks, len(chunks) * 3):
+            if len(cases) >= floor:
+                break
+            if add(case_):
+                stats["cloze_fallback"] = stats.get("cloze_fallback", 0) + 1
 
     by_type: dict[str, list[EvalCase]] = defaultdict(list)
     for c in cases:

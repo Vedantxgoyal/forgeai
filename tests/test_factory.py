@@ -366,3 +366,38 @@ def test_rerun_removes_only_files_of_the_previous_run(tmp_path):
         (tmp_path / name).write_text("x")
     _clear_previous_run(tmp_path)
     assert [p.name for p in tmp_path.iterdir()] == ["my_notes.txt"]
+
+
+def test_exam_reaches_its_floor_even_if_the_model_produces_nothing_usable():
+    """A model that only ever returns junk must not leave the exam short: the rest is built from the documents."""
+    from forgeai.config import Settings
+    from forgeai.factory.evalgen import generate_cases
+    from forgeai.ingest.chunker import Chunk
+    from forgeai.llm.client import Completion, LLMClient
+    from forgeai.retrieval.embed import TfidfLsaEmbedder
+    from forgeai.retrieval.index import HybridIndex
+    from forgeai.schemas import Requirements
+    from forgeai.textutil import fact_in
+
+    topics = ["alpha", "bravo", "charlie", "delta", "echo", "foxtrot", "golf", "hotel"]
+    chunks = []
+    for n, t in enumerate(topics):
+        body = " ".join(
+            f"The {t} {kind} rule requires notice of {n * 3 + k + 2} hours before arrival at the berth."
+            for k, kind in enumerate(["pilot", "cargo", "waste"])
+        )
+        chunks.append(Chunk(chunk_id=f"d{n % 2}::{n}", doc_id=f"d{n % 2}", text=body, body=body))
+
+    class Junk:
+        def complete(self, **_):
+            return Completion("sorry, no idea")
+
+    s = Settings(use_cache=False, embed_backend="tfidf", json_retries=0)
+    req = Requirements(agent_name="a", purpose="p", audience="u", tone="t", scope="port rules", must_answer_topics=["notice"])
+    cases, stats = generate_cases(
+        LLMClient(s, transport=Junk(), use_cache=False), HybridIndex(chunks, TfidfLsaEmbedder()), req, target=20
+    )
+    assert len(cases) >= 20 and stats["cloze_fallback"] >= 20
+    by_id = {c.chunk_id: c for c in chunks}
+    for c in cases:
+        assert fact_in(c.key_facts[0], by_id[c.gold_chunks[0]].body) and not fact_in(c.key_facts[0], c.question)

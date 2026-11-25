@@ -140,6 +140,11 @@ def render_report(
         f"- Judge: deterministic checks decide; LLM judge ({models['judge']}) only arbitrates when some key facts are missing, and counts only if two votes with reversed fact order agree.",
         f"  Overrides by LLM judge: {sum(r.llm_overrode for r in final.results)}; unstable judgements: {sum(r.judge_unstable for r in final.results)}.",
     ]
+    if gen_stats.get("cloze_fallback"):
+        L.append(
+            f"- **{gen_stats['cloze_fallback']} case(s) are fill-in-the-blank cases built without the model**, because it could not "
+            "produce enough verified ones. They are easier than model-written questions, so read the score with that in mind."
+        )
     over = sum(not r.contract_ok for r in final.results)
     L.append(
         f"- Output contract: {over} answer(s) exceeded the word limit of {d_final.output_contract.get('max_words', 'n/a')} (reported, not scored)."
