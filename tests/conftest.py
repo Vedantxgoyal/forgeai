@@ -81,3 +81,11 @@ def corpus(tmp_path):
     (root / "image.png").write_bytes(b"\x89PNG fake")
     (root / ".hidden.txt").write_text("should be ignored")
     return root
+
+
+@pytest.fixture(autouse=True)
+def _ignore_local_env_file(monkeypatch):
+    """Tests must not depend on the developer's .env (models, fallbacks, keys)."""
+    from forgeai.config import Settings
+
+    monkeypatch.setitem(Settings.model_config, "env_file", None)

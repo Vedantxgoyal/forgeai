@@ -36,6 +36,28 @@ def _dump(path: Path, obj) -> None:
     path.write_text(json.dumps(obj, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
 
 
+_RUN_FILES = (
+    "0[0-5]_*",
+    "agent.final.yaml",
+    "changelog.json",
+    "report.md",
+    "manifest.json",
+    "comparison.md",
+    "requirements.review.yaml",
+    "NOTE.md",
+    "docs_path.txt",
+)
+
+
+def _clear_previous_run(out: Path) -> None:
+    """Re-using a run folder must not leave files from the earlier run behind: an old iteration file would be read
+    as part of the new run. Only files the factory itself writes are removed."""
+    for pattern in _RUN_FILES:
+        for path in out.glob(pattern):
+            if path.is_file():
+                path.unlink()
+
+
 def _models_used(wanted: str, substitutions: dict[str, int]) -> set[str]:
     """The configured model plus every stand-in that answered for it."""
     return {wanted} | {k.split(" -> ")[1] for k in substitutions if k.split(" -> ")[0] == wanted}
@@ -65,6 +87,7 @@ def run_factory(
     token_budget = token_budget or s.token_budget
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
+    _clear_previous_run(out)
     t0 = time.perf_counter()
     notes: list[str] = []
 

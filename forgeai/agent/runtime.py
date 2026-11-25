@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 import time
 from pathlib import Path
 
@@ -18,7 +17,7 @@ import yaml
 from forgeai.config import Settings, get_settings
 from forgeai.ingest.chunker import ChunkParams, chunk_documents
 from forgeai.ingest.loaders import LoadResult, load_folder
-from forgeai.llm.client import LLMClient, LLMUnavailable
+from forgeai.llm.client import LLMClient, is_outage
 from forgeai.llm.structured import generate_structured
 from forgeai.retrieval.embed import get_embedder
 from forgeai.retrieval.index import HybridIndex, Reranker, SearchParams
@@ -79,7 +78,9 @@ class Agent:
         try:
             q = self.client.chat(msgs, model=self.model, max_tokens=60, stage="agent_rewrite").strip().strip('"')
             return (q if 3 <= len(q) <= 300 else question), q
-        except Exception:
+        except Exception as exc:
+            if is_outage(exc):
+                raise
             return question, ""
 
     def _tool_block(self) -> str:
@@ -138,7 +139,7 @@ class Agent:
                     continue
                 break
         except Exception as exc:
-            if isinstance(exc, LLMUnavailable) and re.search(r"RateLimit|Connection|Timeout|InternalServer", str(exc)):
+            if is_outage(exc):
                 raise
             err = f"{type(exc).__name__}: {exc}"[:200]
             turn = fallback

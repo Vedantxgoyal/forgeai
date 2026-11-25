@@ -88,7 +88,7 @@ class FakeTransport:
                 "Can you write python code for sorting?",
             ]
             return {"questions": pool[:n]}
-        if "RULES:" in messages[0]["content"] and "CONTEXT:" in user:
+        if "CONTEXT:" in user and any("RULES:" in m["content"] for m in messages if m["role"] == "system"):
             q = user.split("QUESTION:")[1].strip().lower()
             ctx = user.split("CONTEXT:")[1].split("QUESTION:")[0].strip()
             m = re.match(r"\[([^\]]+)\] (.*)", ctx, re.S)
@@ -150,6 +150,9 @@ def test_factory_end_to_end(tmp_path):
     types = {c["type"] for c in evals["cases"]}
     assert {"answerable", "out_of_scope"} <= types and len(evals["cases"]) >= 15
     assert any(c["split"] == "holdout" for c in evals["cases"])
+    baseline = json.loads((out / "05_iteration_0.json").read_text(encoding="utf-8"))["results"]
+    assert not any("agent error" in r["judge_note"] for r in baseline)  # the fake agent really answered
+    assert any(r["passed"] and not r["refused"] for r in baseline)
     report = (out / "report.md").read_text(encoding="utf-8")
     assert "Scorecard per iteration" in report and "How trustworthy" in report and "100%" not in report.split("Verdict")[0]
 

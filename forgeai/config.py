@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     agent_model: str = ""
     fallback_models: str = ""
     local_base_url: str = "http://localhost:11434/v1"
+    judge_fallback_models: str = ""
+    max_quota_wait_s: float = 0
 
     request_timeout_s: float = 180.0
     transport_retries: int = 3

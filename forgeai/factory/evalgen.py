@@ -22,7 +22,7 @@ from collections import defaultdict
 
 from forgeai.factory.toolcases import build_tool_cases
 from forgeai.ingest.chunker import Chunk
-from forgeai.llm.client import LLMClient
+from forgeai.llm.client import LLMClient, is_outage
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
 from forgeai.retrieval.index import HybridIndex, SearchParams
@@ -31,6 +31,7 @@ from forgeai.textutil import content_tokens, fact_in, norm
 
 log = logging.getLogger(__name__)
 MIN_CHUNK_WORDS = 15
+MAX_FACT_WORDS = 12
 MIN_CASES = 20
 MAX_ROUNDS = 3
 
@@ -80,6 +81,8 @@ def _qa_for_chunk(client, model, chunk: Chunk, audience: str, style_key: str, av
             client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=500, retries=1
         )
     except Exception as exc:
+        if is_outage(exc):
+            raise
         log.info("evalgen skipped chunk %s: %s", chunk.chunk_id, exc)
         return None
     return res.value
@@ -112,6 +115,15 @@ def _truly_ambiguous(question: str, a: str, b: str) -> bool:
     asked = words(question) - {w.rstrip("s") for w in _GENERIC}
     in_a, in_b = words(a), words(b)
     return bool(asked & in_a & in_b) and not (asked & (in_a ^ in_b))
+
+
+def _short_facts(qa: RawQA) -> None:
+    """A whole sentence as a "fact" can only be matched by an LLM judge; short facts are checked deterministically."""
+    long = [f for f in qa.key_facts if len(f.split()) > MAX_FACT_WORDS]
+    if long:
+        raise ValueError(
+            f"each key fact must be a short phrase of at most {MAX_FACT_WORDS} words copied exactly; too long: {long[0]!r}"
+        )
 
 
 def _answerability(index: HybridIndex, question: str) -> float:
@@ -214,9 +226,18 @@ def generate_cases(
             )
             try:
                 qa = generate_structured(
-                    client, RawQA, [{"role": "user", "content": prompt}], model=model, stage="evalgen", max_tokens=600, retries=1
+                    client,
+                    RawQA,
+                    [{"role": "user", "content": prompt}],
+                    model=model,
+                    stage="evalgen",
+                    max_tokens=600,
+                    retries=1,
+                    validator=_short_facts,
                 ).value
-            except Exception:
+            except Exception as exc:
+                if is_outage(exc):
+                    raise
                 stats["dropped_unverified"] += 1
                 continue
             in_a = any(fact_in(f, a.body) for f in qa.key_facts)
@@ -261,7 +282,9 @@ def generate_cases(
                 max_tokens=500,
                 retries=1,
             ).value
-        except Exception:
+        except Exception as exc:
+            if is_outage(exc):
+                raise
             stats["dropped_unverified"] += 1
             continue
         fa, fb = raw.facts_a[0].strip(), raw.facts_b[0].strip()
@@ -322,7 +345,9 @@ def generate_cases(
                 max_tokens=500,
                 retries=1,
             ).value.questions
-        except Exception:
+        except Exception as exc:
+            if is_outage(exc):
+                raise
             qs = []
         made = 0
         for q in qs:

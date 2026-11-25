@@ -32,7 +32,7 @@ from forgeai.agent.runtime import Agent, build_index
 from forgeai.config import Settings
 from forgeai.factory.judge import judge_case
 from forgeai.ingest.loaders import LoadResult
-from forgeai.llm.client import BudgetExceeded, LLMClient, LLMUnavailable
+from forgeai.llm.client import BudgetExceeded, LLMClient, LLMUnavailable, is_outage
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
 from forgeai.retrieval.index import HybridIndex
@@ -151,7 +151,9 @@ def _new_rule(
             client, _Rule, [{"role": "user", "content": prompt}], model=model, stage="optimize", max_tokens=200, retries=1
         )
         cand = res.value.rule.strip()
-    except Exception:
+    except Exception as exc:
+        if is_outage(exc):
+            raise
         cand = ""
     why = _rule_is_clean(cand, all_cases, failing) if cand else "LLM produced no valid rule"
     if why:
@@ -318,7 +320,11 @@ def optimize(
                     )
                 else:
                     sym = ""
-                text, how = _new_rule(client, settings.gen_model, req, cat, fl, cases, it, sym)
+                try:
+                    text, how = _new_rule(client, settings.gen_model, req, cat, fl, cases, it, sym)
+                except (BudgetExceeded, LLMUnavailable) as exc:
+                    stop(f"iteration {it} could not finish ({type(exc).__name__}); keeping the best agent so far")
+                    return best_d, logs
                 if norm(text) in rejected_rules:
                     text, how = FALLBACK_RULES[cat], "previous LLM rule was rolled back; tried vetted template rule instead"
                 if norm(text) in rejected_rules:

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import re
 
-from forgeai.llm.client import LLMClient
+from forgeai.llm.client import LLMClient, is_outage
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
 from forgeai.schemas import AgentResponse, CaseResult, EvalCase, JudgeVote
@@ -57,7 +57,9 @@ def _vote(client: LLMClient, model: str, case: EvalCase, resp: AgentResponse, fa
             retries=1,
             validator=check,
         ).value
-    except Exception:
+    except Exception as exc:
+        if is_outage(exc):
+            raise
         return None
 
 

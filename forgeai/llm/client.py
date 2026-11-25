@@ -36,12 +36,24 @@ class LLMUnavailable(RuntimeError):
     """Raised when the endpoint cannot be reached after all transport retries."""
 
 
+class RequestRejected(LLMUnavailable):
+    """The server refused this particular request (too long, malformed). Not an outage."""
+
+
 class QuotaExhausted(LLMUnavailable):
     """This model cannot serve now (daily quota spent, long cool-down, or unknown name)."""
 
     def __init__(self, message: str, retry_after: float = 3600.0):
         super().__init__(message)
         self.retry_after = retry_after
+
+
+def is_outage(exc: BaseException) -> bool:
+    """True when no answer could be obtained for reasons unrelated to the model's behaviour. Callers must let these
+    propagate: an outage that is turned into a refusal, a dropped test case or a verdict corrupts the results."""
+    if isinstance(exc, BudgetExceeded):
+        return True
+    return isinstance(exc, LLMUnavailable) and not isinstance(exc, RequestRejected)
 
 
 @dataclass
@@ -237,33 +249,60 @@ class LLMClient:
         stage: str = "",
     ) -> str:
         wanted = model or self.settings.gen_model
+        chain = self._chain(wanted)
+        keys = {m: self._key(m, messages, temperature, max_tokens, json_mode) for m in chain}
+        if self._cache is not None:
+            for candidate in chain:
+                if keys[candidate] in self._cache:
+                    cached: Completion = self._cache[keys[candidate]]
+                    self.meter.record(stage, Completion(cached.text), 0.0, cached=True)
+                    self._note_substitution(wanted, candidate)
+                    return cached.text
+
+        waited = 0.0
         last: QuotaExhausted | None = None
-        for candidate in self._chain(wanted):
-            key = self._key(candidate, messages, temperature, max_tokens, json_mode)
-            if self._cache is not None and key in self._cache:
-                cached: Completion = self._cache[key]
-                self.meter.record(stage, Completion(cached.text), 0.0, cached=True)
+        while True:
+            for candidate in chain:
+                if self._exhausted.get(candidate, 0) > time.time():
+                    continue
+                self._check_budget()
+                try:
+                    completion, seconds = self._call_with_retries(candidate, messages, temperature, max_tokens, json_mode)
+                except QuotaExhausted as exc:
+                    last = exc
+                    self._exhausted[candidate] = time.time() + exc.retry_after
+                    log.warning("model %s unavailable for %.0fs", candidate, exc.retry_after)
+                    continue
+                self.meter.record(stage, completion, seconds, cached=False)
                 self._note_substitution(wanted, candidate)
-                return cached.text
-            if self._exhausted.get(candidate, 0) > time.time():
-                continue
-            self._check_budget()
-            try:
-                completion, seconds = self._call_with_retries(candidate, messages, temperature, max_tokens, json_mode)
-            except QuotaExhausted as exc:
-                last = exc
-                self._exhausted[candidate] = time.time() + exc.retry_after
-                log.warning("model %s unavailable; trying the next fallback", candidate)
-                continue
-            self.meter.record(stage, completion, seconds, cached=False)
-            self._note_substitution(wanted, candidate)
-            if self._cache is not None and completion.text.strip():
-                self._cache[key] = completion
-            return completion.text
-        raise last or QuotaExhausted(f"RateLimitError: every model in the chain for {wanted} is cooling down")
+                if self._cache is not None and completion.text.strip():
+                    self._cache[keys[candidate]] = completion
+                return completion.text
+            if waited >= self.settings.max_quota_wait_s:
+                raise last or QuotaExhausted(f"RateLimitError: every model in the chain for {wanted} is cooling down")
+            soonest = min((self._exhausted.get(m, 0) for m in chain), default=0) - time.time()
+            pause = min(max(soonest, 5.0), 300.0)
+            log.warning("all models for %s are out of quota; waiting %.0fs (%.0fs waited so far)", wanted, pause, waited)
+            time.sleep(pause)
+            waited += pause
+            for m in chain:
+                if self._exhausted.get(m, 0) - time.time() <= 1:
+                    self._exhausted.pop(m, None)
 
     def _chain(self, wanted: str) -> list[str]:
-        extra = [m.strip() for m in self.settings.fallback_models.split(",") if m.strip()]
+        """Stand-ins never cross the judge/agent line: the judge only falls back to judge stand-ins, and the other
+        roles never fall back to a judge model. Otherwise a spent quota would silently reintroduce self-preference."""
+
+        def names(raw: str) -> list[str]:
+            return [m.strip() for m in raw.split(",") if m.strip()]
+
+        s = self.settings
+        general, judges = names(s.fallback_models), names(s.judge_fallback_models)
+        builders = {s.gen_model, s.effective_agent_model}
+        if wanted == s.judge_model and wanted not in builders:
+            extra = [m for m in judges if m not in builders and m not in general]
+        else:
+            extra = [m for m in general if m != s.judge_model]
         return [wanted, *[m for m in extra if m != wanted]]
 
     def _note_substitution(self, wanted: str, used: str) -> None:
@@ -337,4 +376,6 @@ class LLMClient:
                 wait = min(2**attempt, 20)
                 log.warning("LLM call failed (%s), retry %d/%d in %ss", type(exc).__name__, attempt, attempts - 1, wait)
                 time.sleep(wait)
-        raise LLMUnavailable(f"LLM call failed after {attempts} attempt(s): {_redact(repr(last))}") from last
+        rejected = type(last).__name__ in ("BadRequestError", "UnprocessableEntityError")
+        error = RequestRejected if rejected else LLMUnavailable
+        raise error(f"LLM call failed after {attempt} attempt(s): {_redact(repr(last))}") from last

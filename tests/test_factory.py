@@ -180,6 +180,8 @@ def test_small_corpus_still_yields_twenty_cases():
     class Fake:
         def complete(self, *, messages, **_):
             user = messages[-1]["content"]
+            if any("PASSAGE A:" in m["content"] for m in messages):
+                return Completion("{}")
             k = next(counter)
             if "MUST REFUSE" in user:
                 return Completion(
@@ -293,3 +295,74 @@ def test_domain_rule_gate_catches_invented_currency_and_numbers():
     assert "GBP" in _invented_content("Figures are expressed in GBP.", corpus, [])
     assert "1.25" in _invented_content("Leave accrues at 1.25 days.", corpus, [])
     assert _invented_content("Quote the USD 60 allowance exactly.", corpus, []) == ""
+
+
+class _Spent:
+    def complete(self, **_):
+        raise RuntimeError("The model `m` does not exist or you do not have access to it.")
+
+
+def test_outages_are_never_turned_into_results():
+    import pytest
+
+    from forgeai.config import Settings
+    from forgeai.factory.judge import _vote
+    from forgeai.factory.optimizer import _new_rule
+    from forgeai.llm.client import LLMClient, LLMUnavailable, RequestRejected, is_outage
+    from forgeai.schemas import Requirements
+
+    client = LLMClient(Settings(use_cache=False, transport_retries=0), transport=_Spent(), use_cache=False)
+    req = Requirements(agent_name="a", purpose="p", audience="u", tone="t", scope="s", must_answer_topics=["x"])
+    with pytest.raises(LLMUnavailable):
+        _vote(client, "m", case(), resp("x"), ["24 days"])
+    with pytest.raises(LLMUnavailable):
+        _new_rule(client, "m", req, "hallucination", [], [], 1, "symptom")
+    assert not is_outage(RequestRejected("context too long")) and not is_outage(ValueError("bad json"))
+
+
+def test_fallbacks_never_cross_the_judge_agent_line():
+    from forgeai.config import Settings
+    from forgeai.llm.client import LLMClient
+
+    s = Settings(
+        use_cache=False, gen_model="a", agent_model="a", judge_model="j", fallback_models="b,j,j2", judge_fallback_models="j2,a,b"
+    )
+    client = LLMClient(s, transport=_Spent(), use_cache=False)
+    assert client._chain("a") == ["a", "b", "j2"]
+    assert client._chain("j") == ["j"]
+    s = Settings(
+        use_cache=False, gen_model="a", agent_model="a", judge_model="j", fallback_models="b", judge_fallback_models="j2"
+    )
+    client = LLMClient(s, transport=_Spent(), use_cache=False)
+    assert client._chain("a") == ["a", "b"] and client._chain("j") == ["j", "j2"]
+
+
+def test_client_waits_for_quota_when_allowed(monkeypatch):
+    from forgeai.config import Settings
+    from forgeai.llm import client as module
+
+    clock = [1000.0]
+    monkeypatch.setattr(module.time, "time", lambda: clock[0])
+    monkeypatch.setattr(module.time, "sleep", lambda s: clock.__setitem__(0, clock[0] + s))
+
+    class Refills:
+        calls = 0
+
+        def complete(self, **_):
+            Refills.calls += 1
+            if Refills.calls == 1:
+                raise RuntimeError("Rate limit reached on tokens per day (TPD). Please try again in 4m0s.")
+            return module.Completion("ok")
+
+    s = Settings(use_cache=False, max_quota_wait_s=3600, transport_retries=0)
+    assert module.LLMClient(s, transport=Refills(), use_cache=False).chat([{"role": "user", "content": "q"}], model="m") == "ok"
+    assert Refills.calls == 2 and clock[0] >= 1240
+
+
+def test_rerun_removes_only_files_of_the_previous_run(tmp_path):
+    from forgeai.factory.pipeline import _clear_previous_run
+
+    for name in ("05_iteration_3.json", "report.md", "NOTE.md", "my_notes.txt"):
+        (tmp_path / name).write_text("x")
+    _clear_previous_run(tmp_path)
+    assert [p.name for p in tmp_path.iterdir()] == ["my_notes.txt"]
