@@ -89,9 +89,16 @@ def _qa_for_chunk(client, model, chunk: Chunk, audience: str, style_key: str, av
     return res.value
 
 
+def _mentions_source_layout(question: str) -> bool:
+    """A user cannot know about "passage A": such a question tests the generator's prompt, not the agent."""
+    return re.search(r"\bpassages?\b", question, re.I) is not None
+
+
 def _verify_facts(qa: RawQA, texts: list[str]) -> bool:
     """Facts must occur verbatim in the source AND carry information (not merely echo the question)."""
     joined = "\n".join(texts)
+    if _mentions_source_layout(qa.question):
+        return False
     qn = norm(qa.question)
     facts = [f for f in qa.key_facts if f.strip() and norm(f) not in qn]
     if not facts or len(facts) < len(qa.key_facts) - 1 or len(qa.question.split()) < 4:
@@ -290,10 +297,14 @@ def generate_cases(
             continue
         fa, fb = raw.facts_a[0].strip(), raw.facts_b[0].strip()
         if (
-            not (fact_in(fa, a.body) and fact_in(fb, b.body) and norm(fa) != norm(fb))
-            or norm(fa) in norm(raw.question)
-            or norm(fb) in norm(raw.question)
-        ) or not _truly_ambiguous(raw.question, a.body, b.body):
+            (
+                not (fact_in(fa, a.body) and fact_in(fb, b.body) and norm(fa) != norm(fb))
+                or norm(fa) in norm(raw.question)
+                or norm(fb) in norm(raw.question)
+            )
+            or _mentions_source_layout(raw.question)
+            or not _truly_ambiguous(raw.question, a.body, b.body)
+        ):
             stats["dropped_unverified"] += 1
             continue
         if add(

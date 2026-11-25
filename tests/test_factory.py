@@ -401,3 +401,13 @@ def test_exam_reaches_its_floor_even_if_the_model_produces_nothing_usable():
     by_id = {c.chunk_id: c for c in chunks}
     for c in cases:
         assert fact_in(c.key_facts[0], by_id[c.gold_chunks[0]].body) and not fact_in(c.key_facts[0], c.question)
+
+
+def test_questions_that_mention_passages_are_rejected():
+    from forgeai.factory.evalgen import _verify_facts
+    from forgeai.schemas import RawQA
+
+    text = ["Standard delivery is to the nominated port agent."]
+    bad = RawQA(question="What is the delivery method in passage B here?", answer="x", key_facts=["nominated port agent"])
+    good = RawQA(question="Where does standard delivery go to?", answer="x", key_facts=["nominated port agent"])
+    assert not _verify_facts(bad, text) and _verify_facts(good, text)
