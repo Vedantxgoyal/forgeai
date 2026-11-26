@@ -88,7 +88,9 @@ def fact_in(fact: str, text: str) -> bool:
 
 
 def content_tokens(s: str) -> set[str]:
-    return {w for w in norm(s).split() if len(w) > 2 and w not in _STOP}
+    """Meaningful words. Edge punctuation is removed so that "leave." at the end of a sentence is "leave"."""
+    words = (w.strip(".-/") for w in norm(s).split())
+    return {w for w in words if len(w) > 2 and w not in _STOP}
 
 
 def support_ratio(answer: str, context: str, question: str = "") -> tuple[float, set[str]]:

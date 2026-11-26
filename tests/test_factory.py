@@ -411,3 +411,55 @@ def test_questions_that_mention_passages_are_rejected():
     bad = RawQA(question="What is the delivery method in passage B here?", answer="x", key_facts=["nominated port agent"])
     good = RawQA(question="Where does standard delivery go to?", answer="x", key_facts=["nominated port agent"])
     assert not _verify_facts(bad, text) and _verify_facts(good, text)
+
+
+def test_a_tool_the_brief_plainly_asks_for_survives_a_misquote():
+    from forgeai.factory.generator import brief_sentence_asking_for
+
+    brief = "An assistant for masters: it answers from the port guides, and checks the current weather at the port."
+    assert "current weather" in brief_sentence_asking_for("weather", brief)
+    hr = "An assistant that answers HR policy questions about leave and travel expenses. Keep answers short."
+    assert not any(brief_sentence_asking_for(t, hr) for t in ("weather", "calculator", "current_date"))
+    assert brief_sentence_asking_for("calculator", "It should work out order totals with discounts.")
+
+
+def test_refusal_that_contradicts_a_documented_section_is_dropped():
+    from forgeai.factory.guard import drop_unfounded_refusals
+    from forgeai.ingest.chunker import Chunk
+    from forgeai.retrieval.embed import TfidfLsaEmbedder
+    from forgeai.retrieval.index import HybridIndex
+    from forgeai.schemas import Requirements
+
+    chunk = Chunk(
+        chunk_id="g::1", doc_id="g", text="Passes are required.", body="Passes are required.", section="5. Crew Shore Leave"
+    )
+    req = Requirements(
+        agent_name="a",
+        purpose="p",
+        audience="u",
+        tone="t",
+        scope="s",
+        must_answer_topics=["x"],
+        must_refuse_topics=["crew shore leave", "legal advice"],
+        brief="Answer port questions.",
+    )
+    assert drop_unfounded_refusals(HybridIndex([chunk], TfidfLsaEmbedder()), req).must_refuse_topics == ["legal advice"]
+    req.must_refuse_topics, req.brief = ["crew shore leave"], "Answer port questions but refuse crew shore leave."
+    assert drop_unfounded_refusals(HybridIndex([chunk], TfidfLsaEmbedder()), req).must_refuse_topics == ["crew shore leave"]
+
+
+def test_vague_facts_are_not_accepted():
+    from forgeai.factory.evalgen import _verify_facts
+    from forgeai.schemas import RawQA
+
+    text = ["Mooring lines must be tended at all times, at least 2 hours."]
+    assert not _verify_facts(
+        RawQA(question="When must mooring lines be tended?", answer="x", key_facts=["at least", "times"]), text
+    )
+    assert _verify_facts(RawQA(question="What is the minimum period stated?", answer="x", key_facts=["2 hours"]), text)
+
+
+def test_sentence_punctuation_does_not_hide_a_word():
+    from forgeai.textutil import content_tokens
+
+    assert {"leave", "e-mail"} <= content_tokens("Staff may e-mail HR about leave.")

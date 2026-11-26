@@ -104,6 +104,24 @@ def check_topic(
     )
 
 
+def drop_unfounded_refusals(index: HybridIndex, req: Requirements) -> Requirements:
+    """A model-written "must refuse" topic is dropped when the documents have a section about exactly that and the
+    client never asked for it to be refused: otherwise the agent would be told to decline its own material."""
+    headings = sorted({c.section for c in index.chunks if c.section})
+    said = [req.brief, *[x.answer for x in req.qa if x.source == "user"]]
+    kept = []
+    for topic in req.must_refuse_topics:
+        documented = any(lexical_coverage(topic, [h]) >= 0.99 for h in headings)
+        if documented and lexical_coverage(topic, said) < 0.67:
+            req.assumptions.append(
+                f"REFUSAL DROPPED: '{topic}' has its own section in the documents and the client did not ask to refuse it"
+            )
+        else:
+            kept.append(topic)
+    req.must_refuse_topics = kept
+    return req
+
+
 def run_guard(
     client: LLMClient, index: HybridIndex, req: Requirements, model: str | None = None, extra_evidence: str = ""
 ) -> Requirements:
@@ -116,4 +134,4 @@ def run_guard(
     for c in checks:
         if c.status in ("unsupported", "partial"):
             req.assumptions.append(f"GROUNDABILITY {c.status.upper()}: '{c.topic}' (coverage {c.lexical_coverage}) - {c.note}")
-    return req
+    return drop_unfounded_refusals(index, req)

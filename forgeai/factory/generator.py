@@ -28,6 +28,20 @@ from forgeai.schemas import AgentDef, Requirements, RetrievalConfig, RoleDraft, 
 from forgeai.tools import REGISTRY, registry_cards
 from forgeai.tools.base import ToolContext
 
+_BRIEF_ASKS = {
+    "weather": r"\b(current|live|today'?s|real[- ]?time|forecast(ed)?)\b[^.]{0,40}\bweather\b|\bweather\b[^.]{0,40}\b(forecast|today|right now|currently)\b",
+    "current_date": r"\btoday'?s date\b|\bcurrent date\b|\bdays? (left|remaining|until)\b|\bas of today\b",
+    "calculator": r"\bcalculat\w*|\bcompute\w*|\bwork(s|ing)? out\b[^.]{0,40}\btotals?\b|\border totals?\b",
+}
+
+
+def brief_sentence_asking_for(tool: str, brief: str) -> str:
+    """The sentence of the client's own brief that plainly asks for what this tool does, or ''."""
+    pattern = _BRIEF_ASKS.get(tool)
+    if not pattern:
+        return ""
+    return next((s.strip() for s in re.split(r"(?<=[.!?])\s+", brief) if re.search(pattern, s, re.I)), "")
+
 
 def select_tools(
     client: LLMClient, req: Requirements, load: LoadResult, profile: CorpusProfile, model: str | None = None
@@ -70,6 +84,10 @@ def select_tools(
         quote = pick.justification.strip()
         score = fuzz.partial_ratio(quote.lower(), (corpus_text + " " + req_text).lower()) if len(quote) >= 12 else 0
         if score < 85:
+            asked = brief_sentence_asking_for(name, req.brief)
+            if asked:  # the model chose rightly but misquoted: use the client's own sentence as the evidence
+                keep.append(ToolChoice(name=name, justification=asked))
+                continue
             dropped.append(
                 {
                     "tool": name,
@@ -78,6 +96,11 @@ def select_tools(
             )
             continue
         keep.append(ToolChoice(name=name, justification=quote))
+    for name in _BRIEF_ASKS:  # the brief asks for it in so many words, but the model did not pick it
+        asked = brief_sentence_asking_for(name, req.brief)
+        if asked and name not in {t.name for t in keep}:
+            keep.append(ToolChoice(name=name, justification=asked))
+            dropped = [d for d in dropped if d["tool"] != name]
     if load.tables and "csv_lookup" not in {t.name for t in keep}:
         keep.append(ToolChoice(name="csv_lookup", justification=f"corpus contains structured table(s): {', '.join(load.tables)}"))
     return keep, dropped

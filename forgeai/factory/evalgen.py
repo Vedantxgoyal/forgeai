@@ -33,8 +33,10 @@ from forgeai.textutil import content_tokens, fact_in, norm
 log = logging.getLogger(__name__)
 MIN_CHUNK_WORDS = 15
 MAX_FACT_WORDS = 12
+_VAGUE = {"least", "most", "times", "time", "minimum", "maximum"}
 MIN_CASES = 20
 MAX_ROUNDS = 3
+REFUSAL_ATTEMPTS = 2
 
 STYLE = {
     "answerable": "Use the passage's own key terms in the question.",
@@ -94,13 +96,18 @@ def _mentions_source_layout(question: str) -> bool:
     return re.search(r"\bpassages?\b", question, re.I) is not None
 
 
+def _informative(fact: str) -> bool:
+    """A "fact" such as "at least" or "all" would be found in almost any answer and proves nothing."""
+    return any(ch.isdigit() for ch in fact) or bool(content_tokens(fact) - _VAGUE)
+
+
 def _verify_facts(qa: RawQA, texts: list[str]) -> bool:
     """Facts must occur verbatim in the source AND carry information (not merely echo the question)."""
     joined = "\n".join(texts)
     if _mentions_source_layout(qa.question):
         return False
     qn = norm(qa.question)
-    facts = [f for f in qa.key_facts if f.strip() and norm(f) not in qn]
+    facts = [f for f in qa.key_facts if f.strip() and norm(f) not in qn and _informative(f)]
     if not facts or len(facts) < len(qa.key_facts) - 1 or len(qa.question.split()) < 4:
         return False
     qa.key_facts = facts
@@ -336,43 +343,46 @@ def generate_cases(
         ),
     ]
     for kind, n, instr in kinds:
-        if n <= 0:
-            continue
-        prompt = render(
-            "eval_refuse",
-            scope=req.scope,
-            refuse_topics="; ".join(req.must_refuse_topics) or "none listed",
-            ungrounded="; ".join(req.ungrounded_topics) or "none identified",
-            terms=terms,
-            n=n * 2,
-            kind_instructions=instr,
-        )
-        try:
-            qs = generate_structured(
-                client,
-                RawQuestions,
-                [{"role": "user", "content": prompt}],
-                model=model,
-                stage="evalgen",
-                max_tokens=500,
-                retries=1,
-            ).value.questions
-        except Exception as exc:
-            if is_outage(exc):
-                raise
-            qs = []
         made = 0
-        for q in qs:
+        for attempt in range(REFUSAL_ATTEMPTS):
             if made >= n:
                 break
-            stats["proposed"] += 1
-            cov = _answerability(index, q)
-            limit = 0.45 if kind == "out_of_scope" else 0.75
-            if cov > limit:
-                stats["dropped_answerable_refusal"] += 1
-                continue
-            if add(EvalCase(id=_case_id(kind, q), type=kind, question=q.strip(), expected_refusal=True)):
-                made += 1
+            if attempt:
+                instr = f"{instr} Write questions DIFFERENT from any you would have written before (attempt {attempt + 1})."
+            prompt = render(
+                "eval_refuse",
+                scope=req.scope,
+                refuse_topics="; ".join(req.must_refuse_topics) or "none listed",
+                ungrounded="; ".join(req.ungrounded_topics) or "none identified",
+                terms=terms,
+                n=n * 2,
+                kind_instructions=instr,
+            )
+            try:
+                qs = generate_structured(
+                    client,
+                    RawQuestions,
+                    [{"role": "user", "content": prompt}],
+                    model=model,
+                    stage="evalgen",
+                    max_tokens=500,
+                    retries=1,
+                ).value.questions
+            except Exception as exc:
+                if is_outage(exc):
+                    raise
+                qs = []
+            for q in qs:
+                if made >= n:
+                    break
+                stats["proposed"] += 1
+                cov = _answerability(index, q)
+                limit = 0.45 if kind == "out_of_scope" else 0.75
+                if cov > limit:
+                    stats["dropped_answerable_refusal"] += 1
+                    continue
+                if add(EvalCase(id=_case_id(kind, q), type=kind, question=q.strip(), expected_refusal=True)):
+                    made += 1
 
     for c in tool_cases:
         stats["proposed"] += 1
