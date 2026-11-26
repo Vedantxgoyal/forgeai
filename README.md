@@ -23,8 +23,9 @@ a local 3B model).
 | [Regression: port guides changed](runs/demo3_port_regression/regression_report.md) | - | old exam: 15/20 -> 13/20 | 1 real break, 3 outdated tests, 1 fixed | same local model |
 
 **Read each run's `NOTE.md` before quoting a score.** In short:
-- HR: the one improvement round fixed nothing and was rejected. Three of the four failures look like tests that demand a
-  detail the question did not ask for; one is a real hallucination. 95% interval 64-93%.
+- HR: the one improvement round fixed one case, broke another, and was rejected for no net gain. Three of the four
+  failures look like tests that demand a detail the question did not ask for; one is a real hallucination. 95% interval
+  64-93%.
 - Third brief: 8 of its 20 cases are model-free fill-in-the-blank cases, and judge and agent are the same model.
 - Regression: the changed guide states new notice periods and a new wind limit; the agent answered with the new values
   and the report marks those three old tests as outdated instead of blaming the agent.
