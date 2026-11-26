@@ -90,7 +90,7 @@ class AgentDef(BaseModel):
     output_contract: dict = Field(
         default_factory=lambda: {
             "answer": "string, grounded only in the context",
-            "citations": "list of chunk ids used, e.g. ['hr_policy#3']",
+            "citations": "ids of the passages used, copied exactly from the square brackets in the context",
             "refused": "true if the documents cannot answer",
         }
     )

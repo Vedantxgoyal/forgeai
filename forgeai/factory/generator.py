@@ -132,7 +132,8 @@ GROUNDING_RULES = [
     ),
     (
         "g2",
-        'Cite the chunk ids you used in "citations", e.g. ["doc#3"]. Cite only passages that actually contain the answer.',
+        'In "citations", list the ids of the passages you used, copied exactly from the square brackets that start each CONTEXT '
+        "passage. Cite only passages that actually contain the answer.",
         "citation",
     ),
     (
@@ -158,7 +159,7 @@ def output_contract(req: Requirements, tool_names: set[str]) -> dict:
     concise = re.search(r"concise|short|brief", f"{req.tone} {req.brief}", re.I)
     contract = {
         "answer": f"plain text for {req.audience}; tone: {req.tone}; grounded only in the context",
-        "citations": "list of chunk ids used, e.g. ['document::0001']",
+        "citations": "ids of the passages used, copied exactly from the square brackets in the context",
         "refused": "true if the documents cannot answer",
         "max_words": 90 if concise else 180,
     }

@@ -96,9 +96,15 @@ def _mentions_source_layout(question: str) -> bool:
     return re.search(r"\bpassages?\b", question, re.I) is not None
 
 
-def _informative(fact: str) -> bool:
-    """A "fact" such as "at least" or "all" would be found in almost any answer and proves nothing."""
-    return any(ch.isdigit() for ch in fact) or bool(content_tokens(fact) - _VAGUE)
+def _informative(fact: str, n_facts: int = 1) -> bool:
+    """A "fact" such as "at least" would be found in almost any answer and proves nothing. A single word is only a fact
+    when it is the whole expected answer: several loose words mean the model split a phrase into pieces."""
+    if any(ch.isdigit() for ch in fact):
+        return True
+    meaningful = content_tokens(fact) - _VAGUE
+    if len(fact.split()) == 1:
+        return n_facts == 1 and bool(meaningful)
+    return bool(meaningful)
 
 
 def _verify_facts(qa: RawQA, texts: list[str]) -> bool:
@@ -107,7 +113,7 @@ def _verify_facts(qa: RawQA, texts: list[str]) -> bool:
     if _mentions_source_layout(qa.question):
         return False
     qn = norm(qa.question)
-    facts = [f for f in qa.key_facts if f.strip() and norm(f) not in qn and _informative(f)]
+    facts = [f for f in qa.key_facts if f.strip() and norm(f) not in qn and _informative(f, len(qa.key_facts))]
     if not facts or len(facts) < len(qa.key_facts) - 1 or len(qa.question.split()) < 4:
         return False
     qa.key_facts = facts

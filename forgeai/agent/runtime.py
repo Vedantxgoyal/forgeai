@@ -47,6 +47,16 @@ def build_index(load: LoadResult, d: AgentDef, settings: Settings, embedder=None
     return HybridIndex(chunks, emb, Reranker(settings.st_reranker))
 
 
+def match_citation(raw: str, retrieved: list[str]) -> str:
+    """Accept an id wrapped in extra text (models often append the section heading), but never guess: the citation
+    must literally contain exactly one retrieved passage id."""
+    cleaned = raw.strip("[] ")
+    if cleaned in retrieved:
+        return cleaned
+    found = [r for r in retrieved if r in cleaned]
+    return found[0] if len(found) == 1 else cleaned
+
+
 class Agent:
     def __init__(
         self, d: AgentDef, load: LoadResult, client: LLMClient, settings: Settings | None = None, index: HybridIndex | None = None
@@ -146,7 +156,7 @@ class Agent:
         if turn.action == "tool":
             turn = AgentTurn(action="answer", answer=self.d.refusal_phrase, refused=True)
         refused = turn.refused or looks_like_refusal(turn.answer, self.d.refusal_phrase)
-        cites = [c.strip("[] ") for c in turn.citations]
+        cites = [match_citation(c, retrieved) for c in turn.citations]
         return AgentResponse(
             answer=turn.answer.strip(),
             citations=cites,

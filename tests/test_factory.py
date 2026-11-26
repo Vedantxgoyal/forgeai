@@ -463,3 +463,31 @@ def test_sentence_punctuation_does_not_hide_a_word():
     from forgeai.textutil import content_tokens
 
     assert {"leave", "e-mail"} <= content_tokens("Staff may e-mail HR about leave.")
+
+
+def test_citations_with_extra_text_are_matched_but_never_guessed():
+    from forgeai.agent.runtime import match_citation
+
+    got = ["guide::0001", "guide::0002"]
+    assert match_citation("[guide::0001 > 2 Pilotage]", got) == "guide::0001"
+    assert match_citation("guide > 2. Pilotage", got) == "guide > 2. Pilotage"
+    assert match_citation("guide::0001, guide::0002", got) == "guide::0001, guide::0002"
+
+
+def test_the_citation_rule_gives_no_misleading_example_id():
+    from forgeai.factory.generator import GROUNDING_RULES
+
+    rule = next(text for key, text, _ in GROUNDING_RULES if key == "g2")
+    assert "#" not in rule and "square brackets" in rule
+
+
+def test_a_phrase_split_into_words_is_not_accepted_as_facts():
+    from forgeai.factory.evalgen import _verify_facts
+    from forgeai.schemas import RawQA
+
+    text = ["The pilot is requested through the Port Operations Control Centre. The Superintendent signs."]
+    split = RawQA(
+        question="How is a pilot requested here today?", answer="x", key_facts=["through", "Port", "Operations", "Centre"]
+    )
+    sole = RawQA(question="Who has to sign the request?", answer="x", key_facts=["Superintendent"])
+    assert not _verify_facts(split, text) and _verify_facts(sole, text)
