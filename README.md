@@ -9,19 +9,19 @@ improvement rounds, and an honest quality report. Every stage is designed for a 
 
 ## Demo results (committed artifacts)
 
-| Demo | Tools chosen | Baseline -> final | Dev / hold-out | Models (Groq free tier) |
+| Run | Tools chosen | Baseline -> final | Dev / hold-out | Models |
 |---|---|---|---|---|
-| [HR policy assistant](runs/demo1_hr/report.md) | none | 22/24 -> **22/24** | 89% / 100% | `gpt-oss-20b` + `qwen3.8-27b` judge, mostly served by the `gpt-oss-120b` fallback |
-| [Ship-spares procurement](runs/demo2_spares/report.md) | `csv_lookup`, `calculator` | 23/24 -> **24/24** | 100% / 100% | agent `qwen3.8-27b`, judge `gpt-oss-120b` |
+| [HR policy assistant](runs/demo1_hr/report.md) | none | 20/24 -> **20/24 (83%)** | 83% / 83% | `gpt-oss-120b`, judge `qwen3.8-27b` (Groq) |
+| [Ship-spares procurement](runs/demo2_spares/report.md) | `csv_lookup`, `calculator` | 23/24 -> **24/24** | 100% / 100% | `qwen3.8-27b`, judge `gpt-oss-120b` (Groq) |
+| [Ship spares, stricter newer exam](runs/demo2_spares_strict_exam/report.md) | `csv_lookup`, `calculator` | first exam only: **18/25 (72%)** | 79% / 50% | `gpt-oss-20b`, judge `qwen3.8-27b` (Groq) |
 
 **Read each run's `NOTE.md` before quoting a score.** In short:
-- HR: the agent and judge shared a model for part of the run, both failures look like badly written ambiguous
-  questions, and the loop stopped early on exhausted quota. 95% interval 74-98%.
-- Spares: produced by an earlier version of the code (before ambiguous cases and per-agent output contracts);
-  its two-document passes rest on the LLM judge. 95% interval 86-100%.
+- HR: the one improvement round fixed nothing and was rejected. Three of the four failures look like tests that demand a
+  detail the question did not ask for; one is a real hallucination. 95% interval 64-93%.
+- Spares 24/24: produced by an earlier version on an easier exam, so **do not read it as "the agent is perfect"**. The
+  newer exam on the same documents scores 72% and shows what the first one missed (ambiguity, skipped calculator).
 
 The exams come from the same documents the agents read, so treat the scores as faithfulness estimates, not a guarantee.
-Regression mode and the hand-written comparison are covered by offline tests but have no committed real-model run yet.
 
 ## What real runs broke, and how it was fixed
 
@@ -35,6 +35,9 @@ Earlier passes are kept in `runs/_history/`. Each fix is in the pipeline, with a
 - `gpt-oss` made native function calls that the API rejected and were silently scored as refusals.
 - Rate-limit outages were counted as agent failures.
 - "Ambiguous" test questions that only one passage could answer.
+- A citation example (`doc#3`) that did not match real ids; a small model copied it literally.
+- A small model asked no clarifying questions, split facts into single words and wrote rules pointing at "other sources".
+- Small corpora produced fewer than 20 cases.
 
 ## Run it
 

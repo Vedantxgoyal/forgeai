@@ -1,0 +1,57 @@
+{
+  "grounded_share": 1.0,
+  "questions": [
+    {
+      "question": "Does the leave policy specify the exact number of annual leave days employees are entitled to each year?",
+      "why": "The assistant needs to provide accurate leave entitlements.",
+      "grounded_in": [
+        "annual",
+        "days",
+        "leave",
+        "policy",
+        "year"
+      ]
+    },
+    {
+      "question": "Is there a difference in pay between sick leave and bereavement leave, or are they both paid at the same rate?",
+      "why": "Clarifying pay differences is essential for salary and pension queries.",
+      "grounded_in": [
+        "bereavement",
+        "leave",
+        "paid",
+        "sick"
+      ]
+    },
+    {
+      "question": "Does the code of conduct outline any specific disciplinary steps for harassment incidents, such as written warnings or immediate suspension?",
+      "why": "The assistant must answer conduct questions with correct disciplinary procedures.",
+      "grounded_in": [
+        "code",
+        "conduct",
+        "disciplinary",
+        "harassment",
+        "written"
+      ]
+    },
+    {
+      "question": "Are employees allowed to use company equipment for personal travel, or is it strictly prohibited?",
+      "why": "Potential conflict between equipment use policy and travel policy must be resolved.",
+      "grounded_in": [
+        "company",
+        "equipment",
+        "travel"
+      ]
+    },
+    {
+      "question": "What is the per diem rate for meals in the travel expense policy, and does it vary by travel tier?",
+      "why": "The assistant needs to provide precise expense details.",
+      "grounded_in": [
+        "diem",
+        "expense",
+        "policy",
+        "tier",
+        "travel"
+      ]
+    }
+  ]
+}

@@ -562,3 +562,17 @@ def test_llm_judge_cannot_overrule_a_fully_supported_answer():
     c = case(question="Which channel is used?", key_facts=["designated anchorages", "VHF channel 12"])
     r = judge_case(SaysUngrounded(), "j", c, resp("VHF channel 12", ctx="Keep watch on VHF channel 12 in designated anchorages."))
     assert r.grounded and r.failure == "prompt_defect"
+
+
+def test_a_looked_up_value_is_not_rejected_for_using_other_words():
+    answer = AgentResponse(
+        answer="The minimum order quantity for this item is 1.",
+        retrieved=[],
+        citations=[],
+        context_text='[tool:csv_lookup] {"rows": [{"min_order_qty": "1"}]}',
+        tool_calls=[{"tool": "csv_lookup", "ok": True}],
+    )
+    tool_case = case(type="tool", key_facts=["1"], question="What is the min order qty for SP-1273?")
+    assert judge_case(NoLLM(), "m", tool_case, answer, use_llm=False).passed
+    wrong = answer.model_copy(update={"answer": "The minimum order quantity for this item is 7."})
+    assert not judge_case(NoLLM(), "m", tool_case, wrong, use_llm=False).passed

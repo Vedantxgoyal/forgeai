@@ -2,17 +2,26 @@
   {
     "iteration": 1,
     "accepted": false,
-    "note": "no improvement; kept previous agent | stopped: iteration 2 could not finish (QuotaExhausted); keeping the best agent so far",
-    "score_before": 0.9167,
-    "score_after": 0.875,
+    "note": "no improvement; kept previous agent",
+    "score_before": 0.8333,
+    "score_after": 0.8333,
     "changes": [
       {
-        "category": "retrieval_miss",
-        "kind": "retrieval",
-        "detail": "top_k 5 -> 8 (answer may sit just below the cut-off)",
+        "category": "hallucination",
+        "kind": "rule",
+        "detail": "[f1h] Never answer questions about salary, pension, or any topic not explicitly covered in the provided policy documents; if the information is not in the context, politely decline.  (LLM-written rule passed leakage checks)",
         "addresses": [
-          "amb-f2b83b",
-          "amb-066fc0"
+          "nea-650da6"
+        ],
+        "rejected_reason": ""
+      },
+      {
+        "category": "prompt_defect",
+        "kind": "rule",
+        "detail": "[f1p] Provide a complete answer including all required policy details and cite the specific policy sections for every factual claim.  (LLM-written rule passed leakage checks)",
+        "addresses": [
+          "par-69dc45",
+          "ans-703ddf"
         ],
         "rejected_reason": ""
       }

@@ -1,0 +1,76 @@
+{
+  "brief": "A procurement assistant for ship superintendents and chief engineers that helps them find spare parts in our catalogue, check price, stock and lead time, compare the two suppliers' terms, work out order totals with discounts, and say who must approve a purchase.",
+  "docs": "demos/spares_docs",
+  "models": {
+    "gen": "openai/gpt-oss-20b",
+    "judge": "qwen/qwen3.8-27b",
+    "agent": "openai/gpt-oss-20b"
+  },
+  "usage": {
+    "intake": {
+      "calls": 3,
+      "cache_hits": 3,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "guard": {
+      "calls": 7,
+      "cache_hits": 7,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "generate": {
+      "calls": 2,
+      "cache_hits": 2,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "evalgen": {
+      "calls": 23,
+      "cache_hits": 23,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "agent": {
+      "calls": 35,
+      "cache_hits": 35,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "judge": {
+      "calls": 16,
+      "cache_hits": 16,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "_total": {
+      "calls": 86,
+      "cache_hits": 86,
+      "total_tokens": 0,
+      "seconds": 0.0
+    }
+  },
+  "seconds": 59.2,
+  "notes": [
+    "intake: 5 questions, 100% reference real document terms"
+  ],
+  "seed": 7,
+  "final_score": 0.72,
+  "tools": [
+    "csv_lookup",
+    "calculator"
+  ],
+  "substitutions": {}
+}

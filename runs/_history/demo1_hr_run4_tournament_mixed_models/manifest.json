@@ -1,0 +1,94 @@
+{
+  "brief": "An assistant that answers HR policy questions for Meridian Shipping's shore-based staff: leave, conduct, and travel/expense rules. It should also tell staff what the policy says about salary and pension, and keep answers short and polite.",
+  "docs": "demos/hr_docs",
+  "models": {
+    "gen": "openai/gpt-oss-20b",
+    "judge": "qwen/qwen3.8-27b",
+    "agent": "openai/gpt-oss-20b"
+  },
+  "usage": {
+    "intake": {
+      "calls": 3,
+      "cache_hits": 3,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "guard": {
+      "calls": 8,
+      "cache_hits": 8,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "generate": {
+      "calls": 2,
+      "cache_hits": 1,
+      "prompt_tokens": 835,
+      "completion_tokens": 87,
+      "seconds": 2.9552333999999973,
+      "total_tokens": 922
+    },
+    "evalgen": {
+      "calls": 20,
+      "cache_hits": 10,
+      "prompt_tokens": 4449,
+      "completion_tokens": 1336,
+      "seconds": 5.399677099994733,
+      "total_tokens": 5785
+    },
+    "tournament": {
+      "calls": 2,
+      "cache_hits": 0,
+      "prompt_tokens": 620,
+      "completion_tokens": 315,
+      "seconds": 1.0843842000012955,
+      "total_tokens": 935
+    },
+    "agent": {
+      "calls": 100,
+      "cache_hits": 13,
+      "prompt_tokens": 103904,
+      "completion_tokens": 9647,
+      "seconds": 56.19432130000314,
+      "total_tokens": 113551
+    },
+    "judge": {
+      "calls": 72,
+      "cache_hits": 17,
+      "prompt_tokens": 46758,
+      "completion_tokens": 5803,
+      "seconds": 36.91446710000491,
+      "total_tokens": 52561
+    },
+    "agent_rewrite": {
+      "calls": 22,
+      "cache_hits": 0,
+      "prompt_tokens": 2842,
+      "completion_tokens": 1277,
+      "seconds": 9.882147299997087,
+      "total_tokens": 4119
+    },
+    "_total": {
+      "calls": 229,
+      "cache_hits": 52,
+      "total_tokens": 177873,
+      "seconds": 112.43
+    }
+  },
+  "seconds": 1008.4,
+  "notes": [
+    "intake: 5 questions, 100% reference real document terms",
+    "MODEL SUBSTITUTION: openai/gpt-oss-20b -> openai/gpt-oss-120b for 122 call(s) because the configured model was unavailable",
+    "MODEL SUBSTITUTION: qwen/qwen3.8-27b -> openai/gpt-oss-120b for 59 call(s) because the configured model was unavailable"
+  ],
+  "seed": 7,
+  "final_score": null,
+  "tools": [],
+  "substitutions": {
+    "openai/gpt-oss-20b -> openai/gpt-oss-120b": 122,
+    "qwen/qwen3.8-27b -> openai/gpt-oss-120b": 59
+  }
+}

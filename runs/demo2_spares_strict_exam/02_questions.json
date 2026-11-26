@@ -1,0 +1,69 @@
+{
+  "grounded_share": 1.0,
+  "questions": [
+    {
+      "question": "How should the assistant handle approval thresholds when an order value exceeds the limits specified in the procurement_procedure document, and who is the designated approver for such cases?",
+      "why": "The procurement_procedure document lists approval thresholds and mentions superintendents and urgent orders.",
+      "grounded_in": [
+        "approval",
+        "order",
+        "procedure",
+        "procurement",
+        "thresholds",
+        "value"
+      ]
+    },
+    {
+      "question": "When a spare part is listed in the spares_catalogue with a lead_time_days of 42, should the assistant prioritize suppliers with shorter lead times as outlined in supplier_oceanparts_terms, or is there a different rule in supplier_nordmarine_terms?",
+      "why": "Both supplier terms documents discuss delivery and lead times, and the catalogue provides lead_time_days.",
+      "grounded_in": [
+        "catalogue",
+        "days",
+        "lead",
+        "nordmarine",
+        "oceanparts",
+        "part",
+        "spares",
+        "supplier",
+        "terms",
+        "time"
+      ]
+    },
+    {
+      "question": "If a part is marked as critical in the procurement_procedure, does the assistant need to automatically flag it for urgent ordering regardless of the stock_qty in the catalogue, or should it still check stock levels first?",
+      "why": "The procurement_procedure document has a Critical Spares section, and the catalogue includes stock_qty.",
+      "grounded_in": [
+        "catalogue",
+        "critical",
+        "part",
+        "procedure",
+        "procurement",
+        "stock",
+        "urgent"
+      ]
+    },
+    {
+      "question": "What discount structure should the assistant apply when calculating order totals, given that supplier_oceanparts_terms mentions pricing and discounts while supplier_nordmarine_terms references usd discount?",
+      "why": "Both supplier terms documents contain discount information, but the specific discount percentages or thresholds are not detailed.",
+      "grounded_in": [
+        "discount",
+        "discounts",
+        "nordmarine",
+        "oceanparts",
+        "order",
+        "pricing",
+        "supplier",
+        "terms"
+      ]
+    },
+    {
+      "question": "When comparing supplier terms, should the assistant consider the warranty period specified in each supplier's terms, and if so, how should it present any differences to the user?",
+      "why": "Both supplier terms documents include a Returns and Warranty section, which may affect supplier selection.",
+      "grounded_in": [
+        "supplier",
+        "terms",
+        "warranty"
+      ]
+    }
+  ]
+}

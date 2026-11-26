@@ -1,0 +1,21 @@
+[
+  {
+    "iteration": 1,
+    "accepted": false,
+    "note": "no improvement; kept previous agent | stopped: iteration 2 could not finish (QuotaExhausted); keeping the best agent so far",
+    "score_before": 0.9167,
+    "score_after": 0.875,
+    "changes": [
+      {
+        "category": "retrieval_miss",
+        "kind": "retrieval",
+        "detail": "top_k 5 -> 8 (answer may sit just below the cut-off)",
+        "addresses": [
+          "amb-f2b83b",
+          "amb-066fc0"
+        ],
+        "rejected_reason": ""
+      }
+    ]
+  }
+]

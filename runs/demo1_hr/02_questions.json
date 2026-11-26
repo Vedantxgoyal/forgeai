@@ -2,55 +2,41 @@
   "grounded_share": 1.0,
   "questions": [
     {
-      "question": "Does the leave policy specify the exact number of annual leave days employees are entitled to each year?",
-      "why": "The assistant needs to provide accurate leave entitlements.",
+      "question": "When the leave_policy mentions \"annual leave\" and the code_of_conduct references \"working hours and attendance\", should the assistant prioritize the leave entitlement limits from leave_policy or the attendance expectations from code_of_conduct when staff request leave during peak periods?",
+      "why": "Both documents address leave and attendance, creating potential conflict on priority.",
       "grounded_in": [
         "annual",
-        "days",
+        "attendance",
+        "code",
+        "conduct",
+        "during",
+        "hours",
         "leave",
         "policy",
-        "year"
+        "working"
       ]
     },
     {
-      "question": "Is there a difference in pay between sick leave and bereavement leave, or are they both paid at the same rate?",
-      "why": "Clarifying pay differences is essential for salary and pension queries.",
-      "grounded_in": [
-        "bereavement",
-        "leave",
-        "paid",
-        "sick"
-      ]
-    },
-    {
-      "question": "Does the code of conduct outline any specific disciplinary steps for harassment incidents, such as written warnings or immediate suspension?",
-      "why": "The assistant must answer conduct questions with correct disciplinary procedures.",
+      "question": "The travel_expense_policy defines per‑diem rates in USD, but the brief asks for answers about salary and pension; should the assistant reference any salary figures from the code_of_conduct or is that information missing?",
+      "why": "The brief requests salary details which are not present in the provided documents, raising a coverage gap.",
       "grounded_in": [
         "code",
         "conduct",
-        "disciplinary",
-        "harassment",
-        "written"
-      ]
-    },
-    {
-      "question": "Are employees allowed to use company equipment for personal travel, or is it strictly prohibited?",
-      "why": "Potential conflict between equipment use policy and travel policy must be resolved.",
-      "grounded_in": [
-        "company",
-        "equipment",
-        "travel"
-      ]
-    },
-    {
-      "question": "What is the per diem rate for meals in the travel expense policy, and does it vary by travel tier?",
-      "why": "The assistant needs to provide precise expense details.",
-      "grounded_in": [
         "diem",
         "expense",
         "policy",
-        "tier",
         "travel"
+      ]
+    },
+    {
+      "question": "If an employee reports harassment under the code_of_conduct, does the assistant need to provide guidance on leave options from the leave_policy for the affected employee?",
+      "why": "Harassment reporting and leave entitlement intersect across the two documents.",
+      "grounded_in": [
+        "code",
+        "conduct",
+        "harassment",
+        "leave",
+        "policy"
       ]
     }
   ]

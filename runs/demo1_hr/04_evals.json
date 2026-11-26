@@ -1,8 +1,8 @@
 {
   "stats": {
-    "proposed": 24,
+    "proposed": 32,
     "kept": 24,
-    "dropped_unverified": 0,
+    "dropped_unverified": 8,
     "dropped_answerable_refusal": 0,
     "by_type": {
       "answerable": 8,
@@ -15,14 +15,15 @@
   },
   "cases": [
     {
-      "id": "ans-e07e04",
+      "id": "ans-3ba1e0",
       "type": "answerable",
-      "question": "How long does Meridian take to acknowledge a harassment report and complete an investigation?",
+      "question": "To whom can Meridian employees raise concerns about harassment or discrimination?",
       "expected_refusal": false,
-      "reference_answer": "Meridian acknowledges reports within 2 working days and normally completes investigations within 30 calendar days.",
+      "reference_answer": "Concerns can be raised with a line manager, with HR, or anonymously through the Ethics Hotline at ethics@meridian.example.",
       "key_facts": [
-        "2 working days",
-        "30 calendar days"
+        "line manager",
+        "HR",
+        "ethics@meridian.example"
       ],
       "source_docs": [
         "code_of_conduct"
@@ -30,18 +31,19 @@
       "gold_chunks": [
         "code_of_conduct::0003"
       ],
-      "split": "dev",
+      "split": "holdout",
       "verified": true,
       "evidence": []
     },
     {
-      "id": "par-b579e1",
+      "id": "par-693b10",
       "type": "paraphrase",
-      "question": "How many of my unused vacation days can I keep for next year?",
+      "question": "How many days of holiday can I carry over to the next year?",
       "expected_refusal": false,
-      "reference_answer": "You can carry forward up to 10 unused days to the next year.",
+      "reference_answer": "You can carry forward up to 10 unused days, but they must be used by 31 March of the following year or they will expire.",
       "key_facts": [
-        "Up to 10 unused days may be carried forward to the next year."
+        "10 unused days",
+        "31 March"
       ],
       "source_docs": [
         "leave_policy"
@@ -49,7 +51,7 @@
       "gold_chunks": [
         "leave_policy::0001"
       ],
-      "split": "dev",
+      "split": "holdout",
       "verified": true,
       "evidence": []
     },
@@ -58,7 +60,7 @@
       "type": "answerable",
       "question": "What is the per diem for meals and incidentals in tier-1 cities?",
       "expected_refusal": false,
-      "reference_answer": "The per diem for meals and incidentals in tier-1 cities is USD 60 per day.",
+      "reference_answer": "The per diem is USD 60 per day in tier-1 cities.",
       "key_facts": [
         "USD 60 per day"
       ],
@@ -73,13 +75,14 @@
       "evidence": []
     },
     {
-      "id": "ans-f39538",
+      "id": "ans-2daab6",
       "type": "answerable",
-      "question": "What is the maximum value of a gift that Meridian Shipping shore-based employees may accept from suppliers, customers or agents?",
+      "question": "Can I accept a gift worth USD 60 from a supplier?",
       "expected_refusal": false,
-      "reference_answer": "Meridian Shipping shore-based employees may not accept gifts worth more than USD 50 from suppliers, customers or agents.",
+      "reference_answer": "No, any gift above USD 50 must be declined or reported to Compliance within 5 working days.",
       "key_facts": [
-        "USD 50"
+        "USD 50",
+        "5 working days"
       ],
       "source_docs": [
         "code_of_conduct"
@@ -87,17 +90,18 @@
       "gold_chunks": [
         "code_of_conduct::0002"
       ],
-      "split": "holdout",
+      "split": "dev",
       "verified": true,
       "evidence": []
     },
     {
-      "id": "par-fd04ab",
+      "id": "par-69dc45",
       "type": "paraphrase",
-      "question": "How long does it usually take for a line manager to approve a leave request?",
+      "question": "How long does my manager have to approve my leave request?",
       "expected_refusal": false,
-      "reference_answer": "The line manager must approve the request within 3 working days.",
+      "reference_answer": "The line manager must approve leave requests within 3 working days.",
       "key_facts": [
+        "line manager",
         "3 working days"
       ],
       "source_docs": [
@@ -111,13 +115,13 @@
       "evidence": []
     },
     {
-      "id": "ans-549a09",
+      "id": "ans-2fc421",
       "type": "answerable",
-      "question": "How far in advance must flights and hotels be booked?",
+      "question": "How many days in advance must flights and hotels be booked through the corporate travel desk?",
       "expected_refusal": false,
-      "reference_answer": "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure.",
+      "reference_answer": "They must be booked at least 7 days before departure.",
       "key_facts": [
-        "7 days before departure"
+        "at least 7 days before departure"
       ],
       "source_docs": [
         "travel_expense_policy"
@@ -130,14 +134,14 @@
       "evidence": []
     },
     {
-      "id": "par-88ef2c",
+      "id": "par-076314",
       "type": "paraphrase",
-      "question": "If I lose my company laptop, who do I need to tell and how soon?",
+      "question": "If my company laptop gets lost or stolen, how quickly do I need to let the IT team know?",
       "expected_refusal": false,
-      "reference_answer": "You should let IT Security know within 24 hours of losing the device.",
+      "reference_answer": "You must report a lost or stolen device to IT Security within 24 hours.",
       "key_facts": [
         "IT Security",
-        "24 hours"
+        "within 24 hours"
       ],
       "source_docs": [
         "code_of_conduct"
@@ -150,13 +154,13 @@
       "evidence": []
     },
     {
-      "id": "par-c4a85a",
+      "id": "par-147c07",
       "type": "paraphrase",
-      "question": "How many paid sick days do I get each year?",
+      "question": "How many days of paid sick leave do we get each year?",
       "expected_refusal": false,
       "reference_answer": "Employees receive 12 days of paid sick leave per year.",
       "key_facts": [
-        "12 days"
+        "12 days of paid sick leave per year"
       ],
       "source_docs": [
         "leave_policy"
@@ -164,18 +168,18 @@
       "gold_chunks": [
         "leave_policy::0002"
       ],
-      "split": "holdout",
+      "split": "dev",
       "verified": true,
       "evidence": []
     },
     {
-      "id": "ans-658d41",
+      "id": "ans-c55769",
       "type": "answerable",
-      "question": "How long does it take to receive reimbursement after a claim is approved?",
+      "question": "By when must expense claims be submitted after returning from a trip?",
       "expected_refusal": false,
-      "reference_answer": "Reimbursement is made within 10 working days of approval.",
+      "reference_answer": "Expense claims must be submitted within 30 days of returning from the trip.",
       "key_facts": [
-        "10 working days"
+        "within 30 days of returning from the trip"
       ],
       "source_docs": [
         "travel_expense_policy"
@@ -188,15 +192,14 @@
       "evidence": []
     },
     {
-      "id": "ans-4bbf8e",
+      "id": "ans-703ddf",
       "type": "answerable",
-      "question": "What are the core working hours for Meridian Shipping shore-based employees?",
+      "question": "How many days per year can staff work from another country?",
       "expected_refusal": false,
-      "reference_answer": "Core working hours are 09:30 to 17:30, Monday to Friday, with a one hour lunch break.",
+      "reference_answer": "Working from another country is limited to 20 days per year and requires written approval from HR.",
       "key_facts": [
-        "09:30 to 17:30",
-        "Monday to Friday",
-        "one hour lunch break"
+        "written approval from HR",
+        "20 days per year"
       ],
       "source_docs": [
         "code_of_conduct"
@@ -209,13 +212,13 @@
       "evidence": []
     },
     {
-      "id": "ans-aa562e",
+      "id": "ans-a7b371",
       "type": "answerable",
-      "question": "How many days of paid bereavement leave are granted for the death of a spouse?",
+      "question": "How many days of paid bereavement leave are granted on the death of a spouse?",
       "expected_refusal": false,
       "reference_answer": "Up to 5 days of paid bereavement leave are granted on the death of a spouse.",
       "key_facts": [
-        "Up to 5 days"
+        "Up to 5 days of paid bereavement leave are granted on the death of a spouse, child, parent or sibling."
       ],
       "source_docs": [
         "leave_policy"
@@ -232,9 +235,9 @@
       "type": "answerable",
       "question": "Is travel time on weekends credited as leave or time off in lieu?",
       "expected_refusal": false,
-      "reference_answer": "No, travel time on weekends is not credited as leave or time off in lieu, unless the line manager approves compensatory time in writing.",
+      "reference_answer": "No, travel time on weekends is not credited as leave or time off in lieu unless the line manager approves compensatory time in writing.",
       "key_facts": [
-        "Travel time on weekends is not credited as leave or time off in lieu",
+        "travel time on weekends is not credited as leave or time off in lieu",
         "unless the line manager approves compensatory time in writing"
       ],
       "source_docs": [
@@ -248,14 +251,14 @@
       "evidence": []
     },
     {
-      "id": "mul-cf9c70",
+      "id": "mul-04d936",
       "type": "multi_doc",
-      "question": "If a business traveler loses a company laptop during a trip, what must they do and what travel booking rule applies to their flight?",
+      "question": "If an employee loses a company laptop while on a business trip, what must they do regarding the device and what is the maximum hotel nightly rate they can claim in London?",
       "expected_refusal": false,
-      "reference_answer": "They must report the lost or stolen device to IT Security within 24 hours, and any flight they take must be booked through the corporate travel desk at least 7 days before departure.",
+      "reference_answer": "They must report the lost or stolen laptop to IT Security, and the hotel nightly rate in London is capped at USD 180.",
       "key_facts": [
-        "Lost or stolen devices must be reported to IT Security within 24 hours.",
-        "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure."
+        "Lost or stolen devices must be reported to IT Security",
+        "Hotel stays are capped at USD 180 per night in tier-1 cities"
       ],
       "source_docs": [
         "code_of_conduct",
@@ -270,14 +273,14 @@
       "evidence": []
     },
     {
-      "id": "mul-41158f",
+      "id": "mul-1b427c",
       "type": "multi_doc",
-      "question": "If an employee takes four consecutive sick days and receives a gift card from a supplier, what must they do according to the company policies?",
+      "question": "Can an employee who needs a medical certificate for sick leave also accept a gift worth more than USD 50 from a supplier?",
       "expected_refusal": false,
-      "reference_answer": "They must obtain a medical certificate for the sick leave and decline or report the gift card to Compliance, as it is a cash equivalent that may never be accepted.",
+      "reference_answer": "No. The employee must provide a medical certificate for the sick leave and is prohibited from accepting gifts worth more than USD 50 from suppliers.",
       "key_facts": [
-        "A medical certificate is required for any sick leave of 3 or more consecutive days.",
-        "Cash or cash equivalents, such as gift cards, may never be accepted regardless of value."
+        "medical certificate is required",
+        "gifts worth more than USD 50"
       ],
       "source_docs": [
         "leave_policy",
@@ -292,14 +295,14 @@
       "evidence": []
     },
     {
-      "id": "mul-03152d",
+      "id": "mul-9fb7a8",
       "type": "multi_doc",
-      "question": "If an employee needs to book a flight that departs in 5 days and also wants to work remotely from another country during that trip, what are the relevant travel and work policies they must follow?",
+      "question": "An employee plans a 5-hour flight and wants to work remotely from another country for 10 days; what are the travel booking requirements and the remote‑work approval limits?",
       "expected_refusal": false,
-      "reference_answer": "The employee must book the flight through the corporate travel desk at least 7 days before departure, and they must obtain written approval from HR to work remotely from another country, which is limited to 20 days per year.",
+      "reference_answer": "The flight must be booked in economy class because it is under 6 hours, and working from another country requires written HR approval and is limited to 20 days per year.",
       "key_facts": [
-        "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure.",
-        "Working from another country requires written approval from HR and is limited to 20 days per year."
+        "Economy class is mandatory for flights under 6 hours",
+        "Working from another country requires written approval from HR"
       ],
       "source_docs": [
         "travel_expense_policy",
@@ -309,19 +312,19 @@
         "travel_expense_policy::0001",
         "code_of_conduct::0001"
       ],
-      "split": "dev",
+      "split": "holdout",
       "verified": true,
       "evidence": []
     },
     {
-      "id": "mul-64d4be",
+      "id": "mul-b644a7",
       "type": "multi_doc",
-      "question": "If an employee reports harassment and also requests leave during a quarter‑end closing week, what are the timelines for the harassment report to be acknowledged and the leave request to be approved?",
+      "question": "If an employee reports harassment and also requests leave during the quarter‑end closing week, how long will it take for the report to be acknowledged and who must approve the leave?",
       "expected_refusal": false,
-      "reference_answer": "The harassment report will be acknowledged within 2 working days and the investigation will normally be completed within 30 calendar days. The leave request will be approved by the line manager within 3 working days, but if it is not answered within that time it escalates to the Head of Department, and during a quarter‑end closing week it can only be granted with Head of Department approval.",
+      "reference_answer": "The report will be acknowledged within 2 working days, and the leave can only be approved by the Head of Department.",
       "key_facts": [
         "Reports are acknowledged within 2 working days",
-        "Leave requests are approved by the line manager within 3 working days"
+        "is granted only with Head of Department approval"
       ],
       "source_docs": [
         "code_of_conduct",
@@ -331,25 +334,46 @@
         "code_of_conduct::0003",
         "leave_policy::0005"
       ],
-      "split": "holdout",
+      "split": "dev",
       "verified": true,
       "evidence": []
     },
     {
-      "id": "amb-f2b83b",
+      "id": "amb-07472f",
       "type": "ambiguous",
-      "question": "What is the maximum number of days allowed for this situation?",
+      "question": "What is the policy on travel?",
       "expected_refusal": false,
-      "reference_answer": "Either ask which is meant, or give both: up to 10 working days / up to 2 days per week",
+      "reference_answer": "Either ask which is meant, or give both: All flights and hotels must be booked through the corporate travel desk at least 7 days before departure. / Travel time on weekends is not credited as leave or time off in lieu, unless the line manager approves compensatory time in writing.",
       "key_facts": [
-        "up to 10 working days",
-        "up to 2 days per week"
+        "All flights and hotels must be booked through the corporate travel desk at least 7 days before departure.",
+        "Travel time on weekends is not credited as leave or time off in lieu, unless the line manager approves compensatory time in writing."
+      ],
+      "source_docs": [
+        "travel_expense_policy"
+      ],
+      "gold_chunks": [
+        "travel_expense_policy::0001",
+        "travel_expense_policy::0004"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "amb-65792f",
+      "type": "ambiguous",
+      "question": "What is the maximum allowed number of days?",
+      "expected_refusal": false,
+      "reference_answer": "Either ask which is meant, or give both: 30 calendar days / 20 days per year",
+      "key_facts": [
+        "30 calendar days",
+        "20 days per year"
       ],
       "source_docs": [
         "code_of_conduct"
       ],
       "gold_chunks": [
-        "code_of_conduct::0005",
+        "code_of_conduct::0003",
         "code_of_conduct::0001"
       ],
       "split": "dev",
@@ -357,43 +381,9 @@
       "evidence": []
     },
     {
-      "id": "amb-066fc0",
-      "type": "ambiguous",
-      "question": "How many days of leave can be taken for a personal emergency?",
-      "expected_refusal": false,
-      "reference_answer": "Either ask which is meant, or give both: Leave requests are approved by the line manager within 3 working days. / Emergency leave of up to 3 days per year may be approved by a line manager for urgent personal matters such as a house fire or hospitalisation of a family member.",
-      "key_facts": [
-        "Leave requests are approved by the line manager within 3 working days.",
-        "Emergency leave of up to 3 days per year may be approved by a line manager for urgent personal matters such as a house fire or hospitalisation of a family member."
-      ],
-      "source_docs": [
-        "leave_policy"
-      ],
-      "gold_chunks": [
-        "leave_policy::0005",
-        "leave_policy::0004"
-      ],
-      "split": "dev",
-      "verified": true,
-      "evidence": []
-    },
-    {
-      "id": "out-aae766",
+      "id": "out-892af4",
       "type": "out_of_scope",
-      "question": "What is the best way to cook a steak?",
-      "expected_refusal": true,
-      "reference_answer": "",
-      "key_facts": [],
-      "source_docs": [],
-      "gold_chunks": [],
-      "split": "dev",
-      "verified": true,
-      "evidence": []
-    },
-    {
-      "id": "out-e16eec",
-      "type": "out_of_scope",
-      "question": "How do I solve a quadratic equation?",
+      "question": "What is the current salary range for senior engineers at the company?",
       "expected_refusal": true,
       "reference_answer": "",
       "key_facts": [],
@@ -404,9 +394,9 @@
       "evidence": []
     },
     {
-      "id": "out-5f838a",
+      "id": "out-5c7bbe",
       "type": "out_of_scope",
-      "question": "Can you recommend a good mystery novel?",
+      "question": "Can you explain the company's pension contribution matching policy?",
       "expected_refusal": true,
       "reference_answer": "",
       "key_facts": [],
@@ -417,9 +407,9 @@
       "evidence": []
     },
     {
-      "id": "nea-567f31",
-      "type": "near_miss",
-      "question": "What is the exact salary range for a senior analyst according to the company policy?",
+      "id": "out-439307",
+      "type": "out_of_scope",
+      "question": "How do I bake a perfect chocolate cake?",
       "expected_refusal": true,
       "reference_answer": "",
       "key_facts": [],
@@ -430,28 +420,41 @@
       "evidence": []
     },
     {
-      "id": "nea-0a7eaf",
+      "id": "nea-a16c3c",
       "type": "near_miss",
-      "question": "Can you provide the specific pension investment options available to employees?",
-      "expected_refusal": true,
-      "reference_answer": "",
-      "key_facts": [],
-      "source_docs": [],
-      "gold_chunks": [],
-      "split": "dev",
-      "verified": true,
-      "evidence": []
-    },
-    {
-      "id": "nea-ae162a",
-      "type": "near_miss",
-      "question": "What is the maximum annual leave entitlement for a manager under the leave_policy?",
+      "question": "What is the exact salary range for a senior analyst according to the company's policy?",
       "expected_refusal": true,
       "reference_answer": "",
       "key_facts": [],
       "source_docs": [],
       "gold_chunks": [],
       "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-37820f",
+      "type": "near_miss",
+      "question": "Can you provide the detailed pension contribution percentages for each employee grade?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-650da6",
+      "type": "near_miss",
+      "question": "How many unused leave days can a part‑time employee carry over to the next year under the leave_policy?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
       "verified": true,
       "evidence": []
     }

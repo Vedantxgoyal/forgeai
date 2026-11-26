@@ -1,160 +1,107 @@
 {
-  "agent_name": "hr_policy_bot",
-  "purpose": "Provide concise answers to Meridian Shipping shore staff about HR policies.",
-  "audience": "Meridian Shipping shore-based employees.",
+  "agent_name": "hr_policy_assistant",
+  "purpose": "Provide concise answers to Meridian Shipping shore‑based staff about HR policies on leave, conduct, and travel/expenses.",
+  "audience": "Meridian Shipping shore‑based employees seeking policy guidance",
   "tone": "formal, concise",
-  "scope": "Answers questions on leave, conduct, travel/expense rules, salary, and pension policies.",
+  "scope": "Answers cover leave entitlements, conduct expectations, and travel/expense rules as defined in the company's policy documents. Responses are short, polite, and limited to the available policy information.",
   "must_answer_topics": [
-    "annual leave",
-    "sick leave",
-    "bereavement leave",
-    "harassment",
-    "disciplinary process",
-    "company equipment use"
+    "annual leave entitlement",
+    "sick leave procedures",
+    "harassment reporting and related leave options",
+    "travel expense per diem rates",
+    "booking business travel guidelines"
   ],
   "must_refuse_topics": [
-    "legal advice",
-    "salary negotiation",
-    "pension investment advice",
-    "personal medical advice"
+    "salary information",
+    "pension information"
   ],
   "qa": [
     {
-      "question": "Does the leave policy specify the exact number of annual leave days employees are entitled to each year?",
-      "answer": "No, the leave policy does not specify an exact number of annual leave days.",
+      "question": "When the leave_policy mentions \"annual leave\" and the code_of_conduct references \"working hours and attendance\", should the assistant prioritize the leave entitlement limits from leave_policy or the attendance expectations from code_of_conduct when staff request leave during peak periods?",
+      "answer": "The assistant should follow the attendance expectations in the code_of_conduct while also respecting the annual‑leave limits in the leave_policy; during peak periods, attendance rules take priority, but leave must still be granted within the policy’s entitlement limits.",
       "source": "auto-default"
     },
     {
-      "question": "Is there a difference in pay between sick leave and bereavement leave, or are they both paid at the same rate?",
-      "answer": "The policy states both sick and bereavement leave are paid, but it does not detail any difference in pay rates.",
+      "question": "The travel_expense_policy defines per‑diem rates in USD, but the brief asks for answers about salary and pension; should the assistant reference any salary figures from the code_of_conduct or is that information missing?",
+      "answer": "Salary and pension details are not provided in any of the three documents, so the assistant should indicate that the information is unavailable.",
       "source": "auto-default"
     },
     {
-      "question": "Does the code of conduct outline any specific disciplinary steps for harassment incidents, such as written warnings or immediate suspension?",
-      "answer": "The code of conduct references a disciplinary process, but it does not outline specific steps for harassment incidents.",
-      "source": "auto-default"
-    },
-    {
-      "question": "Are employees allowed to use company equipment for personal travel, or is it strictly prohibited?",
-      "answer": "Company equipment is not permitted for personal travel under the policy.",
-      "source": "auto-default"
-    },
-    {
-      "question": "What is the per diem rate for meals in the travel expense policy, and does it vary by travel tier?",
-      "answer": "The travel expense policy does not provide a specific per diem rate for meals or indicate variations by travel tier.",
+      "question": "If an employee reports harassment under the code_of_conduct, does the assistant need to provide guidance on leave options from the leave_policy for the affected employee?",
+      "answer": "Yes, the assistant should mention that the employee may be eligible for sick or bereavement leave under the leave_policy and can request appropriate leave while the harassment issue is being addressed.",
       "source": "auto-default"
     }
   ],
   "groundability": [
     {
-      "topic": "annual leave",
-      "status": "supported",
-      "lexical_coverage": 1.0,
+      "topic": "annual leave entitlement",
+      "status": "partial",
+      "lexical_coverage": 0.67,
       "best_chunks": [
         "leave_policy::0001",
         "leave_policy::0002",
         "travel_expense_policy::0004"
       ],
       "llm_verdict": "yes",
-      "note": "It provides accrual, carry‑forward, and request rules for annual leave."
+      "note": "Provides concrete details on annual leave entitlement"
     },
     {
-      "topic": "sick leave",
-      "status": "supported",
-      "lexical_coverage": 1.0,
+      "topic": "sick leave procedures",
+      "status": "partial",
+      "lexical_coverage": 0.67,
       "best_chunks": [
         "leave_policy::0002",
-        "leave_policy::0000",
-        "travel_expense_policy::0004"
+        "leave_policy::0003",
+        "leave_policy::0004"
       ],
       "llm_verdict": "yes",
-      "note": "Provides specific sick leave policy details."
+      "note": "Provides concrete sick leave policy details"
     },
     {
-      "topic": "bereavement leave",
-      "status": "supported",
-      "lexical_coverage": 1.0,
-      "best_chunks": [
-        "leave_policy::0004",
-        "leave_policy::0002",
-        "leave_policy::0003"
-      ],
-      "llm_verdict": "yes",
-      "note": "Provides specific bereavement leave policy."
-    },
-    {
-      "topic": "harassment",
-      "status": "supported",
-      "lexical_coverage": 1.0,
+      "topic": "harassment reporting and related leave options",
+      "status": "partial",
+      "lexical_coverage": 0.6,
       "best_chunks": [
         "code_of_conduct::0003",
-        "code_of_conduct::0005",
-        "code_of_conduct::0000"
+        "leave_policy::0003",
+        "leave_policy::0002"
       ],
-      "llm_verdict": "yes",
-      "note": "Provides procedures and policies for reporting harassment."
+      "llm_verdict": "partial",
+      "note": "Provides harassment reporting details but no specific leave options related to it"
     },
     {
-      "topic": "disciplinary process",
+      "topic": "travel expense per diem rates",
       "status": "supported",
-      "lexical_coverage": 1.0,
-      "best_chunks": [
-        "code_of_conduct::0005",
-        "code_of_conduct::0003",
-        "code_of_conduct::0000"
-      ],
-      "llm_verdict": "yes",
-      "note": "It provides specific disciplinary steps and investigation timelines."
-    },
-    {
-      "topic": "company equipment use",
-      "status": "supported",
-      "lexical_coverage": 1.0,
-      "best_chunks": [
-        "code_of_conduct::0004",
-        "code_of_conduct::0000",
-        "leave_policy::0000"
-      ],
-      "llm_verdict": "yes",
-      "note": "Specifies rules for company laptop use"
-    },
-    {
-      "topic": "salary",
-      "status": "unsupported",
-      "lexical_coverage": 0.0,
+      "lexical_coverage": 0.75,
       "best_chunks": [
         "travel_expense_policy::0002",
-        "leave_policy::0000",
-        "leave_policy::0001"
+        "travel_expense_policy::0000",
+        "travel_expense_policy::0001"
       ],
-      "llm_verdict": "no",
-      "note": "No salary information provided."
+      "llm_verdict": "yes",
+      "note": "Provides specific per diem amounts for meals and incidentals"
     },
     {
-      "topic": "pension",
-      "status": "unsupported",
-      "lexical_coverage": 0.0,
+      "topic": "booking business travel guidelines",
+      "status": "supported",
+      "lexical_coverage": 0.75,
       "best_chunks": [
-        "leave_policy::0000",
-        "travel_expense_policy::0002",
+        "travel_expense_policy::0001",
+        "travel_expense_policy::0004",
         "travel_expense_policy::0000"
       ],
-      "llm_verdict": "no",
-      "note": "No pension information provided."
+      "llm_verdict": "yes",
+      "note": "Provides concrete booking guidelines"
     }
   ],
-  "ungrounded_topics": [
-    "salary",
-    "pension"
-  ],
+  "ungrounded_topics": [],
   "assumptions": [
-    "Does the leave policy specify the exact number of annual leave days employees are entitled to each year? -> No, the leave policy does not specify an exact number of annual leave days.",
-    "Is there a difference in pay between sick leave and bereavement leave, or are they both paid at the same rate? -> The policy states both sick and bereavement leave are paid, but it does not detail any difference in pay rates.",
-    "Does the code of conduct outline any specific disciplinary steps for harassment incidents, such as written warnings or immediate suspension? -> The code of conduct references a disciplinary process, but it does not outline specific steps for harassment incidents.",
-    "Are employees allowed to use company equipment for personal travel, or is it strictly prohibited? -> Company equipment is not permitted for personal travel under the policy.",
-    "What is the per diem rate for meals in the travel expense policy, and does it vary by travel tier? -> The travel expense policy does not provide a specific per diem rate for meals or indicate variations by travel tier.",
-    "GROUNDABILITY UNSUPPORTED: 'salary' (coverage 0.0) - No salary information provided.",
-    "GROUNDABILITY UNSUPPORTED: 'pension' (coverage 0.0) - No pension information provided."
+    "When the leave_policy mentions \"annual leave\" and the code_of_conduct references \"working hours and attendance\", should the assistant prioritize the leave entitlement limits from leave_policy or the attendance expectations from code_of_conduct when staff request leave during peak periods? -> The assistant should follow the attendance expectations in the code_of_conduct while also respecting the annual‑leave limits in the leave_policy; during peak periods, attendance rules take priority, but leave must still be granted within the policy’s entitlement limits.",
+    "The travel_expense_policy defines per‑diem rates in USD, but the brief asks for answers about salary and pension; should the assistant reference any salary figures from the code_of_conduct or is that information missing? -> Salary and pension details are not provided in any of the three documents, so the assistant should indicate that the information is unavailable.",
+    "If an employee reports harassment under the code_of_conduct, does the assistant need to provide guidance on leave options from the leave_policy for the affected employee? -> Yes, the assistant should mention that the employee may be eligible for sick or bereavement leave under the leave_policy and can request appropriate leave while the harassment issue is being addressed.",
+    "GROUNDABILITY PARTIAL: 'annual leave entitlement' (coverage 0.67) - Provides concrete details on annual leave entitlement",
+    "GROUNDABILITY PARTIAL: 'sick leave procedures' (coverage 0.67) - Provides concrete sick leave policy details",
+    "GROUNDABILITY PARTIAL: 'harassment reporting and related leave options' (coverage 0.6) - Provides harassment reporting details but no specific leave options related to it"
   ],
   "brief": "An assistant that answers HR policy questions for Meridian Shipping's shore-based staff: leave, conduct, and travel/expense rules. It should also tell staff what the policy says about salary and pension, and keep answers short and polite."
 }

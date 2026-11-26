@@ -1,0 +1,527 @@
+{
+  "stats": {
+    "proposed": 29,
+    "kept": 25,
+    "dropped_unverified": 4,
+    "dropped_answerable_refusal": 0,
+    "by_type": {
+      "paraphrase": 4,
+      "answerable": 3,
+      "multi_doc": 4,
+      "ambiguous": 2,
+      "out_of_scope": 3,
+      "near_miss": 3,
+      "tool": 6
+    }
+  },
+  "cases": [
+    {
+      "id": "par-9f9eba",
+      "type": "paraphrase",
+      "question": "If a critical part’s stock falls to one or less, how quickly do we need to order more?",
+      "expected_refusal": false,
+      "reference_answer": "You must raise a replenishment order within 2 working days.",
+      "key_facts": [
+        "2 working days"
+      ],
+      "source_docs": [
+        "procurement_procedure"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0003"
+      ],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "par-01345c",
+      "type": "paraphrase",
+      "question": "How many of the exhaust valve spindles are currently in stock?",
+      "expected_refusal": false,
+      "reference_answer": "There are 8 of the exhaust valve spindles in stock.",
+      "key_facts": [
+        "8"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [
+        "spares_catalogue::r00003"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "ans-0ef896",
+      "type": "answerable",
+      "question": "What surcharge is applied for express delivery and how does it affect the lead time?",
+      "expected_refusal": false,
+      "reference_answer": "Express delivery is available at a surcharge of 20% of the order value and halves the stated lead time.",
+      "key_facts": [
+        "20% of the order value",
+        "halves the stated lead time"
+      ],
+      "source_docs": [
+        "supplier_nordmarine_terms"
+      ],
+      "gold_chunks": [
+        "supplier_nordmarine_terms::0002"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "par-b2e8d4",
+      "type": "paraphrase",
+      "question": "If I order a lot of parts, how much discount can I get on my bill?",
+      "expected_refusal": false,
+      "reference_answer": "If your single order is worth more than USD 5,000, you’ll get a 5% discount, and if it’s over USD 15,000, the discount rises to 8%.",
+      "key_facts": [
+        "5% applies to a single order with a value above USD 5,000",
+        "8% to a single order above USD 15,000"
+      ],
+      "source_docs": [
+        "supplier_oceanparts_terms"
+      ],
+      "gold_chunks": [
+        "supplier_oceanparts_terms::0001"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "par-954e2f",
+      "type": "paraphrase",
+      "question": "Who has to sign off on a $5,000 purchase order?",
+      "expected_refusal": false,
+      "reference_answer": "The Superintendent must approve a purchase order that costs $5,000.",
+      "key_facts": [
+        "Superintendent",
+        "USD 2,001 to USD 10,000"
+      ],
+      "source_docs": [
+        "procurement_procedure"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0001"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "ans-2b377c",
+      "type": "answerable",
+      "question": "What is the unit price in USD for the Turbocharger bearing kit (SP-1035) for the ABB TPL77?",
+      "expected_refusal": false,
+      "reference_answer": "The unit price is 2675.0 USD.",
+      "key_facts": [
+        "2675.0"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [
+        "spares_catalogue::r00004"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "ans-fee4ac",
+      "type": "answerable",
+      "question": "What discount rate applies to a single order above USD 8,000?",
+      "expected_refusal": false,
+      "reference_answer": "A discount of 6% applies to a single order above USD 8,000.",
+      "key_facts": [
+        "6%"
+      ],
+      "source_docs": [
+        "supplier_nordmarine_terms"
+      ],
+      "gold_chunks": [
+        "supplier_nordmarine_terms::0001"
+      ],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "mul-71c6fa",
+      "type": "multi_doc",
+      "question": "If a vessel arrives in 8 days and the buyer wants to use express freight, what surcharge must the Superintendent approve and what is the maximum credit the buyer can claim for a 9‑day late delivery?",
+      "expected_refusal": false,
+      "reference_answer": "The Superintendent must approve the express surcharge, and the buyer can claim a maximum credit of 10% of the order value for a 9‑day delay.",
+      "key_facts": [
+        "The Superintendent must approve the express surcharge regardless of order value",
+        "Express air freight is available at a surcharge of 12%"
+      ],
+      "source_docs": [
+        "procurement_procedure",
+        "supplier_oceanparts_terms"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0004",
+        "supplier_oceanparts_terms::0002"
+      ],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "mul-51a6fe",
+      "type": "multi_doc",
+      "question": "If a customer pays within 10 days and returns a non‑OEM part within 14 days, what discount and restocking fee apply?",
+      "expected_refusal": false,
+      "reference_answer": "The customer receives a 1.5 % early payment discount, and the return incurs a 25 % restocking fee.",
+      "key_facts": [
+        "1.5% early payment discount applies if paid within 10 days",
+        "Returns are accepted within 14 days only, with a 25% restocking fee"
+      ],
+      "source_docs": [
+        "supplier_oceanparts_terms",
+        "supplier_nordmarine_terms"
+      ],
+      "gold_chunks": [
+        "supplier_oceanparts_terms::0003",
+        "supplier_nordmarine_terms::0004"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "mul-f4b8ba",
+      "type": "multi_doc",
+      "question": "What is the maximum time allowed to raise a replenishment order for a critical part that has stock of 1 or below, and what is the restocking fee for returns accepted within 14 days?",
+      "expected_refusal": false,
+      "reference_answer": "A replenishment order must be raised within 2 working days, and the restocking fee for returns accepted within 14 days is 25%.",
+      "key_facts": [
+        "replenishment order must be raised within 2 working days",
+        "Returns are accepted within 14 days only, with a 25% restocking fee"
+      ],
+      "source_docs": [
+        "procurement_procedure",
+        "supplier_nordmarine_terms"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0003",
+        "supplier_nordmarine_terms::0004"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "mul-14910b",
+      "type": "multi_doc",
+      "question": "What are the return window and restocking fee for OEM parts from Nordmarine and the return window and restocking fee for unused parts from Oceanparts?",
+      "expected_refusal": false,
+      "reference_answer": "Nordmarine allows returns within 14 days with a 25% restocking fee, while Oceanparts accepts returns of unused parts in original packaging within 30 days with a 15% restocking fee.",
+      "key_facts": [
+        "Returns are accepted within 14 days only, with a 25% restocking fee.",
+        "Unused parts in original packaging may be returned within 30 days"
+      ],
+      "source_docs": [
+        "supplier_nordmarine_terms",
+        "supplier_oceanparts_terms"
+      ],
+      "gold_chunks": [
+        "supplier_nordmarine_terms::0004",
+        "supplier_oceanparts_terms::0004"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "amb-dce4ca",
+      "type": "ambiguous",
+      "question": "What is required for orders above a certain dollar amount?",
+      "expected_refusal": false,
+      "reference_answer": "Either ask which is meant, or give both: Orders above USD 10,000 require approval from the Technical Director. / For orders above USD 5,000, at least 2 quotes must be obtained unless the part is single-source.",
+      "key_facts": [
+        "Orders above USD 10,000 require approval from the Technical Director.",
+        "For orders above USD 5,000, at least 2 quotes must be obtained unless the part is single-source."
+      ],
+      "source_docs": [
+        "procurement_procedure"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0001",
+        "procurement_procedure::0002"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "amb-77f302",
+      "type": "ambiguous",
+      "question": "What happens when an order exceeds a certain dollar amount?",
+      "expected_refusal": false,
+      "reference_answer": "Either ask which is meant, or give both: For orders above USD 5,000, at least 2 quotes must be obtained unless the part is single-source. / Orders above USD 10,000 require approval from the Technical Director.",
+      "key_facts": [
+        "For orders above USD 5,000, at least 2 quotes must be obtained unless the part is single-source.",
+        "Orders above USD 10,000 require approval from the Technical Director."
+      ],
+      "source_docs": [
+        "procurement_procedure"
+      ],
+      "gold_chunks": [
+        "procurement_procedure::0002",
+        "procurement_procedure::0001"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "out-f8703d",
+      "type": "out_of_scope",
+      "question": "What is the capital of Iceland?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "out-4ff637",
+      "type": "out_of_scope",
+      "question": "How do you bake a chocolate cake from scratch?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "out-7f9614",
+      "type": "out_of_scope",
+      "question": "Can you explain the concept of quantum entanglement?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-8b4350",
+      "type": "near_miss",
+      "question": "What is the exact lead time for delivery of the 20mm stainless steel propeller shaft from supplier Nordmarine?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-41dd7b",
+      "type": "near_miss",
+      "question": "Can you provide the current exchange rate used for converting USD to EUR in the procurement system?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-bbe5af",
+      "type": "near_miss",
+      "question": "What is the warranty period for the new hull coating supplied by Oceanparts?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "too-a13b92",
+      "type": "tool",
+      "question": "What is the total for 8 units of SP-1042 (Fuel pump plunger) based on its unit price usd, before any discounts, surcharges or taxes?",
+      "expected_refusal": false,
+      "reference_answer": "8 x 980 = 7840",
+      "key_facts": [
+        "7840"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": [
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1042",
+          "column": "unit_price_usd",
+          "value": "980.0"
+        }
+      ]
+    },
+    {
+      "id": "too-57b868",
+      "type": "tool",
+      "question": "What is the exact difference in unit price usd between SP-1091 (Mechanical seal) and SP-1140 (Flame sensor)?",
+      "expected_refusal": false,
+      "reference_answer": "|218 - 163| = 55",
+      "key_facts": [
+        "55"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true,
+      "evidence": [
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1091",
+          "column": "unit_price_usd",
+          "value": "218.0"
+        },
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1140",
+          "column": "unit_price_usd",
+          "value": "163.0"
+        }
+      ]
+    },
+    {
+      "id": "too-14f359",
+      "type": "tool",
+      "question": "What is the min order qty recorded for SP-1112 (Purifier disc stack)?",
+      "expected_refusal": false,
+      "reference_answer": "min order qty = 1",
+      "key_facts": [
+        "1"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": [
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1112",
+          "column": "min_order_qty",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "id": "too-0b81ce",
+      "type": "tool",
+      "question": "What is the total for 6 units of SP-1217 (Immersion suit) based on its unit price usd, before any discounts, surcharges or taxes?",
+      "expected_refusal": false,
+      "reference_answer": "6 x 340 = 2040",
+      "key_facts": [
+        "2040"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": [
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1217",
+          "column": "unit_price_usd",
+          "value": "340.0"
+        }
+      ]
+    },
+    {
+      "id": "too-a8221e",
+      "type": "tool",
+      "question": "What is the exact difference in unit price usd between SP-1063 (Cylinder head gasket) and SP-1084 (Seawater pump impeller)?",
+      "expected_refusal": false,
+      "reference_answer": "|134 - 346| = 212",
+      "key_facts": [
+        "212"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": [
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1063",
+          "column": "unit_price_usd",
+          "value": "134.0"
+        },
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1084",
+          "column": "unit_price_usd",
+          "value": "346.0"
+        }
+      ]
+    },
+    {
+      "id": "too-8bd1f7",
+      "type": "tool",
+      "question": "What is the min order qty recorded for SP-1273 (Deck crane wire rope 20mm 100m)?",
+      "expected_refusal": false,
+      "reference_answer": "min order qty = 1",
+      "key_facts": [
+        "1"
+      ],
+      "source_docs": [
+        "spares_catalogue"
+      ],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": [
+        {
+          "table": "spares_catalogue",
+          "key_column": "part_no",
+          "key": "SP-1273",
+          "column": "min_order_qty",
+          "value": "1"
+        }
+      ]
+    }
+  ]
+}

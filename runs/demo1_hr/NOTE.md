@@ -1,19 +1,20 @@
-# Provenance and how to read the 22/24
+# Provenance and how to read the 20/24
 
-**Models.** Configured: agent and generator `openai/gpt-oss-20b`, judge `qwen/qwen3.8-27b`. Both ran out of daily quota,
-and the fallback served 181 calls with `openai/gpt-oss-120b` (122 for the agent/generator model, 59 for the judge).
-So **for part of this run the agent and the judge were the same model**, and self-preference bias is possible. The
-report lists the substitutions but its "How trustworthy" section does not warn about the shared model; the code does now.
+**Models.** Agent and generator `openai/gpt-oss-120b`, judge `qwen/qwen3.8-27b` (Groq free tier). One model per role for the
+whole run: no fallback, no substitutions, no outages, no invalid agent outputs.
 
-**Both remaining failures are most likely bad test cases, not agent mistakes.**
-- `amb-066fc0` asks about leave "for a personal emergency". Only emergency leave fits, so the agent's answer is correct
-  and the question was never ambiguous.
-- `amb-f2b83b` asks about "this situation" without saying which. The agent listed several limits, which is reasonable.
-The generator now rejects ambiguous questions with dangling references or with words that only one passage matches.
-The score has **not** been adjusted.
+**Code version.** Commit "Reject test questions that refer to the generator's passages". Later fixes (passage layout shown
+to the agent, citation wording, weak-model robustness) are not in this run.
 
-**Stopped early.** Iteration 1 (larger top-k) did not help and was rejected. Iteration 2 could not finish because every
-model in the fallback chain had spent its quota, so the baseline agent (v1) is the final one. Because iteration 1 and
-the prompt tournament are the only changes tried, this run says little about the optimizer.
+**Loop.** The run was capped at two improvement rounds; the free tier's refill rate allowed one before the deadline, and the
+artifacts were assembled from the cached model calls of that same run. Round 1 added two prompt rules, fixed nothing, and
+was rejected, so the generated agent (v1) is the final one.
 
-**Tournament.** The `checklist` prompt won 8/10 against 7/10 on development cases. A one-case lead is weak evidence.
+**The four failures, read by hand.**
+- `par-693b10`, `par-69dc45`, `ans-703ddf`: the agent's answer to the question asked is correct. Each test case also
+  requires a detail the question did not ask for (an expiry date, who approves, an approval condition). These are most
+  likely weaknesses of the generated tests.
+- `nea-650da6`: a real mistake. Asked about part-time employees, the agent repeated the general rule although the documents
+  say nothing about part-time staff.
+
+The score has not been adjusted for the likely test weaknesses.

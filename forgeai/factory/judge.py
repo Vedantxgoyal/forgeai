@@ -99,7 +99,9 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
     present = [fact_in(f, resp.answer) for f in facts]
     cov = sum(present) / len(facts) if facts else 1.0
     ratio, bad_nums = support_ratio(resp.answer, ctx, case.question)
-    det_grounded = ratio >= SUPPORT_MIN and not bad_nums
+    from_tool = any(t.get("ok") for t in resp.tool_calls)
+    # A looked-up value is phrased in the user's words, not the table's: word overlap says nothing, numbers still must match.
+    det_grounded = not bad_nums and (ratio >= SUPPORT_MIN or from_tool)
     cites_ok = bool(resp.citations) and all(c in resp.retrieved or c.startswith("tool:") for c in resp.citations)
     if any(t.get("ok") for t in resp.tool_calls):
         cites_ok = True
