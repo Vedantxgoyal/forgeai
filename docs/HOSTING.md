@@ -3,6 +3,8 @@
 The repository contains a `Dockerfile` and a Render blueprint (`render.yaml`). The image builds the Vite frontend,
 then serves it together with the API from one Python process.
 
+A deployment of this blueprint runs at https://forgeai-lc5t.onrender.com.
+
 ## Render
 1. Push the repository to GitHub.
 2. On https://render.com choose **New > Blueprint** and select the repository.

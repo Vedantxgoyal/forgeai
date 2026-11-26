@@ -7,6 +7,11 @@ improvement rounds, and an honest quality report. Every stage is designed for a 
 > **Design principle: distrust the pipeline.** No single LLM output is trusted. Every stage has a deterministic
 > verifier, every score carries evidence, and the optimizer is judged on held-out cases it never saw.
 
+**Live demo:** https://forgeai-lc5t.onrender.com — browse the committed runs and chat with their agents. The free host
+sleeps when idle, so the first visit can take a minute. Building a new agent there needs an access code. Hosted chat
+uses Groq models and TF-IDF retrieval, so its answers can differ from the committed runs (the third brief was scored on
+a local 3B model).
+
 ## Demo results (committed artifacts)
 
 | Run | Tools chosen | Baseline -> final | Dev / hold-out | Models |
