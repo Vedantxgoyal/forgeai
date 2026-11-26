@@ -15,7 +15,7 @@ from forgeai.ingest.profiler import CorpusProfile
 from forgeai.llm.client import LLMClient
 from forgeai.llm.structured import generate_structured
 from forgeai.prompts import render
-from forgeai.schemas import QA, Answers, QuestionSet, Requirements, RequirementsDraft
+from forgeai.schemas import QA, Answers, Question, QuestionSet, Requirements, RequirementsDraft
 
 MAX_Q = 5
 _W = re.compile(r"[a-z0-9]+")
@@ -31,6 +31,32 @@ def corpus_vocab(profile: CorpusProfile) -> set[str]:
 
 def grounded_terms(question: str, vocab: set[str]) -> list[str]:
     return sorted({w for w in _W.findall(question.lower()) if w in vocab})
+
+
+def fallback_questions(profile: CorpusProfile) -> QuestionSet:
+    """Used only when the model produces no usable question: questions assembled from what the documents contain, so
+    the requester is still asked, and asked about this corpus."""
+    out: list[Question] = []
+    texts = [d for d in profile.docs if not d.columns]
+    if len(profile.docs) >= 2:
+        a, b = profile.docs[0].doc_id, profile.docs[1].doc_id
+        out.append(
+            Question(question=f"If {a} and {b} say different things, which should the assistant follow, or should it show both?")
+        )
+    for d in profile.docs:
+        if d.columns:
+            out.append(Question(question=f"Which of the columns in {d.doc_id} ({', '.join(d.columns[:6])}) may users ask about?"))
+    for d in texts:
+        if d.headings:
+            heading = d.headings[-1]
+            out.append(
+                Question(
+                    question=f"Should the assistant answer questions on '{heading}' in {d.doc_id}, and is any of it off limits?"
+                )
+            )
+    for q in out:
+        q.why = "built from the document profile because the model produced no usable question"
+    return QuestionSet(questions=out[:MAX_Q])
 
 
 def make_questions(client: LLMClient, brief: str, profile: CorpusProfile, model: str | None = None) -> tuple[QuestionSet, float]:
@@ -51,7 +77,7 @@ def make_questions(client: LLMClient, brief: str, profile: CorpusProfile, model:
         validator=validate,
         fallback=fallback,
     )
-    qs = res.value
+    qs = res.value if res.value.questions else fallback_questions(profile)
     for q in qs.questions:
         q.grounded_in = grounded_terms(q.question, vocab)
     generic = [q for q in qs.questions if not q.grounded_in]

@@ -10,3 +10,4 @@ Kept as evidence of what real runs broke. Do not read their scores as results.
 | `demo2_spares_run2_before_final_fixes` | A list marker was judged as an invented number; changes that improved nothing were kept |
 | `demo3_port_run1_guard_blocked_weather` | The guard told the agent to refuse the weather questions its tool exists for |
 | `demo3_port_run2_only_11_cases` | A small corpus produced fewer than the required 20 test cases |
+| `demo3_port_local_run1_no_interview` | Local 3B run (13/20): the model asked no clarifying questions, accepted rules pointing at outside sources, and its judge overruled supported answers |

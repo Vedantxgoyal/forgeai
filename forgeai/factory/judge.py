@@ -26,6 +26,7 @@ from forgeai.schemas import AgentResponse, CaseResult, EvalCase, JudgeVote
 from forgeai.textutil import fact_in, support_ratio
 
 SUPPORT_MIN = 0.55
+LLM_MAY_OVERRULE_BELOW = 0.8
 _CLARIFY = re.compile(
     r"(which (one|of|\w+)|do you mean|are you (asking|referring)|could you (clarify|specify|tell)|please (clarify|specify))[^?]*\?",
     re.I,
@@ -115,7 +116,7 @@ def judge_case(client: LLMClient, judge_model: str, case: EvalCase, resp: AgentR
                 if all(v1.facts_present) and not all(present):
                     present, overrode = [True] * len(facts), True
                     note.append("LLM judge (2 agreeing votes) accepted paraphrased facts")
-                if not v1.grounded and not v2.grounded and det_grounded:
+                if not v1.grounded and not v2.grounded and det_grounded and ratio < LLM_MAY_OVERRULE_BELOW:
                     grounded = False
                     note.append("LLM judge (2 agreeing votes) flagged unsupported claims")
             else:

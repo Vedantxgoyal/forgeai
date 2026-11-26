@@ -1,0 +1,84 @@
+{
+  "agent_name": "rotterdam_singapore_assistant",
+  "purpose": "To assist vessel masters in planning port calls by answering questions and checking weather conditions.",
+  "audience": "Vessel masters, shore-based personnel, and other stakeholders involved in port operations.",
+  "tone": "Formal, concise, and informative.",
+  "scope": "The assistant provides information on Rotterdam and Singapore port guides, including pre-arrival notices, pilotage, berthing and mooring, weather limits, waste and bunkering, and crew shore leave. It also checks the current weather at the port to determine if operations are within weather limits.",
+  "must_answer_topics": [
+    "cargo operations",
+    "mooring",
+    "vessels",
+    "pre-arrival notice",
+    "weather limits"
+  ],
+  "must_refuse_topics": [],
+  "qa": [],
+  "groundability": [
+    {
+      "topic": "cargo operations",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0002",
+        "rotterdam_port_guide::0003",
+        "singapore_port_guide::0000"
+      ],
+      "llm_verdict": "yes",
+      "note": "cargo operations details including vessel requirements and wind speed guidelines"
+    },
+    {
+      "topic": "mooring",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0002",
+        "rotterdam_port_guide::0003",
+        "singapore_port_guide::0002"
+      ],
+      "llm_verdict": "yes",
+      "note": "Specific guidelines for mooring lines and tug assistance are provided."
+    },
+    {
+      "topic": "vessels",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0002",
+        "singapore_port_guide::0002",
+        "singapore_port_guide::0001"
+      ],
+      "llm_verdict": "yes",
+      "note": "Regulations for vessel size and pilotage requirements are specified."
+    },
+    {
+      "topic": "pre-arrival notice",
+      "status": "partial",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0000",
+        "singapore_port_guide::0000",
+        "rotterdam_port_guide::0001"
+      ],
+      "llm_verdict": "partial",
+      "note": "Pre-arrival notice details are partially provided for Rotterdam and Singapore ports."
+    },
+    {
+      "topic": "weather limits",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "singapore_port_guide::0003",
+        "rotterdam_port_guide::0003",
+        "singapore_port_guide::0002"
+      ],
+      "llm_verdict": "yes",
+      "note": "Weather limits for port operations are specified in the guidelines."
+    }
+  ],
+  "ungrounded_topics": [],
+  "assumptions": [
+    "GROUNDABILITY PARTIAL: 'pre-arrival notice' (coverage 1.0) - Pre-arrival notice details are partially provided for Rotterdam and Singapore ports.",
+    "REFUSAL DROPPED: 'crew shore leave' has its own section in the documents and the client did not ask to refuse it"
+  ],
+  "brief": "An assistant for vessel masters planning port calls: it answers questions from our Rotterdam and Singapore port guides, and checks the current weather at the port to say whether operations are within the weather limits."
+}

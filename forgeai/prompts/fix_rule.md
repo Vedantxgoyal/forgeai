@@ -9,4 +9,5 @@ SYMPTOMS (what the failing questions look like, paraphrased; do NOT copy specifi
 Constraints:
 - The rule must be general: it must not contain any specific number, name, or answer from the examples.
 - It must not weaken the grounding requirement (never allow answering from outside knowledge).
+- The only source is the provided CONTEXT: never mention other sources, standards or references.
 - Output {"rule": "..."}.

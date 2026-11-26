@@ -1,0 +1,65 @@
+[
+  {
+    "iteration": 1,
+    "accepted": true,
+    "note": "accepted",
+    "score_before": 0.55,
+    "score_after": 0.6,
+    "changes": [
+      {
+        "category": "hallucination",
+        "kind": "rule",
+        "detail": "[f1h] Never provide information that is not verifiably supported by official port guides, weather reports, or other credible sources.  (LLM-written rule passed leakage checks)",
+        "addresses": [
+          "ans-059fdb"
+        ],
+        "rejected_reason": ""
+      },
+      {
+        "category": "prompt_defect",
+        "kind": "rule",
+        "detail": "[f1p] All answers must include a clear reference to relevant official sources or industry standards for accuracy and reliability.  (LLM-written rule passed leakage checks)",
+        "addresses": [
+          "par-a7a5a7",
+          "ans-ac3b4b",
+          "ans-66bcde",
+          "par-2178ac",
+          "ans-977469",
+          "mul-e13445"
+        ],
+        "rejected_reason": ""
+      }
+    ]
+  },
+  {
+    "iteration": 2,
+    "accepted": true,
+    "note": "accepted",
+    "score_before": 0.6,
+    "score_after": 0.65,
+    "changes": [
+      {
+        "category": "hallucination",
+        "kind": "rule",
+        "detail": "[f2h] Never provide information that is not verifiably supported by official port guides, weather reports, or reputable maritime sources.  (LLM-written rule passed leakage checks)",
+        "addresses": [
+          "par-a7a5a7",
+          "ans-059fdb"
+        ],
+        "rejected_reason": ""
+      },
+      {
+        "category": "prompt_defect",
+        "kind": "rule",
+        "detail": "[f2p] Provide all relevant details and supporting evidence for answers to ensure accuracy and reliability in port guide information.  (LLM-written rule passed leakage checks)",
+        "addresses": [
+          "par-2178ac",
+          "ans-977469",
+          "mul-e13445",
+          "clz-fe6004"
+        ],
+        "rejected_reason": ""
+      }
+    ]
+  }
+]

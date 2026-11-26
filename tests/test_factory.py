@@ -519,3 +519,46 @@ def test_blank_hides_the_number_and_keeps_the_unit():
     body = "Cargo operations stop when the wind speed exceeds 50 km/h at the berth."
     case_ = build_cloze_cases([Chunk(chunk_id="g::0001", doc_id="g", text=body, body=body)], 1)[0]
     assert case_.key_facts == ["50"] and "____ km/h" in case_.question
+
+
+def test_interview_is_not_skipped_when_the_model_asks_nothing():
+    from forgeai.config import Settings
+    from forgeai.factory.intake import make_questions
+    from forgeai.ingest.loaders import load_folder
+    from forgeai.ingest.profiler import profile_corpus
+    from forgeai.llm.client import Completion, LLMClient
+
+    class Silent:
+        def complete(self, **_):
+            return Completion("no questions from me")
+
+    profile = profile_corpus(load_folder("demos/port_docs"))
+    client = LLMClient(Settings(use_cache=False, json_retries=0), transport=Silent(), use_cache=False)
+    questions, share = make_questions(client, "Port assistant.", profile)
+    assert 1 <= len(questions.questions) <= 5 and share == 1.0
+
+
+def test_rules_may_not_point_outside_the_documents():
+    for rule in (
+        "Never give information that is not supported by official port guides or other credible sources.",
+        "All answers must include a clear reference to relevant official sources or industry standards.",
+    ):
+        assert "sources other than" in _rule_is_clean(rule, [], [])
+    assert not _rule_is_clean("Quote every condition found in the cited passages before you finish answering.", [], [])
+
+
+def test_llm_judge_cannot_overrule_a_fully_supported_answer():
+    class SaysUngrounded:
+        class settings:
+            json_retries = 0
+
+        def chat(self, *a, **k):
+            return (
+                '{"facts_present": [false, true], "grounded": false}'
+                if "1. designated" in a[0][-1]["content"]
+                else '{"facts_present": [true, false], "grounded": false}'
+            )
+
+    c = case(question="Which channel is used?", key_facts=["designated anchorages", "VHF channel 12"])
+    r = judge_case(SaysUngrounded(), "j", c, resp("VHF channel 12", ctx="Keep watch on VHF channel 12 in designated anchorages."))
+    assert r.grounded and r.failure == "prompt_defect"

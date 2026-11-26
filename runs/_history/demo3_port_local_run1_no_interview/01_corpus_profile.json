@@ -1,0 +1,71 @@
+{
+  "docs": [
+    {
+      "doc_id": "rotterdam_port_guide",
+      "file": "rotterdam_port_guide.md",
+      "kind": "text",
+      "n_words": 147,
+      "n_pages": null,
+      "headings": [
+        "Rotterdam Port Call Guide (fictional training document)",
+        "1. Pre-arrival Notice",
+        "2. Pilotage",
+        "3. Berthing and Mooring",
+        "4. Weather Limits",
+        "5. Waste and Bunkering"
+      ],
+      "top_terms": [
+        "metres",
+        "cargo operations",
+        "mooring",
+        "vessels",
+        "hours",
+        "pilot",
+        "arrival",
+        "cargo",
+        "speed",
+        "pre-arrival",
+        "wind",
+        "wind speed"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    },
+    {
+      "doc_id": "singapore_port_guide",
+      "file": "singapore_port_guide.md",
+      "kind": "text",
+      "n_words": 123,
+      "n_pages": null,
+      "headings": [
+        "Singapore Port Call Guide (fictional training document)",
+        "1. Pre-arrival Notice",
+        "2. Pilotage",
+        "3. Anchorage",
+        "4. Weather Limits",
+        "5. Crew Shore Leave"
+      ],
+      "top_terms": [
+        "crew",
+        "hours",
+        "shore",
+        "vessels",
+        "arrival",
+        "hours arrival",
+        "pilotage",
+        "port",
+        "vessels anchor",
+        "vessels gross",
+        "vessels submit",
+        "watch vhf"
+      ],
+      "columns": [],
+      "n_rows": null,
+      "sample_rows": [],
+      "warnings": []
+    }
+  ],
+  "skipped": []
+}

@@ -121,6 +121,11 @@ def _rule_is_clean(rule: str, cases: list[EvalCase], failing: list[CaseResult]) 
         qt = content_tokens(r.question)
         if qt and len(rt & qt) / len(qt) >= 0.7:
             return "copies a failing test question"
+    if re.search(
+        r"\b(other|external|outside|reputable|credible|industry|third.party|official)\b[^.]{0,40}\b(sources?|standards?|references?)\b",
+        low,
+    ):
+        return "points the agent to sources other than the provided documents"
     if re.search(r"\b(ignore|outside knowledge|general knowledge|guess)\b", low) and not re.search(
         r"\b(never|not|don'?t|without)\b", low
     ):
