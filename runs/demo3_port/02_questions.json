@@ -1,0 +1,40 @@
+{
+  "grounded_share": 1.0,
+  "questions": [
+    {
+      "question": "If rotterdam_port_guide and singapore_port_guide say different things, which should the assistant follow, or should it show both?",
+      "why": "built from the document profile because the model produced no usable question",
+      "grounded_in": [
+        "guide",
+        "port",
+        "rotterdam",
+        "singapore"
+      ]
+    },
+    {
+      "question": "Should the assistant answer questions on '5. Waste and Bunkering' in rotterdam_port_guide, and is any of it off limits?",
+      "why": "built from the document profile because the model produced no usable question",
+      "grounded_in": [
+        "bunkering",
+        "guide",
+        "limits",
+        "port",
+        "rotterdam",
+        "waste"
+      ]
+    },
+    {
+      "question": "Should the assistant answer questions on '5. Crew Shore Leave' in singapore_port_guide, and is any of it off limits?",
+      "why": "built from the document profile because the model produced no usable question",
+      "grounded_in": [
+        "crew",
+        "guide",
+        "leave",
+        "limits",
+        "port",
+        "shore",
+        "singapore"
+      ]
+    }
+  ]
+}

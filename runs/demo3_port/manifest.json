@@ -1,0 +1,83 @@
+{
+  "brief": "An assistant for vessel masters planning port calls: it answers questions from our Rotterdam and Singapore port guides, and checks the current weather at the port to say whether operations are within the weather limits.",
+  "docs": "demos/port_docs",
+  "models": {
+    "gen": "llama3.2:3b",
+    "judge": "llama3.2:3b",
+    "agent": "llama3.2:3b"
+  },
+  "usage": {
+    "intake": {
+      "calls": 7,
+      "cache_hits": 7,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "guard": {
+      "calls": 3,
+      "cache_hits": 3,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "generate": {
+      "calls": 2,
+      "cache_hits": 2,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "evalgen": {
+      "calls": 58,
+      "cache_hits": 58,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "agent": {
+      "calls": 69,
+      "cache_hits": 69,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "judge": {
+      "calls": 32,
+      "cache_hits": 32,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "optimize": {
+      "calls": 1,
+      "cache_hits": 1,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "seconds": 0.0,
+      "total_tokens": 0
+    },
+    "_total": {
+      "calls": 172,
+      "cache_hits": 172,
+      "total_tokens": 0,
+      "seconds": 0.0
+    }
+  },
+  "seconds": 39.2,
+  "notes": [
+    "intake: 3 questions, 100% reference real document terms"
+  ],
+  "seed": 7,
+  "final_score": null,
+  "tools": [
+    "weather"
+  ],
+  "substitutions": {}
+}

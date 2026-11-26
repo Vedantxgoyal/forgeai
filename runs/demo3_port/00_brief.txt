@@ -1,0 +1,1 @@
+An assistant for vessel masters planning port calls: it answers questions from our Rotterdam and Singapore port guides, and checks the current weather at the port to say whether operations are within the weather limits.

@@ -1,0 +1,23 @@
+[
+  {
+    "iteration": 1,
+    "accepted": false,
+    "note": "rolled back: dev 0.73->0.60, holdout 0.80->0.80",
+    "score_before": 0.75,
+    "score_after": 0.65,
+    "changes": [
+      {
+        "category": "prompt_defect",
+        "kind": "rule",
+        "detail": "[f1p] Ensure all answers are supported by relevant information from the provided context, and provide sufficient details to facilitate accurate decision-making.  (LLM-written rule passed leakage checks)",
+        "addresses": [
+          "par-6108d6",
+          "par-0204c9",
+          "ans-977469",
+          "mul-e13445"
+        ],
+        "rejected_reason": ""
+      }
+    ]
+  }
+]

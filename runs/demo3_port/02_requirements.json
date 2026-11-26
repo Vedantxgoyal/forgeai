@@ -1,0 +1,77 @@
+{
+  "agent_name": "rotterdam_singapore_assistant",
+  "purpose": "Provide vessel masters with accurate and up-to-date information on port calls in Rotterdam and Singapore.",
+  "audience": "Vessel masters, port authorities, and shipping companies",
+  "tone": "Formal, concise",
+  "scope": "The assistant will answer questions from the Rotterdam Port Guide and Singapore Port Guide, and provide current weather conditions to determine if operations are within weather limits.",
+  "must_answer_topics": [
+    "Pre-arrival Notice",
+    "Pilotage",
+    "Berthing and Mooring"
+  ],
+  "must_refuse_topics": [],
+  "qa": [
+    {
+      "question": "If rotterdam_port_guide and singapore_port_guide say different things, which should the assistant follow, or should it show both?",
+      "answer": "(no preference - be conservative)",
+      "source": "auto-default"
+    },
+    {
+      "question": "Should the assistant answer questions on '5. Waste and Bunkering' in rotterdam_port_guide, and is any of it off limits?",
+      "answer": "(no preference - be conservative)",
+      "source": "auto-default"
+    },
+    {
+      "question": "Should the assistant answer questions on '5. Crew Shore Leave' in singapore_port_guide, and is any of it off limits?",
+      "answer": "(no preference - be conservative)",
+      "source": "auto-default"
+    }
+  ],
+  "groundability": [
+    {
+      "topic": "Pre-arrival Notice",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0000",
+        "singapore_port_guide::0000",
+        "rotterdam_port_guide::0001"
+      ],
+      "llm_verdict": "yes",
+      "note": "Pre-arrival notification and declaration times are specified for both Rotterdam and Singapore ports."
+    },
+    {
+      "topic": "Pilotage",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "singapore_port_guide::0001",
+        "rotterdam_port_guide::0001",
+        "rotterdam_port_guide::0004"
+      ],
+      "llm_verdict": "yes",
+      "note": "Pilotage requirements and procedures are specified for certain vessel types and ports."
+    },
+    {
+      "topic": "Berthing and Mooring",
+      "status": "supported",
+      "lexical_coverage": 1.0,
+      "best_chunks": [
+        "rotterdam_port_guide::0002",
+        "rotterdam_port_guide::0003",
+        "singapore_port_guide::0002"
+      ],
+      "llm_verdict": "yes",
+      "note": "Specific guidelines for vessel size and wind speed requirements during cargo operations at berths."
+    }
+  ],
+  "ungrounded_topics": [],
+  "assumptions": [
+    "If rotterdam_port_guide and singapore_port_guide say different things, which should the assistant follow, or should it show both? -> (no preference - be conservative)",
+    "Should the assistant answer questions on '5. Waste and Bunkering' in rotterdam_port_guide, and is any of it off limits? -> (no preference - be conservative)",
+    "Should the assistant answer questions on '5. Crew Shore Leave' in singapore_port_guide, and is any of it off limits? -> (no preference - be conservative)",
+    "REFUSAL DROPPED: 'Waste and Bunkering' has its own section in the documents and the client did not ask to refuse it",
+    "REFUSAL DROPPED: 'Crew Shore Leave' has its own section in the documents and the client did not ask to refuse it"
+  ],
+  "brief": "An assistant for vessel masters planning port calls: it answers questions from our Rotterdam and Singapore port guides, and checks the current weather at the port to say whether operations are within the weather limits."
+}

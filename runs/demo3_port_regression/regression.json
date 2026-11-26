@@ -1,0 +1,260 @@
+{
+  "old_run": "runs\\demo3_port",
+  "new_docs": "demos/port_docs_v2",
+  "counts": {
+    "regression": 1,
+    "stale": 3,
+    "recheck": 0,
+    "fixed": 1,
+    "still failing": 3,
+    "still passing": 12
+  },
+  "old_passed": 15,
+  "new_passed": 13,
+  "total": 20,
+  "score_on_valid_cases": 0.7647,
+  "valid_cases": 17,
+  "document_changes": [
+    {
+      "doc": "rotterdam_port_guide",
+      "change": "modified",
+      "lines": [
+        "-Vessels must send the pre-arrival notification at least 24 hours before arrival. Dangerous cargo must be declared at least 48 hours before arrival.",
+        "+Vessels must send the pre-arrival notification at least 48 hours before arrival. Dangerous cargo must be declared at least 72 hours before arrival.",
+        "-Cargo operations at container berths stop when wind speed exceeds 50 km/h. Tug assistance is mandatory when wind speed exceeds 40 km/h.",
+        "-5. Waste and Bunkering",
+        "-Garbage must be landed before departure unless storage capacity is sufficient for the next voyage. Bunkering requires a completed safety checklist signed by the Chief Engineer.",
+        "+Cargo operations at container berths stop when wind speed exceeds 45 km/h. Tug assistance is mandatory when wind speed exceeds 40 km/h."
+      ],
+      "more": 0
+    }
+  ],
+  "cases": [
+    {
+      "id": "par-6108d6",
+      "type": "paraphrase",
+      "question": "How many tugboats should I have on board if my ship is really big?",
+      "status": "still failing",
+      "passed_before": false,
+      "passed_now": false,
+      "reasons": [],
+      "answer": "At least 2 tugs.",
+      "judge": "LLM judge unavailable; deterministic verdict kept; facts missing from answer despite being retrieved"
+    },
+    {
+      "id": "ans-ac3b4b",
+      "type": "answerable",
+      "question": "What is the minimum time before arrival that dangerous cargo must be declared?",
+      "status": "fixed",
+      "passed_before": false,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "24 hours",
+      "judge": ""
+    },
+    {
+      "id": "par-0204c9",
+      "type": "paraphrase",
+      "question": "What should I do with my ship if it starts to blow strongly?",
+      "status": "still failing",
+      "passed_before": false,
+      "passed_now": false,
+      "reasons": [],
+      "answer": "Stop cargo operations and use tug assistance if wind speed exceeds 40 km/h.",
+      "judge": "LLM judge unavailable; deterministic verdict kept; facts missing from answer despite being retrieved"
+    },
+    {
+      "id": "ans-219285",
+      "type": "answerable",
+      "question": "What is the VHF channel number for vessels to keep a continuous listening watch on?",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "VHF channel 12",
+      "judge": ""
+    },
+    {
+      "id": "ans-977469",
+      "type": "answerable",
+      "question": "What is the minimum wind speed at which tug assistance becomes mandatory?",
+      "status": "still failing",
+      "passed_before": false,
+      "passed_now": false,
+      "reasons": [],
+      "answer": "40 km/h",
+      "judge": "facts missing from answer despite being retrieved"
+    },
+    {
+      "id": "par-6d583a",
+      "type": "paraphrase",
+      "question": "What is the rule for crew members when they go on shore leave?",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "Crew must return on board at least 2 hours before the scheduled departure.",
+      "judge": ""
+    },
+    {
+      "id": "mul-e13445",
+      "type": "multi_doc",
+      "question": "What are the requirements for crew shore passes in Rotterdam and Singapore?",
+      "status": "stale",
+      "passed_before": false,
+      "passed_now": false,
+      "reasons": [
+        "fact no longer in rotterdam_port_guide, singapore_port_guide: 'Bunkering requires a completed safety checklist'"
+      ],
+      "answer": "In Rotterdam, crew must return on board at least 2 hours before departure. In Singapore, shore passes are required for all crew going ashore and they must return on board at least 2 hours before the scheduled departure.",
+      "judge": "LLM judge unavailable; deterministic verdict kept"
+    },
+    {
+      "id": "out-7ce179",
+      "type": "out_of_scope",
+      "question": "What is the airspeed velocity of an unladen swallow?",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "I can't answer that from the provided documents.",
+      "judge": "agent error: agent output invalid after retries"
+    },
+    {
+      "id": "out-b96770",
+      "type": "out_of_scope",
+      "question": "Can you write a recipe for chocolate chip cookies?",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "I can't answer that from the provided documents.",
+      "judge": "agent error: agent output invalid after retries"
+    },
+    {
+      "id": "nea-f11828",
+      "type": "near_miss",
+      "question": "What is the average annual rainfall in Rotterdam?",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "I can't answer that from the provided documents.",
+      "judge": "agent error: agent output invalid after retries"
+    },
+    {
+      "id": "nea-c05d4e",
+      "type": "near_miss",
+      "question": "How many cargo ships can fit in the Singapore Strait?",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "I can't answer that from the provided documents.",
+      "judge": "agent error: agent output invalid after retries"
+    },
+    {
+      "id": "nea-23678c",
+      "type": "near_miss",
+      "question": "Can you tell me the exact coordinates of the Rotterdam Maasvlakte?",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "I can't answer that from the provided documents.",
+      "judge": "agent error: agent output invalid after retries"
+    },
+    {
+      "id": "clz-1576b6",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (1. Pre-arrival Notice), which number belongs in the blank: \"Vessels must send the pre-arrival notification at least ____ hours before arrival.\"",
+      "status": "stale",
+      "passed_before": true,
+      "passed_now": false,
+      "reasons": [
+        "fact no longer in rotterdam_port_guide: '24'"
+      ],
+      "answer": "48",
+      "judge": "LLM judge unavailable; deterministic verdict kept; facts missing from answer despite being retrieved"
+    },
+    {
+      "id": "clz-4f0379",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (2. Pilotage), which number belongs in the blank: \"Pilotage is compulsory for vessels longer than ____ metres.\"",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "75",
+      "judge": ""
+    },
+    {
+      "id": "clz-9bde67",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (3. Berthing and Mooring), which number belongs in the blank: \"Vessels over ____ metres require at least 2 tugs.\"",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "200",
+      "judge": ""
+    },
+    {
+      "id": "clz-fe6004",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (4. Weather Limits), which number belongs in the blank: \"Cargo operations at container berths stop when wind speed exceeds ____ km/h.\"",
+      "status": "stale",
+      "passed_before": true,
+      "passed_now": false,
+      "reasons": [
+        "fact no longer in rotterdam_port_guide: '50'"
+      ],
+      "answer": "45",
+      "judge": "LLM judge unavailable; deterministic verdict kept"
+    },
+    {
+      "id": "clz-5f9711",
+      "type": "answerable",
+      "question": "According to singapore port guide (1. Pre-arrival Notice), which number belongs in the blank: \"Vessels must submit the arrival declaration at least ____ hours before arrival.\"",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "12",
+      "judge": ""
+    },
+    {
+      "id": "clz-882f89",
+      "type": "answerable",
+      "question": "According to singapore port guide (2. Pilotage), which number belongs in the blank: \"Pilotage is compulsory for vessels of ____ gross tonnage and above.\"",
+      "status": "regression",
+      "passed_before": true,
+      "passed_now": false,
+      "reasons": [],
+      "answer": "300",
+      "judge": "missing or invalid citations"
+    },
+    {
+      "id": "clz-94a4f9",
+      "type": "answerable",
+      "question": "According to singapore port guide (4. Weather Limits), which number belongs in the blank: \"Bunkering is suspended during lightning warnings and when wind speed exceeds ____ km/h.\"",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "45",
+      "judge": ""
+    },
+    {
+      "id": "clz-7147dc",
+      "type": "answerable",
+      "question": "According to singapore port guide (5. Crew Shore Leave), which number belongs in the blank: \"Crew must return on board at least ____ hours before the scheduled departure.\"",
+      "status": "still passing",
+      "passed_before": true,
+      "passed_now": true,
+      "reasons": [],
+      "answer": "2 hours before the scheduled departure.",
+      "judge": ""
+    }
+  ]
+}

@@ -1,0 +1,375 @@
+{
+  "stats": {
+    "proposed": 50,
+    "kept": 20,
+    "dropped_unverified": 36,
+    "dropped_answerable_refusal": 0,
+    "by_type": {
+      "paraphrase": 3,
+      "answerable": 11,
+      "multi_doc": 1,
+      "out_of_scope": 2,
+      "near_miss": 3
+    },
+    "cloze_fallback": 8
+  },
+  "cases": [
+    {
+      "id": "par-6108d6",
+      "type": "paraphrase",
+      "question": "How many tugboats should I have on board if my ship is really big?",
+      "expected_refusal": false,
+      "reference_answer": "At least 2",
+      "key_facts": [
+        "200 metres",
+        "require at least 2 tugs"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0002"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "ans-ac3b4b",
+      "type": "answerable",
+      "question": "What is the minimum time before arrival that dangerous cargo must be declared?",
+      "expected_refusal": false,
+      "reference_answer": "at least 24 hours",
+      "key_facts": [
+        "at least 24 hours before arrival"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0000"
+      ],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "par-0204c9",
+      "type": "paraphrase",
+      "question": "What should I do with my ship if it starts to blow strongly?",
+      "expected_refusal": false,
+      "reference_answer": "You need to stop cargo operations and get help from a tugboat.",
+      "key_facts": [
+        "wind speed exceeds",
+        "tug assistance is mandatory"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0003"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "ans-219285",
+      "type": "answerable",
+      "question": "What is the VHF channel number for vessels to keep a continuous listening watch on?",
+      "expected_refusal": false,
+      "reference_answer": "VHF channel 12",
+      "key_facts": [
+        "VHF channel 12"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0002"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "ans-977469",
+      "type": "answerable",
+      "question": "What is the minimum wind speed at which tug assistance becomes mandatory?",
+      "expected_refusal": false,
+      "reference_answer": "40 km/h",
+      "key_facts": [
+        "wind speed exceeds",
+        "40 km/h"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0003"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "par-6d583a",
+      "type": "paraphrase",
+      "question": "What is the rule for crew members when they go on shore leave?",
+      "expected_refusal": false,
+      "reference_answer": "They must return to their ship at least 2 hours before it's set to leave.",
+      "key_facts": [
+        "at least 2 hours",
+        "return on board"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0004"
+      ],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "mul-e13445",
+      "type": "multi_doc",
+      "question": "What are the requirements for crew shore passes in Rotterdam and Singapore?",
+      "expected_refusal": false,
+      "reference_answer": "In Rotterdam, bunkering requires a completed safety checklist. In Singapore, shore passes are required for all crew going ashore.",
+      "key_facts": [
+        "Bunkering requires a completed safety checklist",
+        "Shore passes are required for all crew"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide",
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0004",
+        "singapore_port_guide::0004"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "out-7ce179",
+      "type": "out_of_scope",
+      "question": "What is the airspeed velocity of an unladen swallow?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "out-b96770",
+      "type": "out_of_scope",
+      "question": "Can you write a recipe for chocolate chip cookies?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-f11828",
+      "type": "near_miss",
+      "question": "What is the average annual rainfall in Rotterdam?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-c05d4e",
+      "type": "near_miss",
+      "question": "How many cargo ships can fit in the Singapore Strait?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "nea-23678c",
+      "type": "near_miss",
+      "question": "Can you tell me the exact coordinates of the Rotterdam Maasvlakte?",
+      "expected_refusal": true,
+      "reference_answer": "",
+      "key_facts": [],
+      "source_docs": [],
+      "gold_chunks": [],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-1576b6",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (1. Pre-arrival Notice), which number belongs in the blank: \"Vessels must send the pre-arrival notification at least ____ hours before arrival.\"",
+      "expected_refusal": false,
+      "reference_answer": "Vessels must send the pre-arrival notification at least 24 hours before arrival.",
+      "key_facts": [
+        "24"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0000"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-4f0379",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (2. Pilotage), which number belongs in the blank: \"Pilotage is compulsory for vessels longer than ____ metres.\"",
+      "expected_refusal": false,
+      "reference_answer": "Pilotage is compulsory for vessels longer than 75 metres.",
+      "key_facts": [
+        "75"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-9bde67",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (3. Berthing and Mooring), which number belongs in the blank: \"Vessels over ____ metres require at least 2 tugs.\"",
+      "expected_refusal": false,
+      "reference_answer": "Vessels over 200 metres require at least 2 tugs.",
+      "key_facts": [
+        "200"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0002"
+      ],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-fe6004",
+      "type": "answerable",
+      "question": "According to rotterdam port guide (4. Weather Limits), which number belongs in the blank: \"Cargo operations at container berths stop when wind speed exceeds ____ km/h.\"",
+      "expected_refusal": false,
+      "reference_answer": "Cargo operations at container berths stop when wind speed exceeds 50 km/h.",
+      "key_facts": [
+        "50"
+      ],
+      "source_docs": [
+        "rotterdam_port_guide"
+      ],
+      "gold_chunks": [
+        "rotterdam_port_guide::0003"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-5f9711",
+      "type": "answerable",
+      "question": "According to singapore port guide (1. Pre-arrival Notice), which number belongs in the blank: \"Vessels must submit the arrival declaration at least ____ hours before arrival.\"",
+      "expected_refusal": false,
+      "reference_answer": "Vessels must submit the arrival declaration at least 12 hours before arrival.",
+      "key_facts": [
+        "12"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0000"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-882f89",
+      "type": "answerable",
+      "question": "According to singapore port guide (2. Pilotage), which number belongs in the blank: \"Pilotage is compulsory for vessels of ____ gross tonnage and above.\"",
+      "expected_refusal": false,
+      "reference_answer": "Pilotage is compulsory for vessels of 300 gross tonnage and above.",
+      "key_facts": [
+        "300"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0001"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-94a4f9",
+      "type": "answerable",
+      "question": "According to singapore port guide (4. Weather Limits), which number belongs in the blank: \"Bunkering is suspended during lightning warnings and when wind speed exceeds ____ km/h.\"",
+      "expected_refusal": false,
+      "reference_answer": "Bunkering is suspended during lightning warnings and when wind speed exceeds 45 km/h.",
+      "key_facts": [
+        "45"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0003"
+      ],
+      "split": "dev",
+      "verified": true,
+      "evidence": []
+    },
+    {
+      "id": "clz-7147dc",
+      "type": "answerable",
+      "question": "According to singapore port guide (5. Crew Shore Leave), which number belongs in the blank: \"Crew must return on board at least ____ hours before the scheduled departure.\"",
+      "expected_refusal": false,
+      "reference_answer": "Crew must return on board at least 2 hours before the scheduled departure.",
+      "key_facts": [
+        "2"
+      ],
+      "source_docs": [
+        "singapore_port_guide"
+      ],
+      "gold_chunks": [
+        "singapore_port_guide::0004"
+      ],
+      "split": "holdout",
+      "verified": true,
+      "evidence": []
+    }
+  ]
+}

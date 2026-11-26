@@ -14,10 +14,15 @@ improvement rounds, and an honest quality report. Every stage is designed for a 
 | [HR policy assistant](runs/demo1_hr/report.md) | none | 20/24 -> **20/24 (83%)** | 83% / 83% | `gpt-oss-120b`, judge `qwen3.8-27b` (Groq) |
 | [Ship-spares procurement](runs/demo2_spares/report.md) | `csv_lookup`, `calculator` | 23/24 -> **24/24** | 100% / 100% | `qwen3.8-27b`, judge `gpt-oss-120b` (Groq) |
 | [Ship spares, stricter newer exam](runs/demo2_spares_strict_exam/report.md) | `csv_lookup`, `calculator` | first exam only: **18/25 (72%)** | 79% / 50% | `gpt-oss-20b`, judge `qwen3.8-27b` (Groq) |
+| [Third brief: port calls](runs/demo3_port/report.md) | `weather` | 15/20 -> **15/20 (75%)** | 73% / 80% | everything on `llama3.2:3b`, local Ollama on a CPU laptop |
+| [Regression: port guides changed](runs/demo3_port_regression/regression_report.md) | - | old exam: 15/20 -> 13/20 | 1 real break, 3 outdated tests, 1 fixed | same local model |
 
 **Read each run's `NOTE.md` before quoting a score.** In short:
 - HR: the one improvement round fixed nothing and was rejected. Three of the four failures look like tests that demand a
   detail the question did not ask for; one is a real hallucination. 95% interval 64-93%.
+- Third brief: 8 of its 20 cases are model-free fill-in-the-blank cases, and judge and agent are the same model.
+- Regression: the changed guide states new notice periods and a new wind limit; the agent answered with the new values
+  and the report marks those three old tests as outdated instead of blaming the agent.
 - Spares 24/24: produced by an earlier version on an easier exam, so **do not read it as "the agent is perfect"**. The
   newer exam on the same documents scores 72% and shows what the first one missed (ambiguity, skipped calculator).
 
@@ -46,8 +51,10 @@ pip install -e ".[dev]"
 copy .env.example .env            # choose Ollama (local) or Groq (hosted open models)
 forge ping                        # check the models respond
 python demos/make_demo_docs.py    # builds the two demo corpora
-forge run demos/hr_docs     --brief @demos/briefs/hr.txt     --out runs/demo1_hr
-forge run demos/spares_docs --brief @demos/briefs/spares.txt --out runs/demo2_spares
+forge run demos/hr_docs     --brief "@demos/briefs/hr.txt"  --out runs/demo1_hr
+forge run demos/spares_docs --brief "@demos/briefs/spares.txt" --out runs/demo2_spares
+forge run demos/port_docs   --brief "@demos/briefs/port.txt"   --out runs/demo3_port --cases 20
+forge regress runs/demo3_port demos/port_docs_v2 --out runs/demo3_port_regression
 forge chat runs/demo1_hr/agent.final.yaml demos/hr_docs --trace     # generic runner: works with ANY definition
 forge run <any folder> --brief "…" -i --approve     # interview yourself, approve requirements before generation
 forge ui                          # web UI at http://127.0.0.1:8600 (build it once, see below)
