@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from pathlib import Path
 
 import yaml
 
 from forgeai.config import Settings, get_settings
-from forgeai.ingest.chunker import ChunkParams, chunk_documents
+from forgeai.ingest.chunker import Chunk, ChunkParams, chunk_documents
 from forgeai.ingest.loaders import LoadResult, load_folder
 from forgeai.llm.client import LLMClient, is_outage
 from forgeai.llm.structured import generate_structured
@@ -47,13 +48,25 @@ def build_index(load: LoadResult, d: AgentDef, settings: Settings, embedder=None
     return HybridIndex(chunks, emb, Reranker(settings.st_reranker))
 
 
-def match_citation(raw: str, retrieved: list[str]) -> str:
-    """Accept an id wrapped in extra text (models often append the section heading), but never guess: the citation
-    must literally contain exactly one retrieved passage id."""
+def passage(chunk: Chunk) -> str:
+    """A passage as the agent sees it: exactly one bracketed label, the id it must cite."""
+    section = f"(section: {chunk.section})\n" if chunk.section else ""
+    return f"[{chunk.chunk_id}] {section}{chunk.body}"
+
+
+def match_citation(raw: str, retrieved: list[str], sections: dict[str, str] | None = None) -> str:
+    """Resolve what a small model writes ("doc::0001 > Pilotage", "0001", "doc > Pilotage") to a retrieved id,
+    but only when exactly one retrieved passage fits. Anything ambiguous is left as written and judged invalid."""
     cleaned = raw.strip("[] ")
     if cleaned in retrieved:
         return cleaned
     found = [r for r in retrieved if r in cleaned]
+    if not found:
+        number = re.match(r"(\d{4})\b", cleaned)
+        if number:
+            found = [r for r in retrieved if r.endswith(f"::{number.group(1)}")]
+        elif sections and ">" in cleaned:
+            found = [r for r in retrieved if cleaned.startswith(r.split("::")[0]) and sections.get(r) and sections[r] in cleaned]
     return found[0] if len(found) == 1 else cleaned
 
 
@@ -108,7 +121,7 @@ class Agent:
         q_ret, rewritten = self._retrieval_query(question, history)
         p = self.d.retrieval
         hits = self.index.search(q_ret, SearchParams(top_k=p.top_k, mode=p.mode, rerank=p.rerank))
-        ctx_text = "\n\n".join(f"[{h.chunk.chunk_id}] {h.chunk.text}" for h in hits)
+        ctx_text = "\n\n".join(passage(h.chunk) for h in hits)
         retrieved = [h.chunk.chunk_id for h in hits]
         contract = json.dumps(self.d.output_contract, ensure_ascii=False)
         sys_msg = (
@@ -156,7 +169,8 @@ class Agent:
         if turn.action == "tool":
             turn = AgentTurn(action="answer", answer=self.d.refusal_phrase, refused=True)
         refused = turn.refused or looks_like_refusal(turn.answer, self.d.refusal_phrase)
-        cites = [match_citation(c, retrieved) for c in turn.citations]
+        sections = {h.chunk.chunk_id: h.chunk.section for h in hits}
+        cites = [match_citation(c, retrieved, sections) for c in turn.citations]
         return AgentResponse(
             answer=turn.answer.strip(),
             citations=cites,

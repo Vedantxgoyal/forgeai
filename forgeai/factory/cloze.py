@@ -1,7 +1,7 @@
 """Fill-in-the-blank cases built without a model, used only when the model cannot produce enough verified cases.
 
-A weak model, or a very small corpus, can leave the exam below its minimum size. Blanking a quantity out of a real
-sentence gives a question whose answer is certainly in the documents. These cases are easier and more mechanical
+A weak model, or a very small corpus, can leave the exam below its minimum size. Blanking the number of a quantity out of a
+real sentence (the unit stays visible) gives a question whose answer is certainly in the documents. These cases are easier and more mechanical
 than the model-written ones, so the report always states how many were used.
 """
 
@@ -54,15 +54,16 @@ def build_cloze_cases(chunks: list[Chunk], n: int) -> list[EvalCase]:
             if sentence in seen:
                 continue
             seen.add(sentence)
-            blanked = re.sub(re.escape(fact), "____", sentence)
-            question = f'According to {_title(chunk)}, what belongs in the blank: "{blanked}"'
+            number = re.search(r"\d[\d,]*(?:\.\d+)?", fact).group(0)
+            blanked = re.sub(rf"(?<![\d.,]){re.escape(number)}(?![\d]|[.,]\d)", "____", sentence)
+            question = f'According to {_title(chunk)}, which number belongs in the blank: "{blanked}"'
             cases.append(
                 EvalCase(
                     id="clz-" + hashlib.sha1(question.encode()).hexdigest()[:6],
                     type="answerable",
                     question=question,
                     reference_answer=sentence,
-                    key_facts=[fact],
+                    key_facts=[number],
                     source_docs=[chunk.doc_id],
                     gold_chunks=[chunk.chunk_id],
                 )

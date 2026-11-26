@@ -491,3 +491,31 @@ def test_a_phrase_split_into_words_is_not_accepted_as_facts():
     )
     sole = RawQA(question="Who has to sign the request?", answer="x", key_facts=["Superintendent"])
     assert not _verify_facts(split, text) and _verify_facts(sole, text)
+
+
+def test_shortened_and_section_style_citations_resolve_only_when_unambiguous():
+    from forgeai.agent.runtime import match_citation
+
+    got = ["port_a::0001", "port_b::0001", "port_a::0002"]
+    sections = {"port_a::0001": "2. Pilotage", "port_b::0001": "2. Pilotage", "port_a::0002": "3. Anchorage"}
+    assert match_citation("0002", got, sections) == "port_a::0002"
+    assert match_citation("0001", got, sections) == "0001"  # two passages end in 0001: do not guess
+    assert match_citation("port_b > 2. Pilotage", got, sections) == "port_b::0001"
+    assert match_citation("port_c > 2. Pilotage", got, sections) == "port_c > 2. Pilotage"
+
+
+def test_passage_shows_exactly_one_bracketed_label():
+    from forgeai.agent.runtime import passage
+    from forgeai.ingest.chunker import Chunk
+
+    chunk = Chunk(chunk_id="g::0001", doc_id="g", text="[g > 2. P]\nBody", body="Body", section="2. P")
+    assert passage(chunk).count("[") == 1 and "g::0001" in passage(chunk)
+
+
+def test_blank_hides_the_number_and_keeps_the_unit():
+    from forgeai.factory.cloze import build_cloze_cases
+    from forgeai.ingest.chunker import Chunk
+
+    body = "Cargo operations stop when the wind speed exceeds 50 km/h at the berth."
+    case_ = build_cloze_cases([Chunk(chunk_id="g::0001", doc_id="g", text=body, body=body)], 1)[0]
+    assert case_.key_facts == ["50"] and "____ km/h" in case_.question
